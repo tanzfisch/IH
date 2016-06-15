@@ -50,8 +50,8 @@ void VoxelTerrainGenerator::init()
 
     // set up terrain material
     _terrainMaterialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("ascent_terrain.vert", iShaderObjectType::Vertex);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("ascent_terrain_directional_light.frag", iShaderObjectType::Fragment);
+    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain.vert", iShaderObjectType::Vertex);
+    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
 	//iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
@@ -469,7 +469,7 @@ void VoxelTerrainGenerator::unregisterVoxelDataGeneratedDelegate(VoxelDataGenera
 
 void VoxelTerrainGenerator::onHandle()
 {
-    handleVoxelBlocks();
+	handleVoxelBlocks();
 }
 
 void VoxelTerrainGenerator::onTaskFinished(uint64 taskID)
@@ -520,6 +520,11 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
             start._y = 0;
         }
 
+		if (stop._y > 3)
+		{
+			stop._y = 3;
+		}
+
         if (start._z < 0)
         {
             start._z = 0;
@@ -569,17 +574,20 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                     }
                     else if (block->_generatedVoxels)
                     {
-                        handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos);
+						if (block->_changedVoxels)
+						{
+							handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos);
 
-                        if (!block->_generatedEnemies)
-                        {
-                            iaVector3I blockMax = blockPos;
-                            blockMax._x += _voxelBlockSize;
-                            blockMax._y += _voxelBlockSize;
-                            blockMax._z += _voxelBlockSize;
-                            _dataGeneratedEvent(blockPos, blockMax);
-                            block->_generatedEnemies = true;
-                        }
+							if (!block->_generatedEnemies)
+							{
+								iaVector3I blockMax = blockPos;
+								blockMax._x += _voxelBlockSize;
+								blockMax._y += _voxelBlockSize;
+								blockMax._z += _voxelBlockSize;
+								_dataGeneratedEvent(blockPos, blockMax);
+								block->_generatedEnemies = true;
+							}
+						}
                     }
                 }
             }

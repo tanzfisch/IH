@@ -373,7 +373,7 @@ void Player::drawReticle(const iWindow& window)
 
 void Player::handle()
 {
-    float32 speed = 500;
+    float32 speed = 4000;
 
     const float32 offsetIncrease = 0.1;
     iaMatrixf matrix;

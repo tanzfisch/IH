@@ -2,6 +2,7 @@
 
 in vec3 VertexWorld;
 in vec3 VertexNormal;
+in vec4 gl_FragCoord;
 
 layout(location = 0) out vec4 out_color;
 
@@ -69,6 +70,10 @@ void main()
 	
 	vec3 specular = matSpecular * lightSpecular * specularLightFactor;
 	
-	out_color.rgb = emissive + ambient + diffuse + specular;
-	out_color.a = 1;
+	vec4 finalColor;
+	
+	finalColor.rgb = (emissive + ambient + diffuse + specular);
+	finalColor.a = 1;
+	
+	out_color = finalColor;
 }

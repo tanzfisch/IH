@@ -28,7 +28,7 @@ TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 priority)
 
 void TaskGenerateVoxels::run()
 {   
-	iPerlinNoise perlinNoise;
+	static iPerlinNoise perlinNoise;
 
 	iVoxelData* voxelData = _voxelBlock->_voxelData;
 	iaVector3I& offset = _voxelBlock->_offset;
@@ -37,34 +37,43 @@ void TaskGenerateVoxels::run()
     voxelData->setClearValue(0);
 	voxelData->initData(size._x, size._y, size._z);
 
-    // skip all the voxel blocks that are too far away
-    const float64 from = 0.444;
-    const float64 to = 0.45;
-    float64 factor = 1.0 / (to - from);
-
-    const float64 fromMeta = 0.017;
-    const float64 toMeta = 0.0175;
-    float64 factorMeta = 1.0 / (toMeta - fromMeta);
-
-    for (int64 x = 0; x < voxelData->getWidth() - 0; ++x)
+    for (int64 x = 0; x < voxelData->getWidth(); ++x)
     {
-        for (int64 y = 0; y < voxelData->getHeight() - 0; ++y)
-        {
-            float32 density = 0;
+        for (int64 z = 0; z < voxelData->getDepth(); ++z)        
+		{
+			iaVector3f pos(x + offset._x, 0, z + offset._z);
+			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.003, 0, pos._z * 0.003), 6, 0.65) - 0.55;
+			if (noise < 0.0)
+			{
+				noise *= 0.3;
+			}
 
-            // first figure out if a voxel is outside the sphere
-            iaVector3f pos(x + offset._x, y + offset._y, offset._z);
+			noise += 0.025;
 
-            float64 height = perlinNoise.getValue(iaVector3d(pos._x * 0.04, pos._y * 0.04, 0), 4, 0.5);
-            if (height > offset._z + size._z)
-            {
-            //    voxelData->setVoxelLine(iaVector3I(offset._x, offset._y, 0), 255);
-            }
-        }
-    }/**/
+			if (noise < 0)
+			{
+				noise = 0;
+			}
+
+			float64 height = noise * 250;
+			
+			float64 diff = height - offset._y;
+			if (diff > 0)
+			{
+				_voxelBlock->_changedVoxels = true;
+				int64 diffi = diff;
+				if (diffi > 1)
+				{
+					voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi - 1, 255);
+				}
+
+				diff -= static_cast<float64>(diffi);
+				voxelData->setVoxelDensity(iaVector3I(x, diffi - 1, z), (diff * 254) + 1);
+			}
+		}
+    }
 
 	_voxelBlock->_generatedVoxels = true;
-
 	finishTask();
 }
 

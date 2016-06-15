@@ -19,6 +19,7 @@ namespace Igor
 struct VoxelBlock
 {
     bool _generatedVoxels = false;
+	bool _changedVoxels = false;
     bool _generatedEnemies = false;
     iaVector3I _offset;
     iaVector3i _size;
