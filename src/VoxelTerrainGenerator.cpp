@@ -69,7 +69,7 @@ void VoxelTerrainGenerator::deinit()
     iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrainGenerator::onHandle));
 
     con_endl("waiting for some tasks ...");
-    while (_runningTasks.size() > 0)
+    while (loading())
     {
         _sleep(1000);
     }
@@ -474,16 +474,22 @@ void VoxelTerrainGenerator::onHandle()
 
 void VoxelTerrainGenerator::onTaskFinished(uint64 taskID)
 {
+	_runningTaskMutex.lock();
     auto task = find(_runningTasks.begin(), _runningTasks.end(), taskID);
     if (task != _runningTasks.end())
     {
         _runningTasks.erase(task);
     }
+	_runningTaskMutex.unlock();
 }
 
 bool VoxelTerrainGenerator::loading()
 {
-    return _runningTasks.size() ? true : false;
+	_runningTaskMutex.lock();
+    bool result = _runningTasks.size() ? true : false;
+	_runningTaskMutex.unlock();
+
+	return result;
 }
 
 void VoxelTerrainGenerator::handleVoxelBlocks()
@@ -568,7 +574,9 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                             block->_size.set(_voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap);
 
                             TaskGenerateVoxels* task = new TaskGenerateVoxels(block, static_cast<uint32>(distance * 0.9));
+							_runningTaskMutex.lock();
                             _runningTasks.push_back(task->getID());
+							_runningTaskMutex.unlock();
                             iTaskManager::getInstance().addTask(task);
                         }
                     }
