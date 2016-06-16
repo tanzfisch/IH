@@ -79,7 +79,10 @@ void TaskGenerateVoxels::run()
 
 				_voxelBlock->_changedVoxels = true;
 				int64 diffi = static_cast<uint64>(diff);
-    			voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
+				if (diffi > 0)
+				{
+					voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
+				}
 
 				diff -= static_cast<float64>(diffi);
 				voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
