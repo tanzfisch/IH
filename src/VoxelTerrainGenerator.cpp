@@ -268,9 +268,9 @@ void VoxelTerrainGenerator::castRay(const iaVector3I& from, const iaVector3I& to
     (delta._y > 0) ? step._y = 1 : step._y = -1;
     (delta._z > 0) ? step._z = 1 : step._z = -1;
 
-    if (delta._x < 0) delta._x = -delta._x;
-    if (delta._y < 0) delta._y = -delta._y;
-    if (delta._z < 0) delta._z = -delta._z;
+    delta._x = abs(delta._x);
+    delta._y = abs(delta._y);
+    delta._z = abs(delta._z);
 
     int64 dist = (delta._x>delta._y) ? delta._x : delta._y;
     dist = (dist > delta._z) ? dist : delta._z;
@@ -526,9 +526,9 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
             start._y = 0;
         }
 
-		if (stop._y > 3)
+		if (stop._y > 2)
 		{
-			stop._y = 3;
+			stop._y = 2;
 		}
 
         if (start._z < 0)
@@ -582,7 +582,7 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                     }
                     else if (block->_generatedVoxels)
                     {
-						if (block->_changedVoxels)
+						if (block->_changedVoxels) // TODO
 						{
 							handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos);
 

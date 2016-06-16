@@ -644,9 +644,7 @@ void IslandHopper::onHandle()
 {
     if (_loading)
     {
-        if (iTaskManager::getInstance().getQueuedPhysicsContextTaskCount() < 1 &&
-            iTaskManager::getInstance().getQueuedRenderContextTaskCount() < 2 &&
-            iTaskManager::getInstance().getQueuedTaskCount() < 4)
+        if (iTaskManager::getInstance().getQueuedTaskCount() < 4)
         {
             _loading = false;
             _activeControls = true;

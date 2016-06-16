@@ -163,6 +163,7 @@ void Player::hitBy(uint64 entityID)
 
 iaVector3I Player::getGunPointPosition()
 {
+    iaVector3I result;
     iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().getNode(_cameraNodeID));
     if (camera != nullptr)
     {
@@ -171,11 +172,12 @@ iaVector3I Player::getGunPointPosition()
 
         iaVector3d dir(modelMatrix._depth._x, modelMatrix._depth._y, modelMatrix._depth._z);
         dir.negate();
-        dir *= 100.0f;
+        dir *= 30.0f;
         iaVector3d from(modelMatrix._pos._x, modelMatrix._pos._y, modelMatrix._pos._z);
         iaVector3d to(from);
         to += dir;
 
+        // TODO calculate intersection point with plane
         if (from._x > 0 &&
             from._y > 0 &&
             from._z > 0 &&
@@ -190,9 +192,11 @@ iaVector3I Player::getGunPointPosition()
 
             VoxelTerrainGenerator::getInstance().castRay(f, t, outside, inside);
 
-            return outside;
+            result = outside;
         }
     }
+
+    return result;
 }
 
 void Player::dig(uint64 toolSize, uint8 toolDensity)
