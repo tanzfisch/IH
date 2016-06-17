@@ -68,7 +68,7 @@ void TaskGenerateVoxels::run()
 			}
 
 			float64 height = noise * 600;
-			
+
 			float64 diff = height - static_cast<float64>(offset._y) - 1.0;
 			if (diff > 0)
 			{
@@ -85,7 +85,7 @@ void TaskGenerateVoxels::run()
 				}
 
 				diff -= static_cast<float64>(diffi);
-				voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+		        voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
 			}
 		}
     }
