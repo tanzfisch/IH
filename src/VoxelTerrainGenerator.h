@@ -92,18 +92,14 @@ private:
     /*! the voxel data
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
-
-    /*! all 3 dimensions
-    */
-    static const int64 _tilesCountPerVoxelBlock = 4;
-
+    
     /*! size of a tile
     */
     static constexpr float32 _tileSize = 32;
 
     /*! size of a voxel block
     */
-    static constexpr float32 _voxelBlockSize = _tileSize * _tilesCountPerVoxelBlock;
+    static constexpr float32 _voxelBlockSize = _tileSize;
 
     /*! tile overlap
     */
@@ -117,7 +113,7 @@ private:
     static const int64 _tileCreationDistance = 2000 * 2000;
     static const int64 _tileDestructionDistance = 4000 * 4000;
     static const int64 _voxelBlockCreationDistance = 2000 * 2000;
-    static const int64 _voxelBlockScanDistance = 4;
+    static const int64 _voxelBlockScanDistance = 4*4;
 
     /*! scene
     */

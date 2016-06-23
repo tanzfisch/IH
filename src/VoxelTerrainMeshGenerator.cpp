@@ -32,34 +32,35 @@ iModelDataIO* VoxelTerrainMeshGenerator::createInstance()
 iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModelDataInputParameter* parameter)
 {
     TileInformation* tileInformation = reinterpret_cast<TileInformation*>(parameter->_parameters.getDataPointer());
-    const iaVector3I& relativePos = tileInformation->_relativePos;
     const iaVector3I& absolutePos = tileInformation->_absolutePos;
     int64 width = tileInformation->_width;
     int64 depth = tileInformation->_depth;
     int64 height = tileInformation->_height;
     iVoxelData* voxelData = tileInformation->_voxelData;
 
-    if (relativePos._x + width >= voxelData->getWidth())
+    if (width >= voxelData->getWidth())
     {
-        width = voxelData->getWidth() - 1 - relativePos._x;
+        width = voxelData->getWidth() - 1;
     }
 
-    if (relativePos._z + depth >= voxelData->getDepth())
+    if (depth >= voxelData->getDepth())
     {
-        depth = voxelData->getDepth() - 1 - relativePos._z;
+        depth = voxelData->getDepth() - 1;
     }
 
-    if (relativePos._y + height >= voxelData->getHeight())
+    if (height >= voxelData->getHeight())
     {
-        height = voxelData->getHeight() - 1 - relativePos._y;
+        height = voxelData->getHeight() - 1;
     }
 
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
 
+    voxelData->setMode(iaRLEMode::Uncompressed);
+
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
 
-    shared_ptr<iMesh> mesh = contouringCubes.compile(relativePos, iaVector3I(width, height, depth));
+    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth));
 
     if (mesh.get() != nullptr)
     {
@@ -87,6 +88,8 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
         result->insertNode(physicsNode);
     }
+
+    voxelData->setMode(iaRLEMode::Compressed);
 
     return result;
 }

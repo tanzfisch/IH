@@ -17,7 +17,6 @@ namespace Igor
 
 struct TileInformation
 {
-    iaVector3I _relativePos;
     iaVector3I _absolutePos;
     int64 _width = 0;
     int64 _depth = 0;
