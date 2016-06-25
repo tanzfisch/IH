@@ -45,15 +45,28 @@ void TaskGenerateVoxels::run()
 		{
 			iaVector3f pos(x * _lodFactor + offset._x, 0, z * _lodFactor + offset._z);
 
-            float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0005, 0, pos._z * 0.0005), 3, 0.5);
-			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.003, 0, pos._z * 0.003), 6, 0.65);
+            float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
+			contour -= 0.7;
 
-            noise *= contour;
-            noise -= 0.3;
+			if (contour > 0.0)
+			{
+				contour *= 1.0 / 0.3;
+			}
+			else
+			{
+				//contour -= 0.1;
+			}
+
+			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
+            noise += contour;
 
 			if (noise < 0.0)
 			{
 				noise *= 0.25;
+			}
+			else
+			{
+				noise *= 2.0;
 			}
 
 			noise += 0.005;
@@ -70,7 +83,7 @@ void TaskGenerateVoxels::run()
 				noise = 0;
 			}
 
-			float64 height = (noise * 600) / _lodFactor;
+			float64 height = (noise * 2000) / _lodFactor;
 
 			float64 diff = height - static_cast<float64>(offset._y) - 1.0;
 			if (diff > 0)
