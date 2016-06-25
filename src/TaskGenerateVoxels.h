@@ -21,7 +21,7 @@ struct VoxelBlock
     bool _generatedVoxels = false;
 	bool _changedVoxels = false;
     bool _generatedEnemies = false;
-    iaVector3I _offset;
+    iaVector3I _position;
     iaVector3i _size;
     iVoxelData* _voxelData = nullptr;
 };
@@ -35,7 +35,7 @@ public:
 
     \param window window connected to render context
     */
-    TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 priority);
+    TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 lod, uint32 priority);
 
     /*! does nothing
     */
@@ -58,6 +58,7 @@ private:
     */
     VoxelBlock* _voxelBlock = nullptr;
 
+	uint32 _lodFactor = 0;
 };
 
 #endif

@@ -20,7 +20,7 @@ using namespace IgorAux;
 #include "EntityManager.h"
 #include "Turret.h"
 #include "BossDestroyed.h"
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 
 BossEnemy::BossEnemy(iScene* scene, const iaMatrixf& matrix, uint64 playerID)
     : Entity(Fraction::Red, EntityType::Vehicle)

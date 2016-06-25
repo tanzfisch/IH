@@ -36,6 +36,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     int64 width = tileInformation->_width;
     int64 depth = tileInformation->_depth;
     int64 height = tileInformation->_height;
+	float64 scale = pow(2, tileInformation->_lod);
     iVoxelData* voxelData = tileInformation->_voxelData;
 
     if (width >= voxelData->getWidth())
@@ -60,7 +61,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
 
-    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth));
+    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), scale);
 
     if (mesh.get() != nullptr)
     {
@@ -80,13 +81,13 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
         result->insertNode(meshNode);
 
-        iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
+ /*       iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
         iaMatrixf offset;
         physicsNode->addMesh(mesh, 1, offset);
         physicsNode->finalizeCollision(true);
         physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
 
-        result->insertNode(physicsNode);
+        result->insertNode(physicsNode);*/
     }
 
     voxelData->setMode(iaRLEMode::Compressed);

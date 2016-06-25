@@ -1,4 +1,4 @@
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 
 #include <iNodeLODTrigger.h>
 #include <iNodeFactory.h>
@@ -24,17 +24,17 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-VoxelTerrainGenerator::VoxelTerrainGenerator()
+VoxelTerrain::VoxelTerrain()
 {
 
 }
 
-VoxelTerrainGenerator::~VoxelTerrainGenerator()
+VoxelTerrain::~VoxelTerrain()
 {
     deinit();
 }
 
-void VoxelTerrainGenerator::setScene(iScene* scene)
+void VoxelTerrain::setScene(iScene* scene)
 {
     con_assert(scene != nullptr, "zero pointer");
     _scene = scene;
@@ -42,9 +42,9 @@ void VoxelTerrainGenerator::setScene(iScene* scene)
     init();
 }
 
-void VoxelTerrainGenerator::init()
+void VoxelTerrain::init()
 {
-    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrainGenerator::onHandle));
+    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
 
     iModelResourceFactory::getInstance().registerModelDataIO("vtg", &VoxelTerrainMeshGenerator::createInstance);
 
@@ -57,16 +57,16 @@ void VoxelTerrainGenerator::init()
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
-    iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrainGenerator::onTaskFinished));
+    iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 }
 
-void VoxelTerrainGenerator::deinit()
+void VoxelTerrain::deinit()
 {
-    con_endl("shutdown VoxelTerrainGenerator ...");
+    con_endl("shutdown VoxelTerrain ...");
 
     iModelResourceFactory::getInstance().unregisterModelDataIO("vtg");
 
-    iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrainGenerator::onHandle));
+    iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
 
     con_endl("waiting for some tasks ...");
     while (loading())
@@ -74,7 +74,7 @@ void VoxelTerrainGenerator::deinit()
         _sleep(1000);
     }
 
-    iTaskManager::getInstance().unregisterTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrainGenerator::onTaskFinished));
+    iTaskManager::getInstance().unregisterTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 
     con_endl("clear blocks ...");
     for (auto blockIter : _voxelBlocks)
@@ -109,12 +109,12 @@ void VoxelTerrainGenerator::deinit()
     con_endl("... done");
 }
 
-void VoxelTerrainGenerator::setLODTrigger(uint32 lodTriggerID)
+void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 {
     _lodTrigger = lodTriggerID;
 }
 
-uint8 VoxelTerrainGenerator::getVoxelDensity(iaVector3I pos)
+uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 {
     uint8 result = 0;
 
@@ -142,7 +142,7 @@ uint8 VoxelTerrainGenerator::getVoxelDensity(iaVector3I pos)
     return result;
 }
 
-void VoxelTerrainGenerator::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
+void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
 {
     auto blockIter = _voxelBlocks.find(voxelBlock);
     if (blockIter != _voxelBlocks.end())
@@ -155,7 +155,7 @@ void VoxelTerrainGenerator::setVoxelDensity(iaVector3I voxelBlock, iaVector3I vo
     }
 }
 
-void VoxelTerrainGenerator::setVoxelDensity(iaVector3I pos, uint8 density)
+void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 {
     iaVector3I voxelBlock(pos);
     voxelBlock /= _voxelBlockSize;
@@ -257,7 +257,7 @@ void VoxelTerrainGenerator::setVoxelDensity(iaVector3I pos, uint8 density)
     }
 }
 
-void VoxelTerrainGenerator::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
+void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
 {
     iaVector3I u(from);
     iaVector3I delta(to);
@@ -313,7 +313,7 @@ void VoxelTerrainGenerator::castRay(const iaVector3I& from, const iaVector3I& to
 
 #define array3D(x, y, z, f) ((x) + (f) * ((y) + (f) * (z)))
 
-void VoxelTerrainGenerator::refreshTile(iaVector3I tilepos)
+void VoxelTerrain::refreshTile(iaVector3I tilepos)
 {
     auto tileIter = _tileDataSets.find(tilepos);
     if (tileIter != _tileDataSets.end())
@@ -324,16 +324,17 @@ void VoxelTerrainGenerator::refreshTile(iaVector3I tilepos)
     }
 }
 
-void VoxelTerrainGenerator::handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos)
+void VoxelTerrain::handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos, uint32 lod)
 {
     TileInformation tileInformation;
     tileInformation._materialID = _terrainMaterialID;
     tileInformation._voxelData = voxelData;
     tileInformation._lodTriggerID = lodTrigger->getID();
+	tileInformation._lod = lod;
 
     iaVector3I tilePos = blockPos;
     iaVector3I tileIndexPos = tilePos;
-    tileIndexPos /= _tileSize;
+    tileIndexPos /= _voxelBlockSize;
 
     float32 distance = lodTriggerPos.distance2(tilePos);
 
@@ -351,9 +352,9 @@ void VoxelTerrainGenerator::handleMeshTiles(iVoxelData* voxelData, const iaVecto
     if (distance < _tileCreationDistance &&
         (*tileIter).second._transformNodeID == iNode::INVALID_NODE_ID)
     {
-        tileInformation._width = _tileSize + _tileOverlap;
-        tileInformation._depth = _tileSize + _tileOverlap;
-        tileInformation._height = _tileSize + _tileOverlap;
+        tileInformation._width = _voxelBlockSize + _tileOverlap;
+        tileInformation._depth = _voxelBlockSize + _tileOverlap;
+        tileInformation._height = _voxelBlockSize + _tileOverlap;
 
         iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
         inputParam->_identifier = "vtg";
@@ -442,22 +443,22 @@ void VoxelTerrainGenerator::handleMeshTiles(iVoxelData* voxelData, const iaVecto
     }
 }
 
-void VoxelTerrainGenerator::registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
+void VoxelTerrain::registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
 {
     _dataGeneratedEvent.append(voxelDataGeneratedDelegate);
 }
 
-void VoxelTerrainGenerator::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
+void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
 {
     _dataGeneratedEvent.remove(voxelDataGeneratedDelegate);
 }
 
-void VoxelTerrainGenerator::onHandle()
+void VoxelTerrain::onHandle()
 {
-    handleVoxelBlocks();
+    handleVoxelBlocks(0);
 }
 
-void VoxelTerrainGenerator::onTaskFinished(uint64 taskID)
+void VoxelTerrain::onTaskFinished(uint64 taskID)
 {
     _runningTaskMutex.lock();
     auto task = find(_runningTasks.begin(), _runningTasks.end(), taskID);
@@ -468,7 +469,7 @@ void VoxelTerrainGenerator::onTaskFinished(uint64 taskID)
     _runningTaskMutex.unlock();
 }
 
-bool VoxelTerrainGenerator::loading()
+bool VoxelTerrain::loading()
 {
     _runningTaskMutex.lock();
     bool result = _runningTasks.size() ? true : false;
@@ -477,8 +478,10 @@ bool VoxelTerrainGenerator::loading()
     return result;
 }
 
-void VoxelTerrainGenerator::handleVoxelBlocks()
+void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 {
+	float64 lodFactor = pow(2, lod);
+	float64 actualBlockSize = _voxelBlockSize * lodFactor;
     iaVector3I currentVoxelBlock;
     VoxelBlock* block = nullptr;
 
@@ -489,7 +492,7 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
         iaVector3I lodTriggerPos(pos._x, pos._y, pos._z);
 
         iaVector3I center(lodTriggerPos._x, lodTriggerPos._y, lodTriggerPos._z);
-        center /= _voxelBlockSize;
+        center /= actualBlockSize;
 
         iaVector3I start(center);
         start._x -= _voxelBlockScanDistance;
@@ -541,14 +544,14 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                     }
 
                     iaVector3I blockPos(voxelBlockX, voxelBlockY, voxelBlockZ);
-                    blockPos *= _voxelBlockSize;
+                    blockPos *= actualBlockSize;
 
                     if (block->_voxelData == nullptr)
                     {
                         iaVector3I blockCenterPos = blockPos;
-                        blockCenterPos._x += _voxelBlockSize / 2;
-                        blockCenterPos._y += _voxelBlockSize / 2;
-                        blockCenterPos._z += _voxelBlockSize / 2;
+                        blockCenterPos._x += actualBlockSize / 2;
+                        blockCenterPos._y += actualBlockSize / 2;
+                        blockCenterPos._z += actualBlockSize / 2;
 
                         float32 distance = lodTriggerPos.distance2(blockCenterPos);
                         if (distance < _voxelBlockCreationDistance)
@@ -556,10 +559,10 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                             block->_voxelData = new iVoxelData();
                             block->_voxelData->setMode(iaRLEMode::Uncompressed);
                             block->_voxelData->setClearValue(0);
-                            block->_offset = blockPos;
+                            block->_position = blockPos;
                             block->_size.set(_voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap);
 
-                            TaskGenerateVoxels* task = new TaskGenerateVoxels(block, static_cast<uint32>(distance * 0.9));
+                            TaskGenerateVoxels* task = new TaskGenerateVoxels(block, lod, static_cast<uint32>(distance * 0.9));
                             _runningTaskMutex.lock();
                             _runningTasks.push_back(task->getID());
                             _runningTaskMutex.unlock();
@@ -570,9 +573,10 @@ void VoxelTerrainGenerator::handleVoxelBlocks()
                     {
                         if (block->_changedVoxels)
                         {
-                            handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos);
+                            handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos, lod);
 
-                            if (!block->_generatedEnemies)
+                            if (lod == 0 && 
+								!block->_generatedEnemies)
                             {
                                 iaVector3I blockMax = blockPos;
                                 blockMax._x += _voxelBlockSize;

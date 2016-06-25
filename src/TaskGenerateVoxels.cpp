@@ -17,12 +17,14 @@ vector<iSpheref> TaskGenerateVoxels::_metaballs;
 vector<iSpheref> TaskGenerateVoxels::_holes;
 mutex TaskGenerateVoxels::_initMutex;
 
-TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 priority)
+TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 lod, uint32 priority)
 	: iTask(nullptr, priority, false)
 {
 	con_assert(voxelBlock != nullptr, "zero pointer");
 	con_assert(voxelBlock->_voxelData != nullptr, "zero pointer");
+	con_assert(lod >= 0 && lod <= 5, "lod out of range");
 
+	_lodFactor = pow(2, lod);
 	_voxelBlock = voxelBlock;
 }
 
@@ -31,7 +33,7 @@ void TaskGenerateVoxels::run()
 	iPerlinNoise perlinNoise; // TODO move from here
 
 	iVoxelData* voxelData = _voxelBlock->_voxelData;
-	iaVector3I& offset = _voxelBlock->_offset;
+	iaVector3I& offset = _voxelBlock->_position;
 	iaVector3i& size = _voxelBlock->_size;
     
     voxelData->setClearValue(0);
@@ -41,7 +43,8 @@ void TaskGenerateVoxels::run()
     {
         for (int64 z = 0; z < voxelData->getDepth(); ++z)        
 		{
-			iaVector3f pos(x + offset._x, 0, z + offset._z);
+			iaVector3f pos(x * _lodFactor + offset._x, 0, z * _lodFactor + offset._z);
+
             float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0005, 0, pos._z * 0.0005), 3, 0.5);
 			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.003, 0, pos._z * 0.003), 6, 0.65);
 
@@ -67,7 +70,7 @@ void TaskGenerateVoxels::run()
 				noise = 0;
 			}
 
-			float64 height = noise * 600;
+			float64 height = (noise * 600) / _lodFactor;
 
 			float64 diff = height - static_cast<float64>(offset._y) - 1.0;
 			if (diff > 0)
@@ -84,8 +87,11 @@ void TaskGenerateVoxels::run()
 					voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
 				}
 
-				diff -= static_cast<float64>(diffi);
-		        voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+				if (diffi < voxelData->getHeight())
+				{
+					diff -= static_cast<float64>(diffi);
+					voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+				}
 			}
 		}
     }

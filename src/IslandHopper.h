@@ -12,7 +12,7 @@ using namespace Igor;
 #include <iaMatrix.h>
 using namespace IgorAux;
 
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 
 namespace Igor
 {

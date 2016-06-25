@@ -20,7 +20,7 @@ using namespace IgorAux;
 #include "EntityManager.h"
 #include "Turret.h"
 #include "EnemyDestroyed.h"
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 
 Enemy::Enemy(iScene* scene, const iaMatrixf& matrix, uint64 playerID)
     : Entity(Fraction::Red, EntityType::Vehicle)
@@ -137,7 +137,7 @@ iaVector3f Enemy::updatePos()
 
 void Enemy::handle()
 {
-    if (!VoxelTerrainGenerator::getInstance().isInstantiated())
+    if (!VoxelTerrain::getInstance().isInstantiated())
     {
         return;
     }
@@ -166,7 +166,7 @@ void Enemy::handle()
             dir -= getSphere()._center;
             float32 distance = dir.length();
 
-            VoxelTerrainGenerator::getInstance().castRay(iaConvert::convert3I(getSphere()._center), iaConvert::convert3I(targetPos), outside, inside);
+            VoxelTerrain::getInstance().castRay(iaConvert::convert3I(getSphere()._center), iaConvert::convert3I(targetPos), outside, inside);
 
             float32 distanceToWall = iaConvert::convert3f(outside).distance(getSphere()._center) + 5;
             if(distanceToWall > distance &&

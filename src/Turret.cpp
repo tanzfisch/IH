@@ -16,7 +16,7 @@ using namespace IgorAux;
 #include "EntityManager.h"
 #include "Bullet.h"
 #include "Granade.h"
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 
 Turret::Turret(iScene* scene, iNodeTransform* parent, Fraction fraction, uint64 playerID)
     : Entity(fraction, EntityType::None)
@@ -150,7 +150,7 @@ void Turret::handle()
                 }
 
                 iaVector3I outside, inside;
-                VoxelTerrainGenerator::getInstance().castRay(iaConvert::convert3I(getSphere()._center), iaConvert::convert3I(targetPos), outside, inside);
+                VoxelTerrain::getInstance().castRay(iaConvert::convert3I(getSphere()._center), iaConvert::convert3I(targetPos), outside, inside);
 
                 float32 distanceToWall = iaConvert::convert3f(outside).distance(getSphere()._center) + 5;
 

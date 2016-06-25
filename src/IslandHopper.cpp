@@ -203,7 +203,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
                 {
                     for (int z = -2; z < 3; z++)
                     {
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
+                        if (VoxelTerrain::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
                         {
                             addEnemy = false;
                             break;
@@ -243,7 +243,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
                 {
                     for (int z = -1; z < 2; z++)
                     {
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
+                        if (VoxelTerrain::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
                         {
                             addEnemy = false;
                             break;
@@ -292,7 +292,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
                 iaVector3I depth(matrix._depth._x, matrix._depth._y, matrix._depth._z);
                 iaVector3I outside, inside;
 
-                VoxelTerrainGenerator::getInstance().castRay(iaVector3I(from._x, from._y, from._z), iaVector3I(to._x, to._y, to._z), outside, inside);
+                VoxelTerrain::getInstance().castRay(iaVector3I(from._x, from._y, from._z), iaVector3I(to._x, to._y, to._z), outside, inside);
 
                 int rating = 0;
 
@@ -303,23 +303,23 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
                     EntityManager::getInstance().getEntities(sphere, result);
                     if (result.empty())
                     {
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside + right) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside - right) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside + right + depth) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside - right + depth) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside + right - depth) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside - right - depth) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside + depth) != 0) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(inside - depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside + right) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside - right) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside + right + depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside - right + depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside + right - depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside - right - depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside + depth) != 0) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(inside - depth) != 0) rating++;
 
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside + right) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside - right) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside + right + depth) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside - right + depth) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside + right - depth) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside - right - depth) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside + depth) < 50) rating++;
-                        if (VoxelTerrainGenerator::getInstance().getVoxelDensity(outside - depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside + right) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside - right) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside + right + depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside - right + depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside + right - depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside - right - depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside + depth) < 50) rating++;
+                        if (VoxelTerrain::getInstance().getVoxelDensity(outside - depth) < 50) rating++;
 
                         if (rating > 10)
                         {
@@ -392,8 +392,8 @@ void IslandHopper::deinit()
     iTaskManager::getInstance().abortTask(_taskFlushModels);
     iTaskManager::getInstance().abortTask(_taskFlushTextures);
 
-    VoxelTerrainGenerator::getInstance().unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
-    VoxelTerrainGenerator::getInstance().destroyInstance();
+    VoxelTerrain::getInstance().unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
+    VoxelTerrain::getInstance().destroyInstance();
 
     iSceneFactory::getInstance().destroyScene(_scene);
 
@@ -615,13 +615,13 @@ void IslandHopper::onWindowResized(int32 clientWidth, int32 clientHeight)
 
 void IslandHopper::initVoxelData()
 {
-    VoxelTerrainGenerator::getInstance().setScene(_scene);
+    VoxelTerrain::getInstance().setScene(_scene);
     Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
     if (player != nullptr)
     {
-        VoxelTerrainGenerator::getInstance().setLODTrigger(player->getLODTriggerID());
+        VoxelTerrain::getInstance().setLODTrigger(player->getLODTriggerID());
     }
-    VoxelTerrainGenerator::getInstance().registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
+    VoxelTerrain::getInstance().registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
 }
 
 void IslandHopper::handleMouse()

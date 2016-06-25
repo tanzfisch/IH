@@ -27,7 +27,7 @@ using namespace IgorAux;
 #include "Bullet.h"
 #include "Granade.h"
 #include "EntityManager.h"
-#include "VoxelTerrainGenerator.h"
+#include "VoxelTerrain.h"
 #include "DigEffect.h"
 #include "MuzzleFlash.h"
 
@@ -190,7 +190,7 @@ iaVector3I Player::getGunPointPosition()
             iaVector3I outside;
             iaVector3I inside;
 
-            VoxelTerrainGenerator::getInstance().castRay(f, t, outside, inside);
+            VoxelTerrain::getInstance().castRay(f, t, outside, inside);
 
             result = outside;
         }
@@ -233,7 +233,7 @@ void Player::dig(uint64 toolSize, uint8 toolDensity)
 
                     if (center.distance2(pos) < toolRadiusQuadric)
                     {
-                        VoxelTerrainGenerator::getInstance().setVoxelDensity(pos, toolDensity);
+                        VoxelTerrain::getInstance().setVoxelDensity(pos, toolDensity);
                     }
                 }
             }
@@ -258,7 +258,7 @@ void Player::dig(uint64 toolSize, uint8 toolDensity)
                 for (int z = modifyFrom._z; z <= modifyTo._z; ++z)
                 {
                     iaVector3I pos(x, y, z);
-                    VoxelTerrainGenerator::getInstance().refreshTile(pos);
+                    VoxelTerrain::getInstance().refreshTile(pos);
                 }
             }
         }

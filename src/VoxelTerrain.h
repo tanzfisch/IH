@@ -24,10 +24,10 @@ namespace Igor
 
 iaEVENT(VoxelDataGeneratedEvent, VoxelDataGeneratedDelegate, void, (const iaVector3I& min, const iaVector3I& max), (min, max));
 
-class VoxelTerrainGenerator : public iaSingleton<VoxelTerrainGenerator>
+class VoxelTerrain : public iaSingleton<VoxelTerrain>
 {
 
-    friend class iaSingleton<VoxelTerrainGenerator>;
+    friend class iaSingleton<VoxelTerrain>;
 
     class VectorHasher
     {
@@ -92,14 +92,10 @@ private:
     /*! the voxel data
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
-    
-    /*! size of a tile
-    */
-    static constexpr float32 _tileSize = 32;
 
     /*! size of a voxel block
     */
-    static constexpr float32 _voxelBlockSize = _tileSize;
+    static constexpr float32 _voxelBlockSize = 32;
 
     /*! tile overlap
     */
@@ -113,7 +109,7 @@ private:
     static const int64 _tileCreationDistance = 2000 * 2000;
     static const int64 _tileDestructionDistance = 4000 * 4000;
     static const int64 _voxelBlockCreationDistance = 2000 * 2000;
-    static const int64 _voxelBlockScanDistance = 4*4;
+    static const int64 _voxelBlockScanDistance = 4;
 
     /*! scene
     */
@@ -135,8 +131,8 @@ private:
 
     void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
-    void handleVoxelBlocks();
-    void handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos);
+    void handleVoxelBlocks(uint32 lod);
+    void handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos, uint32 lod);
 
     /*! called when task was finished
 
@@ -154,11 +150,11 @@ private:
 
     /*! init
     */
-    VoxelTerrainGenerator();
+    VoxelTerrain();
 
     /*! deinit
     */
-    ~VoxelTerrainGenerator();
+    ~VoxelTerrain();
 
 };
 

@@ -33,9 +33,6 @@
     <ClCompile Include="..\src\TaskGenerateVoxels.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\VoxelTerrainGenerator.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\VoxelTerrainMeshGenerator.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
@@ -69,6 +66,9 @@
     <ClCompile Include="..\src\Player.cpp">
       <Filter>src\Entities</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\VoxelTerrain.cpp">
+      <Filter>src\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Granade.h">
@@ -87,9 +87,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\TaskGenerateVoxels.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\VoxelTerrainGenerator.h">
       <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\src\VoxelTerrainMeshGenerator.h">
@@ -124,6 +121,9 @@
     </ClInclude>
     <ClInclude Include="..\src\Player.h">
       <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VoxelTerrain.h">
+      <Filter>src\Terrain</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
