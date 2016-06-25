@@ -22,7 +22,7 @@ TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 lod, uint3
 {
 	con_assert(voxelBlock != nullptr, "zero pointer");
 	con_assert(voxelBlock->_voxelData != nullptr, "zero pointer");
-	con_assert(lod >= 0 && lod <= 5, "lod out of range");
+	con_assert(lod >= 0, "lod out of range");
 
 	_lodFactor = pow(2, lod);
 	_voxelBlock = voxelBlock;
@@ -52,10 +52,6 @@ void TaskGenerateVoxels::run()
 			{
 				contour *= 1.0 / 0.3;
 			}
-			else
-			{
-				//contour -= 0.1;
-			}
 
 			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
             noise += contour;
@@ -76,16 +72,16 @@ void TaskGenerateVoxels::run()
                 noise *= 3.0;
             }
 
-            noise += 0.02;
+            noise += 0.1;
 
 			if (noise < 0)
 			{
 				noise = 0;
 			}
 
-			float64 height = (noise * 2000) / _lodFactor;
+			float64 height = (noise * 2000);
 
-			float64 diff = height - static_cast<float64>(offset._y) - 1.0;
+			float64 diff = (height - static_cast<float64>(offset._y)) / _lodFactor - 1.0;
 			if (diff > 0)
 			{
                 if (diff > size._y)
