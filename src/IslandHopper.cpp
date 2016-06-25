@@ -91,7 +91,7 @@ void IslandHopper::initViews()
 {
     _view.setClearColor(iaColor4f(0.0f, 0.0f, 0.0f, 1.0f));
     _view.setPerspective(60);
-    _view.setClipPlanes(1.0f, 10000.f);
+    _view.setClipPlanes(1.0f, 40000.f);
     _view.registerRenderDelegate(RenderDelegate(this, &IslandHopper::onRender));
     _view.setName("3d");
 
@@ -160,7 +160,7 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
-    matrix.translate(10000, 200, 10000);
+    matrix.translate(9230, 400, 16250);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 
@@ -443,6 +443,10 @@ void IslandHopper::onKeyPressed(iKeyCode key)
             case iKeyCode::E:
                 player->startDown();
                 break;
+
+			case iKeyCode::P:
+				con_endl("player pos " << player->getSphere()._center);
+				break;
 
             case iKeyCode::LShift:
                 player->startFastTurn();
