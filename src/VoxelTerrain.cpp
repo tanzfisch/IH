@@ -514,10 +514,10 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
             start._y = 0;
         }
 
-        if (stop._y > 3)
+/*        if (stop._y > 20)
         {
-            stop._y = 3;
-        }
+            stop._y = 20;
+        }*/
 
         if (start._z < 0)
         {
