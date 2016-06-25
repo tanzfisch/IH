@@ -105,6 +105,8 @@ private:
     */
     static constexpr float32 _voxelBlockOverlap = 5;
 
+	const uint32 _lowestLOD = 5;
+
     static constexpr float32 _tileVisualDistance = 20000.0f;
     static const int64 _tileCreationDistance = 20000 * 20000;
     static const int64 _tileDestructionDistance = 25000 * 25000;

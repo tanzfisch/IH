@@ -455,7 +455,7 @@ void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelega
 
 void VoxelTerrain::onHandle()
 {
-	handleVoxelBlocks(5);
+	handleVoxelBlocks(_lowestLOD);
 }
 
 void VoxelTerrain::onTaskFinished(uint64 taskID)
