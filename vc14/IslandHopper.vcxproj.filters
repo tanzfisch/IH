@@ -69,6 +69,9 @@
     <ClCompile Include="..\src\VoxelTerrain.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\VoxelBlock.cpp">
+      <Filter>src\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\Granade.h">
@@ -123,6 +126,9 @@
       <Filter>src\Entities</Filter>
     </ClInclude>
     <ClInclude Include="..\src\VoxelTerrain.h">
+      <Filter>src\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VoxelBlock.h">
       <Filter>src\Terrain</Filter>
     </ClInclude>
   </ItemGroup>

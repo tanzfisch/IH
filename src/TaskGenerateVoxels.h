@@ -16,10 +16,10 @@ namespace Igor
     class iVoxelData;
 }
 
-struct VoxelBlock
+struct VoxelBlockInfo
 {
     bool _generatedVoxels = false;
-	bool _changedVoxels = false;
+	bool _transition = false;
     bool _generatedEnemies = false;
     iaVector3I _position;
     iaVector3i _size;
@@ -35,7 +35,7 @@ public:
 
     \param window window connected to render context
     */
-    TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 lod, uint32 priority);
+    TaskGenerateVoxels(VoxelBlockInfo* voxelBlock, uint32 lod, uint32 priority);
 
     /*! does nothing
     */
@@ -56,7 +56,7 @@ private:
 
     /*! the data to work with
     */
-    VoxelBlock* _voxelBlock = nullptr;
+	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
 	uint32 _lodFactor = 0;
 };

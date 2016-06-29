@@ -77,7 +77,7 @@ void VoxelTerrain::deinit()
 	iTaskManager::getInstance().unregisterTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 
 	con_endl("clear blocks ...");
-	for (auto blockIter : _voxelBlocks)
+/* TODO 	for (auto blockIter : _voxelBlocks)
 	{
 		if (blockIter.second != nullptr)
 		{
@@ -106,7 +106,7 @@ void VoxelTerrain::deinit()
 		}
 	}
 
-	con_endl("... done");
+	con_endl("... done"); */
 }
 
 void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
@@ -118,7 +118,7 @@ uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 {
 	uint8 result = 0;
 
-	iaVector3I voxelBlock(pos);
+/*	iaVector3I voxelBlock(pos);
 	voxelBlock /= _voxelBlockSize;
 
 	iaVector3I voxelRelativePos(pos);
@@ -127,7 +127,7 @@ uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 	voxelRelativePos._y = voxelRelativePos._y % static_cast<int64>(_voxelBlockSize);
 	voxelRelativePos._z = voxelRelativePos._z % static_cast<int64>(_voxelBlockSize);
 
-	VoxelBlock* block = nullptr;
+	VoxelBlockInfo* block = nullptr;
 
 	auto blockIter = _voxelBlocks.find(voxelBlock);
 	if (blockIter != _voxelBlocks.end())
@@ -137,27 +137,27 @@ uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 		{
 			result = block->_voxelData->getVoxelDensity(voxelRelativePos);
 		}
-	}
+	} */
 
 	return result;
 }
 
 void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
 {
-	auto blockIter = _voxelBlocks.find(voxelBlock);
+/*	auto blockIter = _voxelBlocks.find(voxelBlock);
 	if (blockIter != _voxelBlocks.end())
 	{
-		VoxelBlock* block = _voxelBlocks[voxelBlock];
+		VoxelBlockInfo* block = _voxelBlocks[voxelBlock];
 		if (block->_generatedVoxels)
 		{
 			block->_voxelData->setVoxelDensity(voxelRelativePos, density);
 		}
-	}
+	}*/
 }
 
 void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 {
-	iaVector3I voxelBlock(pos);
+/*	iaVector3I voxelBlock(pos);
 	voxelBlock /= _voxelBlockSize;
 
 	iaVector3I voxelRelativePos(pos);
@@ -166,7 +166,7 @@ void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 	voxelRelativePos._y = voxelRelativePos._y % static_cast<int64>(_voxelBlockSize);
 	voxelRelativePos._z = voxelRelativePos._z % static_cast<int64>(_voxelBlockSize);
 
-	VoxelBlock* block = nullptr;
+	VoxelBlockInfo* block = nullptr;
 
 	auto blockIter = _voxelBlocks.find(voxelBlock);
 	if (blockIter != _voxelBlocks.end())
@@ -254,7 +254,7 @@ void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 		voxelRelativePosXYZ._y += _voxelBlockSize;
 		voxelRelativePosXYZ._z += _voxelBlockSize;
 		setVoxelDensity(voxelBlockXYZ, voxelRelativePosXYZ, density);
-	}
+	}*/
 }
 
 void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
@@ -315,18 +315,18 @@ void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVecto
 
 void VoxelTerrain::refreshTile(iaVector3I tilepos)
 {
-	auto tileIter = _tileDataSets.find(tilepos);
+/*	auto tileIter = _tileDataSets.find(tilepos);
 	if (tileIter != _tileDataSets.end())
 	{
 		(*tileIter).second._destroyNodeIDs.push_back((*tileIter).second._transformNodeID);
 		(*tileIter).second._modelNodeID = iNode::INVALID_NODE_ID;
 		(*tileIter).second._transformNodeID = iNode::INVALID_NODE_ID;
-	}
+	}*/
 }
 
 void VoxelTerrain::handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos, uint32 lod)
 {
-	TileInformation tileInformation;
+/*	TileInformation tileInformation;
 	tileInformation._materialID = _terrainMaterialID;
 	tileInformation._voxelData = voxelData;
 	tileInformation._lodTriggerID = lodTrigger->getID();
@@ -440,7 +440,7 @@ void VoxelTerrain::handleMeshTiles(iVoxelData* voxelData, const iaVector3I& bloc
 		}
 
 		_tileDataSets.erase(tileIter);
-	}
+	}*/
 }
 
 void VoxelTerrain::registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
@@ -455,7 +455,12 @@ void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelega
 
 void VoxelTerrain::onHandle()
 {
-	handleVoxelBlocks(_lowestLOD);
+	static uint64 counter = 0;
+
+	if (counter++ % 100 == 0)
+	{
+		handleVoxelBlocks(_lowestLOD);
+	}
 }
 
 void VoxelTerrain::onTaskFinished(uint64 taskID)
@@ -482,8 +487,8 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 {
 	float64 lodFactor = pow(2, lod);
 	float64 actualBlockSize = _voxelBlockSize * lodFactor;
-	iaVector3I currentVoxelBlock;
-	VoxelBlock* block = nullptr;
+	iaVector3I voxelBlockPosition;
+	VoxelBlock* voxelBlock = nullptr;
 
 	iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
 	if (lodTrigger != nullptr)
@@ -519,6 +524,11 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 			start._y = 0;
 		}
 
+		if (start._y > 2)
+		{
+			start._y = 2;
+		}
+
 		if (start._z < 0)
 		{
 			start._z = 0;
@@ -530,63 +540,20 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 			{
 				for (int64 voxelBlockZ = start._z; voxelBlockZ < stop._z; ++voxelBlockZ)
 				{
-					currentVoxelBlock.set(voxelBlockX, voxelBlockY, voxelBlockZ);
+					voxelBlockPosition.set(voxelBlockX, voxelBlockY, voxelBlockZ);
 
-					auto blockIter = _voxelBlocks.find(currentVoxelBlock);
+					auto blockIter = _voxelBlocks.find(voxelBlockPosition);
 					if (blockIter == _voxelBlocks.end())
 					{
-						block = new VoxelBlock();
-						_voxelBlocks[currentVoxelBlock] = block;
+						voxelBlock = new VoxelBlock(lod, voxelBlockPosition*actualBlockSize, _terrainMaterialID, _scene);
+						_voxelBlocks[voxelBlockPosition] = voxelBlock;
 					}
 					else
 					{
-						block = _voxelBlocks[currentVoxelBlock];
+						voxelBlock = _voxelBlocks[voxelBlockPosition];
 					}
 
-					iaVector3I blockPos(voxelBlockX, voxelBlockY, voxelBlockZ);
-					blockPos *= actualBlockSize;
-
-					if (block->_voxelData == nullptr)
-					{
-						iaVector3I blockCenterPos = blockPos;
-						blockCenterPos._x += actualBlockSize / 2;
-						blockCenterPos._y += actualBlockSize / 2;
-						blockCenterPos._z += actualBlockSize / 2;
-
-						float32 distance = lodTriggerPos.distance2(blockCenterPos);
-						if (distance < _voxelBlockCreationDistance)
-						{
-							block->_voxelData = new iVoxelData();
-							block->_voxelData->setMode(iaRLEMode::Uncompressed);
-							block->_voxelData->setClearValue(0);
-							block->_position = blockPos;
-							block->_size.set(_voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap);
-
-							TaskGenerateVoxels* task = new TaskGenerateVoxels(block, lod, static_cast<uint32>(distance * 0.9));
-							_runningTaskMutex.lock();
-							_runningTasks.push_back(task->getID());
-							_runningTaskMutex.unlock();
-							iTaskManager::getInstance().addTask(task);
-						}
-					}
-					else if (block->_generatedVoxels)
-					{
-						if (block->_changedVoxels)
-						{
-							handleMeshTiles(block->_voxelData, blockPos, lodTrigger, lodTriggerPos, lod);
-
-							if (lod == 0 &&
-								!block->_generatedEnemies)
-							{
-								iaVector3I blockMax = blockPos;
-								blockMax._x += _voxelBlockSize;
-								blockMax._y += _voxelBlockSize;
-								blockMax._z += _voxelBlockSize;
-								_dataGeneratedEvent(blockPos, blockMax);
-								block->_generatedEnemies = true;
-							}
-						}
-					}
+					voxelBlock->update(lodTriggerPos, false);
 				}
 			}
 		}

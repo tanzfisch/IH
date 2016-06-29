@@ -14,6 +14,7 @@ using namespace std;
 
 #include "TaskGenerateVoxels.h"
 #include "VoxelTerrainMeshGenerator.h"
+#include "VoxelBlock.h"
 
 namespace Igor
 {
@@ -34,7 +35,7 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
     public:
         size_t operator() (iaVector3I const& key) const
         {
-            return (key._x << 1) ^ (key._y << 2) ^ (key._y << 3);
+            return (key._x << 1) ^ (key._y << 2) ^ (key._z << 3);
         }
     };
 
@@ -47,13 +48,13 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
         };
     };
 
-    struct TileData
+/*    struct TileData
     {
         uint32 _transformNodeID = iNode::INVALID_NODE_ID;
         uint32 _modelNodeID = iNode::INVALID_NODE_ID;
         vector<uint32> _destroyNodeIDs;
         uint32 _mutationCounter = 0;
-    };
+    };*/
 
 public:
 
@@ -85,10 +86,6 @@ private:
 
 	mutex _runningTaskMutex;
 
-    /*! tile IDs
-    */
-    unordered_map<iaVector3I, TileData, VectorHasher, VectorEqualFn> _tileDataSets;
-
     /*! the voxel data
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
@@ -97,21 +94,17 @@ private:
     */
     static constexpr float32 _voxelBlockSize = 32;
 
-    /*! tile overlap
-    */
-    static constexpr float32 _tileOverlap = 4;
-
     /*! overlapping of voxel blocks
     */
     static constexpr float32 _voxelBlockOverlap = 5;
 
-	const uint32 _lowestLOD = 5;
+	const uint32 _lowestLOD = 6;
 
     static constexpr float32 _tileVisualDistance = 20000.0f;
     static const int64 _tileCreationDistance = 20000 * 20000;
     static const int64 _tileDestructionDistance = 25000 * 25000;
     static const int64 _voxelBlockCreationDistance = 22000 * 22000;
-    static const int64 _voxelBlockScanDistance = 20;
+    static const int64 _voxelBlockScanDistance = 10;
 
     /*! scene
     */

@@ -160,7 +160,8 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
-    matrix.translate(9230, 400, 16250);
+	//matrix.translate(10000, 9400, 10000);
+    matrix.translate(9230, 5100, 16250);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 

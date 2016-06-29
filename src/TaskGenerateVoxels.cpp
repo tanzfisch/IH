@@ -17,24 +17,24 @@ vector<iSpheref> TaskGenerateVoxels::_metaballs;
 vector<iSpheref> TaskGenerateVoxels::_holes;
 mutex TaskGenerateVoxels::_initMutex;
 
-TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlock* voxelBlock, uint32 lod, uint32 priority)
+TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 lod, uint32 priority)
 	: iTask(nullptr, priority, false)
 {
-	con_assert(voxelBlock != nullptr, "zero pointer");
-	con_assert(voxelBlock->_voxelData != nullptr, "zero pointer");
+	con_assert(voxelBlockInfo != nullptr, "zero pointer");
+	con_assert(voxelBlockInfo->_voxelData != nullptr, "zero pointer");
 	con_assert(lod >= 0, "lod out of range");
 
 	_lodFactor = pow(2, lod);
-	_voxelBlock = voxelBlock;
+	_voxelBlockInfo = voxelBlockInfo;
 }
 
 void TaskGenerateVoxels::run()
 {   
 	iPerlinNoise perlinNoise; // TODO move from here
 
-	iVoxelData* voxelData = _voxelBlock->_voxelData;
-	iaVector3I& offset = _voxelBlock->_position;
-	iaVector3i& size = _voxelBlock->_size;
+	iVoxelData* voxelData = _voxelBlockInfo->_voxelData;
+	iaVector3I& position = _voxelBlockInfo->_position;
+	iaVector3i& size = _voxelBlockInfo->_size;
     
     voxelData->setClearValue(0);
 	voxelData->initData(size._x, size._y, size._z);
@@ -43,7 +43,7 @@ void TaskGenerateVoxels::run()
     {
         for (int64 z = 0; z < voxelData->getDepth(); ++z)        
 		{
-			iaVector3f pos(x * _lodFactor + offset._x, 0, z * _lodFactor + offset._z);
+			iaVector3f pos(x * _lodFactor + position._x, 0, z * _lodFactor + position._z);
 
             float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
 			contour -= 0.7;
@@ -81,7 +81,7 @@ void TaskGenerateVoxels::run()
 
 			float64 height = (noise * 2000);
 
-			float64 diff = (height - static_cast<float64>(offset._y)) / _lodFactor - 1.0;
+			float64 diff = (height - static_cast<float64>(position._y)) / _lodFactor - 1.0;
 			if (diff > 0)
 			{
                 if (diff > size._y)
@@ -89,7 +89,6 @@ void TaskGenerateVoxels::run()
                     diff = size._y;
                 }
 
-				_voxelBlock->_changedVoxels = true;
 				int64 diffi = static_cast<uint64>(diff);
 				if (diffi > 0)
 				{
@@ -102,10 +101,16 @@ void TaskGenerateVoxels::run()
 					voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
 				}
 			}
+
+			if (abs(diff + size._y * 0.5) < size._y)
+			{
+				_voxelBlockInfo->_transition = true;
+			}
 		}
     }
 
-	_voxelBlock->_generatedVoxels = true;
+	_voxelBlockInfo->_generatedVoxels = true;
+
 	finishTask();
 }
 

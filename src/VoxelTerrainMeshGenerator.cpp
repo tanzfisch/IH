@@ -56,7 +56,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
 
-    voxelData->setMode(iaRLEMode::Uncompressed);
+    //voxelData->setMode(iaRLEMode::Uncompressed);
 
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
@@ -69,10 +69,51 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setMesh(mesh);
         meshNode->setMaterial(tileInformation->_materialID);
 
-        iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
-        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
-        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
+#if 0
+		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
+		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
+		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+#else
+		switch (tileInformation->_lod)
+		{
+		case 0:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+			break;
+		case 1:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("green.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("green.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("green.png"), 2);
+			break;
+		case 2:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("blue.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("blue.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("blue.png"), 2);
+			break;
+		case 3:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("red.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("red.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("red.png"), 2);
+			break;
+		case 4:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("yellow.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("yellow.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("yellow.png"), 2);
+			break;
+		case 5:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("cyan.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("cyan.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("cyan.png"), 2);
+			break;
+		case 6:
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("magenta.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("magenta.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("magenta.png"), 2);
+			break;
+		}
+#endif
         targetMaterial->setAmbient(iaColor3f(0.7f, 0.7f, 0.7f));
         targetMaterial->setDiffuse(iaColor3f(0.9f, 0.9f, 0.9f));
         targetMaterial->setSpecular(iaColor3f(0.1f, 0.1f, 0.1f));
@@ -81,16 +122,19 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
         result->insertNode(meshNode);
 
- /*       iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
-        iaMatrixf offset;
-        physicsNode->addMesh(mesh, 1, offset);
-        physicsNode->finalizeCollision(true);
-        physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
+		/*if (tileInformation->_lod == 0)
+		{
+			iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
+			iaMatrixf offset;
+			physicsNode->addMesh(mesh, 1, offset);
+			physicsNode->finalizeCollision(true);
+			physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
 
-        result->insertNode(physicsNode);*/
+			result->insertNode(physicsNode);
+		}*/
     }
 
-    voxelData->setMode(iaRLEMode::Compressed);
+    //voxelData->setMode(iaRLEMode::Compressed);
 
     return result;
 }
