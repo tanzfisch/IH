@@ -47,7 +47,7 @@ private:
 
 	bool _generated = false;
 
-	bool _dirtyMesh = true;
+	bool _dirtyMesh = false;
 
 	iaVector3I _position;
 	uint32 _lod = 0;

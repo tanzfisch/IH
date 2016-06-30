@@ -52,7 +52,13 @@ void VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 				_voxelData = nullptr;
 				_voxelBlockInfo->_voxelData = nullptr;
 			}
+			_dirtyMesh = true;
 		}
+	}
+
+	if (_dirtyMesh && _voxelData != nullptr)
+	{
+		updateMesh();
 	}
 
 	uint32 halfSize = _size >> 1;
@@ -81,46 +87,48 @@ void VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 			_taskID = iTaskManager::getInstance().addTask(task);
 		}
 
-		if (_lod > 0 && _voxelBlockInfo->_transition)
+		if (_lod > 0 && 
+			_voxelBlockInfo->_transition && 
+			!_dirtyMesh)
 		{
 			if (distance >= creationDistance[_lod - 1])
 			{
-				if (_dirtyMesh)
+				// destroy children
+				if (_cildren[0] != nullptr)
 				{
-					updateMesh();
-				}
-				else
-				{
-					if (_cildren[0] != nullptr)
+					/*if (distance > creationDistance[_lod - 1] * 1.5)
 					{
-						if (distance >= creationDistance[_lod] * 0.5)
+						for (int i = 0; i < 8; ++i)
 						{
-							for (int i = 0; i < 8; ++i)
+							if (_cildren[i]->_transformNodeID != iNode::INVALID_NODE_ID)
 							{
-								if (_cildren[i]->_transformNodeID != iNode::INVALID_NODE_ID)
-								{
-									iNodeFactory::getInstance().destroyNode(_cildren[i]->_transformNodeID);
-									_cildren[i]->_transformNodeID = iNode::INVALID_NODE_ID;
-									_cildren[i]->_dirtyMesh;
-								}
-							}
-						}
-						else
-						{
-							for (int i = 0; i < 8; ++i)
-							{
-								iNodeTransform* childTransformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_cildren[i]->_transformNodeID));
-								if (childTransformNode != nullptr)
-								{
-									childTransformNode->setActive(false);
-								}
+								iNodeFactory::getInstance().destroyNode(_cildren[i]->_transformNodeID);
+								_cildren[i]->_transformNodeID = iNode::INVALID_NODE_ID;
 							}
 						}
 					}
+					else
+					{*/
+						for (int i = 0; i < 8; ++i)
+						{
+							iNodeTransform* childTransformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_cildren[i]->_transformNodeID));
+							if (childTransformNode != nullptr)
+							{
+								childTransformNode->setActive(false);
+							}
+						}
+					//}
+				}
+
+				iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
+				if (transformNode != nullptr)
+				{
+					transformNode->setActive();
 				}
 			}
 			else
 			{
+				// create children
 				if (_cildren[0] == nullptr)
 				{
 					_cildren[0] = new VoxelBlock(_lod - 1, _position, _terrainMaterialID, _scene);
@@ -134,7 +142,6 @@ void VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 					_cildren[7] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, halfSize, halfSize), _terrainMaterialID, _scene);
 				}
 
-				bool childrenDone = true;
 				for (int i = 0; i < 8; ++i)
 				{
 					_cildren[i]->update(observerPosition, true);
@@ -143,22 +150,7 @@ void VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 				iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
 				if (transformNode != nullptr)
 				{
-					if (transformNode->isActive())
-					{
-						bool childrensdone = true;
-						for (int i = 0; i < 8; ++i)
-						{
-							if (_cildren[i]->_dirtyMesh)
-							{
-								childrensdone = false;
-							}
-						}
-
-						if (childrensdone)
-						{
-							transformNode->setActive(false);
-						}
-					}
+					transformNode->setActive(false);
 				}
 			}
 		}

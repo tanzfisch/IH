@@ -691,7 +691,7 @@ void IslandHopper::onRender()
 
 void IslandHopper::onRenderOrtho()
 {
-    iStatistics::getInstance().drawStatistics(&_window, _font, iaColor4f(0, 0, 0.8, 1));
+    iStatistics::getInstance().drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
     iaMatrixf matrix;
     iRenderer::getInstance().setViewMatrix(matrix);

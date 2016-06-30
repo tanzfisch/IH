@@ -99,12 +99,8 @@ void TaskGenerateVoxels::run()
 				{
 					diff -= static_cast<float64>(diffi);
 					voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+					_voxelBlockInfo->_transition = true;
 				}
-			}
-
-			if (abs(diff + size._y * 0.5) < size._y)
-			{
-				_voxelBlockInfo->_transition = true;
 			}
 		}
     }
