@@ -457,7 +457,7 @@ void VoxelTerrain::onHandle()
 {
 	static uint64 counter = 0;
 
-	if (counter++ % 100 == 0)
+	if (counter++ % 1 == 0)
 	{
 		handleVoxelBlocks(_lowestLOD);
 	}
@@ -524,9 +524,9 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 			start._y = 0;
 		}
 
-		if (start._y > 2)
+		if (start._y > 3)
 		{
-			start._y = 2;
+			start._y = 3;
 		}
 
 		if (start._z < 0)

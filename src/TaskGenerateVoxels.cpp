@@ -36,76 +36,79 @@ void TaskGenerateVoxels::run()
 	iaVector3I& position = _voxelBlockInfo->_position;
 	iaVector3i& size = _voxelBlockInfo->_size;
     
-    voxelData->setClearValue(0);
-	voxelData->initData(size._x, size._y, size._z);
-
-    for (int64 x = 0; x < voxelData->getWidth(); ++x)
+    if (voxelData != nullptr)
     {
-        for (int64 z = 0; z < voxelData->getDepth(); ++z)        
-		{
-			iaVector3f pos(x * _lodFactor + position._x, 0, z * _lodFactor + position._z);
+        voxelData->setClearValue(0);
+        voxelData->initData(size._x, size._y, size._z);
 
-            float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
-			contour -= 0.7;
-
-			if (contour > 0.0)
-			{
-				contour *= 1.0 / 0.3;
-			}
-
-			float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
-            noise += contour;
-
-			if (noise < 0.0)
-			{
-				noise *= 0.25;
-			}
-			else
-			{
-				noise *= 2.0;
-			}
-
-			noise += 0.005;
-
-            if (noise < 0.0)
+        for (int64 x = 0; x < voxelData->getWidth(); ++x)
+        {
+            for (int64 z = 0; z < voxelData->getDepth(); ++z)
             {
-                noise *= 3.0;
-            }
+                iaVector3f pos(x * _lodFactor + position._x, 0, z * _lodFactor + position._z);
 
-            noise += 0.1;
+                float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
+                contour -= 0.7;
 
-			if (noise < 0)
-			{
-				noise = 0;
-			}
-
-			float64 height = (noise * 2000);
-
-			float64 diff = (height - static_cast<float64>(position._y)) / _lodFactor - 1.0;
-			if (diff > 0)
-			{
-                if (diff > size._y)
+                if (contour > 0.0)
                 {
-                    diff = size._y;
+                    contour *= 1.0 / 0.3;
                 }
 
-				int64 diffi = static_cast<uint64>(diff);
-				if (diffi > 0)
-				{
-					voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
-				}
+                float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
+                noise += contour;
 
-				if (diffi < voxelData->getHeight())
-				{
-					diff -= static_cast<float64>(diffi);
-					voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
-					_voxelBlockInfo->_transition = true;
-				}
-			}
-		}
+                if (noise < 0.0)
+                {
+                    noise *= 0.25;
+                }
+                else
+                {
+                    noise *= 2.0;
+                }
+
+                noise += 0.005;
+
+                if (noise < 0.0)
+                {
+                    noise *= 3.0;
+                }
+
+                noise += 0.1;
+
+                if (noise < 0)
+                {
+                    noise = 0;
+                }
+
+                float64 height = (noise * 2000);
+
+                float64 diff = (height - static_cast<float64>(position._y)) / _lodFactor - 1.0;
+                if (diff > 0)
+                {
+                    if (diff > size._y)
+                    {
+                        diff = size._y;
+                    }
+
+                    int64 diffi = static_cast<uint64>(diff);
+                    if (diffi > 0)
+                    {
+                        voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
+                    }
+
+                    if (diffi < voxelData->getHeight())
+                    {
+                        diff -= static_cast<float64>(diffi);
+                        voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+                        _voxelBlockInfo->_transition = true;
+                    }
+                }
+            }
+        }
+
+        _voxelBlockInfo->_generatedVoxels = true;
     }
-
-	_voxelBlockInfo->_generatedVoxels = true;
 
 	finishTask();
 }

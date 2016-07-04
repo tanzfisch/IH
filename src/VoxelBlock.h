@@ -16,6 +16,15 @@ namespace Igor
 	class iScene;
 }
 
+enum class Stage
+{
+    Initial,
+    GeneratingVoxel,
+    GeneratingMesh,
+    Ready,
+    Empty
+};
+
 class VoxelBlock
 {
 
@@ -24,7 +33,7 @@ public:
 	VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene);
 	~VoxelBlock();
 
-	void update(iaVector3I observerPosition, bool closeEnough);
+	bool update(iaVector3I observerPosition, bool closeEnough);
 
 private:
 
@@ -45,13 +54,11 @@ private:
 
 	iScene* _scene = nullptr;
 
-	bool _generated = false;
-
-	bool _dirtyMesh = false;
-
 	iaVector3I _position;
 	uint32 _lod = 0;
 	uint32 _size = 0;
+
+    Stage _stage = Stage::Initial;
 	
 	iVoxelData* _voxelData = nullptr;
 

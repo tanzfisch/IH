@@ -98,12 +98,8 @@ private:
     */
     static constexpr float32 _voxelBlockOverlap = 5;
 
-	const uint32 _lowestLOD = 6;
+	const uint32 _lowestLOD = 7;
 
-    static constexpr float32 _tileVisualDistance = 20000.0f;
-    static const int64 _tileCreationDistance = 20000 * 20000;
-    static const int64 _tileDestructionDistance = 25000 * 25000;
-    static const int64 _voxelBlockCreationDistance = 22000 * 22000;
     static const int64 _voxelBlockScanDistance = 10;
 
     /*! scene

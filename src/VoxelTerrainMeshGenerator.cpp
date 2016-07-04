@@ -70,7 +70,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setMaterial(tileInformation->_materialID);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 1
+#if 0
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
@@ -112,6 +112,16 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("magenta.png"), 1);
 			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("magenta.png"), 2);
 			break;
+        case 7:
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("black.png"), 0);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("black.png"), 1);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("black.png"), 2);
+            break;
+        case 8:
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 0);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 1);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);
+            break;
 		}
 #endif
         targetMaterial->setAmbient(iaColor3f(0.7f, 0.7f, 0.7f));
