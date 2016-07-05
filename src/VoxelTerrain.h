@@ -98,9 +98,9 @@ private:
     */
     static constexpr float32 _voxelBlockOverlap = 5;
 
-	const uint32 _lowestLOD = 7;
+	const uint32 _lowestLOD = 8;
 
-    static const int64 _voxelBlockScanDistance = 10;
+    static const int64 _voxelBlockScanDistance = 4;
 
     /*! scene
     */

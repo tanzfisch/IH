@@ -118,9 +118,9 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
             targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("black.png"), 2);
             break;
         case 8:
-            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 0);
-            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 1);
-            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 0);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 1);
+            targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 2);
             break;
 		}
 #endif
