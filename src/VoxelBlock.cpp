@@ -150,11 +150,13 @@ bool VoxelBlock::update(iaVector3I observerPosition)
             {
                 for (int i = 0; i < 8; ++i)
                 {
-                    iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_cildren[i]->_transformNodeID));
-                    if (transformNode != nullptr && 
-                        _cildren[i]->_stage == Stage::Ready)
+                    if (_cildren[i]->_stage == Stage::Ready)
                     {
-                        transformNode->setActive(false);
+                        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_cildren[i]->_transformNodeID));
+                        if (transformNode != nullptr)
+                        {
+                            transformNode->setActive(false);
+                        }
                     }
                 }
             }
