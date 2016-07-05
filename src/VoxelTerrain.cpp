@@ -553,7 +553,7 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 						voxelBlock = _voxelBlocks[voxelBlockPosition];
 					}
 
-					voxelBlock->update(lodTriggerPos, false);
+					voxelBlock->update(lodTriggerPos);
 				}
 			}
 		}

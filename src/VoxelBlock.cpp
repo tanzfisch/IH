@@ -34,12 +34,13 @@ VoxelBlock::~VoxelBlock()
     }
 }
 
-bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
+bool VoxelBlock::update(iaVector3I observerPosition)
 {
-    bool visible = false;
+    bool visible = true;
 
     if (_stage == Stage::Empty)
     {
+        visible = true;
         return visible;
     }
 
@@ -47,6 +48,8 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 
     if (_stage == Stage::Initial)
     {
+        visible = false;
+
         iaVector3I blockCenterPos = _position;
         blockCenterPos._x += halfSize;
         blockCenterPos._y += halfSize;
@@ -54,7 +57,7 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 
         float64 distance = observerPosition.distance2(blockCenterPos);
 
-        if (closeEnough || distance < creationDistance[_lod])
+        if (distance < creationDistance[_lod])
         {
             _voxelData = new iVoxelData();
             _voxelData->setMode(iaRLEMode::Compressed);
@@ -73,6 +76,8 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
     }
     else if (_stage == Stage::GeneratingVoxel)
     {
+        visible = false;
+
         iTask* task = iTaskManager::getInstance().getTask(_taskID);
         if (task == nullptr)
         {
@@ -93,6 +98,8 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
     }
     else if (_stage == Stage::GeneratingMesh)
     {
+        visible = false;
+
         updateMesh();
 
         if (_lod > 0)
@@ -113,8 +120,8 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
     }
     else if (_stage == Stage::Ready)
     {
-        bool childrenVisible = false;
-        bool meshVisible = closeEnough;
+        visible = false;
+        bool meshVisible = true;
 
         iaVector3I blockCenterPos = _position;
         blockCenterPos._x += halfSize;
@@ -125,12 +132,12 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
 
         if (_lod > 0)
         {
-            bool force = distance < creationDistance[_lod - 1];
+            bool childrenVisible = true;
             for (int i = 0; i < 8; ++i)
             {
-                if (_cildren[i]->update(observerPosition, force))
+                if (!_cildren[i]->update(observerPosition))
                 {
-                    childrenVisible = true;
+                    childrenVisible = false;
                 }
             }
 
@@ -138,6 +145,18 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
             {
                 visible = true;
                 meshVisible = false;
+            }
+            else
+            {
+                for (int i = 0; i < 8; ++i)
+                {
+                    iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_cildren[i]->_transformNodeID));
+                    if (transformNode != nullptr && 
+                        _cildren[i]->_stage == Stage::Ready)
+                    {
+                        transformNode->setActive(false);
+                    }
+                }
             }
         }
 
@@ -150,11 +169,11 @@ bool VoxelBlock::update(iaVector3I observerPosition, bool closeEnough)
         if (transformNode != nullptr)
         {
             transformNode->setActive(meshVisible);
+        }
 
-            if (meshVisible)
-            {
-                visible = true;
-            }
+        if (meshVisible)
+        {
+            visible = true;
         }
     }
 

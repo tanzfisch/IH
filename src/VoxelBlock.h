@@ -33,7 +33,7 @@ public:
 	VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene);
 	~VoxelBlock();
 
-	bool update(iaVector3I observerPosition, bool closeEnough);
+	bool update(iaVector3I observerPosition);
 
 private:
 

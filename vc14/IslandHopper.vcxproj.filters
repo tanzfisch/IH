@@ -10,6 +10,9 @@
     <Filter Include="src\Entities">
       <UniqueIdentifier>{bd42fb1d-ae84-402b-a6aa-76de420a39b0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Water">
+      <UniqueIdentifier>{ac302969-03ba-4af8-a98a-00b77b4b1b35}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
