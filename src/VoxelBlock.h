@@ -41,6 +41,8 @@ private:
 	const int32 _voxelBlockOverlap = 5;
 	const int32 _tileOverlap = 4;
 
+    bool _edited = false;
+
 	uint64 _taskID = iTask::INVALID_TASK_ID;
 
 	/*! terrain material id

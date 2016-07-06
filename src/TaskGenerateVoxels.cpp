@@ -35,6 +35,10 @@ void TaskGenerateVoxels::run()
 	iVoxelData* voxelData = _voxelBlockInfo->_voxelData;
 	iaVector3I& position = _voxelBlockInfo->_position;
 	iaVector3i& size = _voxelBlockInfo->_size;
+
+    const float64 from = 0.444;
+    const float64 to = 0.45;
+    float64 factor = 1.0 / (to - from);
     
     if (voxelData != nullptr)
     {
@@ -102,6 +106,22 @@ void TaskGenerateVoxels::run()
                         diff -= static_cast<float64>(diffi);
                         voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
                         _voxelBlockInfo->_transition = true;
+                    }
+                }
+
+                float32 xd = fmod(pos._x, 100);
+                float32 zd = fmod(pos._z, 100);
+
+                for (int64 y = 0; y < voxelData->getHeight(); ++y)
+                {
+                    pos._y = y * _lodFactor + position._y;
+                    if (pos._y > 300 && pos._y < 350)
+                    {
+                        if (xd < 50 || xd > 70 || zd < 50 || zd > 70)
+                        {
+                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
+                            _voxelBlockInfo->_transition = true;
+                        }
                     }
                 }
             }

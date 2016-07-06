@@ -91,7 +91,7 @@ void IslandHopper::initViews()
 {
     _view.setClearColor(iaColor4f(0.0f, 0.0f, 0.0f, 1.0f));
     _view.setPerspective(60);
-    _view.setClipPlanes(1.0f, 40000.f);
+    _view.setClipPlanes(1.0f, 80000.f);
     _view.registerRenderDelegate(RenderDelegate(this, &IslandHopper::onRender));
     _view.setName("3d");
 

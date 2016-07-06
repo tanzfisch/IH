@@ -137,7 +137,7 @@ uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 		{
 			result = block->_voxelData->getVoxelDensity(voxelRelativePos);
 		}
-	} */
+	}*/
 
 	return result;
 }
