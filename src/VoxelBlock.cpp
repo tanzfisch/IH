@@ -9,7 +9,7 @@ using namespace Igor;
 #include "TaskGenerateVoxels.h"
 #include "VoxelTerrainMeshGenerator.h"
 
-float64 creationDistance[] = { 150 * 150, 300 * 300, 600 * 600, 1200 * 1200, 2400 * 2400, 5000 * 5000, 10000 * 10000, 20000 * 20000, 40000 * 40000, 80000 * 80000, 160000 * 160000 };
+float64 creationDistance[] = { 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3000 * 3000, 6000 * 6000, 10000 * 10000, 20000 * 20000, 40000 * 40000, 80000 * 80000, 160000 * 160000 };
 
 VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene)
 {
@@ -28,6 +28,11 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID
 
 VoxelBlock::~VoxelBlock()
 {
+    if (_voxelData != nullptr)
+    {
+        delete _voxelData;
+    }
+
     if (_voxelBlockInfo != nullptr)
     {
         delete _voxelBlockInfo;
@@ -59,19 +64,22 @@ bool VoxelBlock::update(iaVector3I observerPosition)
 
         if (distance < creationDistance[_lod])
         {
-            _voxelData = new iVoxelData();
-            _voxelData->setMode(iaRLEMode::Compressed);
-            _voxelData->setClearValue(0);
+            if (_voxelBlockInfo == nullptr)
+            {
+                _voxelData = new iVoxelData();
+                _voxelData->setMode(iaRLEMode::Compressed);
+                _voxelData->setClearValue(0);
 
-            _voxelBlockInfo = new VoxelBlockInfo();
-            _voxelBlockInfo->_size.set(_voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap);
-            _voxelBlockInfo->_position = _position;
-            _voxelBlockInfo->_voxelData = _voxelData;
+                _voxelBlockInfo = new VoxelBlockInfo();
+                _voxelBlockInfo->_size.set(_voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap, _voxelBlockSize + _voxelBlockOverlap);
+                _voxelBlockInfo->_position = _position;
+                _voxelBlockInfo->_voxelData = _voxelData;
+
+                TaskGenerateVoxels* task = new TaskGenerateVoxels(_voxelBlockInfo, _lod, static_cast<uint32>(distance * 0.9));
+                _taskID = iTaskManager::getInstance().addTask(task);
+            }
 
             _stage = Stage::GeneratingVoxel;
-
-            TaskGenerateVoxels* task = new TaskGenerateVoxels(_voxelBlockInfo, _lod, static_cast<uint32>(distance * 0.9));
-            _taskID = iTaskManager::getInstance().addTask(task);
         }
     }
     else if (_stage == Stage::GeneratingVoxel)
@@ -96,32 +104,45 @@ bool VoxelBlock::update(iaVector3I observerPosition)
             }
         }
     }
-    else if (_stage == Stage::GeneratingMesh)
+    
+    if (_stage == Stage::GeneratingMesh)
     {
         visible = false;
 
-        updateMesh();
+        iaVector3I blockCenterPos = _position;
+        blockCenterPos._x += halfSize;
+        blockCenterPos._y += halfSize;
+        blockCenterPos._z += halfSize;
 
-        if (_lod > 0)
+        float64 distance = observerPosition.distance2(blockCenterPos);
+
+        if (distance < creationDistance[_lod])
         {
-            if (_cildren[0] == nullptr)
-            {
-                _cildren[0] = new VoxelBlock(_lod - 1, _position, _terrainMaterialID, _scene);
-                _cildren[1] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, 0, 0), _terrainMaterialID, _scene);
-                _cildren[2] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, 0, halfSize), _terrainMaterialID, _scene);
-                _cildren[3] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, 0, halfSize), _terrainMaterialID, _scene);
+            updateMesh();
 
-                _cildren[4] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, halfSize, 0), _terrainMaterialID, _scene);
-                _cildren[5] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, halfSize, 0), _terrainMaterialID, _scene);
-                _cildren[6] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, halfSize, halfSize), _terrainMaterialID, _scene);
-                _cildren[7] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, halfSize, halfSize), _terrainMaterialID, _scene);
+            if (_lod > 0)
+            {
+                if (_cildren[0] == nullptr)
+                {
+                    _cildren[0] = new VoxelBlock(_lod - 1, _position, _terrainMaterialID, _scene);
+                    _cildren[1] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, 0, 0), _terrainMaterialID, _scene);
+                    _cildren[2] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, 0, halfSize), _terrainMaterialID, _scene);
+                    _cildren[3] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, 0, halfSize), _terrainMaterialID, _scene);
+
+                    _cildren[4] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, halfSize, 0), _terrainMaterialID, _scene);
+                    _cildren[5] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, halfSize, 0), _terrainMaterialID, _scene);
+                    _cildren[6] = new VoxelBlock(_lod - 1, _position + iaVector3I(halfSize, halfSize, halfSize), _terrainMaterialID, _scene);
+                    _cildren[7] = new VoxelBlock(_lod - 1, _position + iaVector3I(0, halfSize, halfSize), _terrainMaterialID, _scene);
+                }
             }
         }
     }
-    else if (_stage == Stage::Ready)
+    
+    if (_stage == Stage::Ready)
     {
         visible = false;
         bool meshVisible = true;
+        bool destroy = false;
 
         iaVector3I blockCenterPos = _position;
         blockCenterPos._x += halfSize;
@@ -165,6 +186,11 @@ bool VoxelBlock::update(iaVector3I observerPosition)
         if (distance >= creationDistance[_lod])
         {
             meshVisible = false;
+
+            if (distance >= creationDistance[_lod] * 3.0)
+            {
+                destroy = true;
+            }
         }
 
         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
@@ -176,6 +202,27 @@ bool VoxelBlock::update(iaVector3I observerPosition)
         if (meshVisible)
         {
             visible = true;
+        }
+        else if (destroy)
+        {
+            iNodeFactory::getInstance().destroyNode(_transformNodeID);
+            _transformNodeID = iNode::INVALID_NODE_ID;
+            _modelNodeID = iNode::INVALID_NODE_ID;
+            _stage = Stage::Initial;
+
+            if (_voxelData != nullptr)
+            {
+                delete _voxelData;
+                _voxelData = nullptr;
+            }
+
+            if (_voxelBlockInfo != nullptr)
+            {
+                delete _voxelBlockInfo;
+                _voxelBlockInfo = nullptr;
+            }
+
+            visible = false;
         }
     }
 

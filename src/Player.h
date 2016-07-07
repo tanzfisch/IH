@@ -58,6 +58,8 @@ public:
 
     uint32 getLODTriggerID();
 
+    void setPosition(iaVector3f pos);
+
 private:
 
     bool _up = false;

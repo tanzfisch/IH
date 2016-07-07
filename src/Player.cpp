@@ -377,7 +377,7 @@ void Player::drawReticle(const iWindow& window)
 
 void Player::handle()
 {
-    float32 speed = 10000;
+    float32 speed = 2000;
 
     const float32 offsetIncrease = 0.1;
     iaMatrixf matrix;
@@ -597,4 +597,21 @@ void Player::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep, int thr
 {
     body->setForce(_force);
     body->setTorque(_torque);
+}
+
+void Player::setPosition(iaVector3f pos)
+{
+    iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().getNode(_physicsNodeID));
+    if (physicsNode != nullptr)
+    {
+        uint64 bodyID = physicsNode->getBodyID();
+
+        iPhysicsBody* body = iPhysics::getInstance().getBody(bodyID);
+        if (body != nullptr)
+        {
+            iaMatrixf matrix;
+            matrix._pos = pos;
+            body->setMatrix(matrix);
+        }
+    }
 }

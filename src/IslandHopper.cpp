@@ -164,7 +164,7 @@ void IslandHopper::initPlayer()
     matrix.translate(9230, 450, 16250);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
-
+    
     /*iaMatrixf enemyMatrix;
     enemyMatrix._pos.set(10000, 9400, 10000 - 200);
     BossEnemy* boss = new BossEnemy(_scene, enemyMatrix, _playerID);
@@ -463,6 +463,22 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 
             case iKeyCode::Space:
                 player->dig(_toolSize, _toolDensity);
+                break;
+
+            case iKeyCode::F5:
+                player->setPosition(iaVector3f(9230, 450, 16250));
+                break;
+
+            case iKeyCode::F6:
+                player->setPosition(iaVector3f(27934.5, 553.604, 17452.6));
+                break;
+
+            case iKeyCode::F7:
+                player->setPosition(iaVector3f(16912.3, 328.994, 31719.6));
+                break;
+
+            case iKeyCode::F8:
+                player->setPosition(iaVector3f(31841.6, 300.569, 29283.8));
                 break;
             }
         }

@@ -67,8 +67,6 @@ private:
 
     static uint64 _nextID;
 
-    
-
     iSpheref _sphere;
     
     Fraction _fraction = Fraction::None;
