@@ -9,11 +9,11 @@ using namespace Igor;
 #include "TaskGenerateVoxels.h"
 #include "VoxelTerrainMeshGenerator.h"
 
-float64 creationDistance[] = { 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3000 * 3000, 6000 * 6000, 10000 * 10000, 20000 * 20000, 40000 * 40000, 80000 * 80000, 160000 * 160000 };
+float64 creationDistance[] = { 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3000 * 3000, 6000 * 6000, 10000 * 10000, 100000 * 100000 };
 
 VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene)
 {
-    con_assert(lod >= 0 && lod <= 10, "lod out of range");
+    con_assert(lod >= 0 && lod <= 7, "lod out of range");
     _position = position;
     _lod = lod;
     _size = _voxelBlockSize * pow(2, lod);
@@ -45,13 +45,14 @@ bool VoxelBlock::update(iaVector3I observerPosition)
 
     if (_stage == Stage::Empty)
     {
-        visible = true;
         return visible;
     }
 
     uint32 halfSize = _size >> 1;
 
-    if (_stage == Stage::Initial)
+    switch (_stage)
+    {
+    case Stage::Initial:
     {
         visible = false;
 
@@ -82,7 +83,9 @@ bool VoxelBlock::update(iaVector3I observerPosition)
             _stage = Stage::GeneratingVoxel;
         }
     }
-    else if (_stage == Stage::GeneratingVoxel)
+    break;
+
+    case Stage::GeneratingVoxel:
     {
         visible = false;
 
@@ -104,8 +107,9 @@ bool VoxelBlock::update(iaVector3I observerPosition)
             }
         }
     }
-    
-    if (_stage == Stage::GeneratingMesh)
+    break;
+
+    case Stage::GeneratingMesh:
     {
         visible = false;
 
@@ -137,8 +141,9 @@ bool VoxelBlock::update(iaVector3I observerPosition)
             }
         }
     }
-    
-    if (_stage == Stage::Ready)
+    break;
+
+    case Stage::Ready:
     {
         visible = false;
         bool meshVisible = true;
@@ -224,6 +229,8 @@ bool VoxelBlock::update(iaVector3I observerPosition)
 
             visible = false;
         }
+    }
+    break;
     }
 
     return visible;

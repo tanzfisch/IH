@@ -445,10 +445,6 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 player->startDown();
                 break;
 
-			case iKeyCode::P:
-				con_endl("player pos " << player->getSphere()._center);
-				break;
-
             case iKeyCode::LShift:
                 player->startFastTurn();
                 break;
@@ -745,6 +741,16 @@ void IslandHopper::onRenderOrtho()
             iRenderer::getInstance().setColor(iaColor4f(0, 0, 1, 1));
             iRenderer::getInstance().drawString(_window.getClientWidth() * 0.10, _window.getClientHeight() * 0.05, shieldText);
 
+            iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
+
+            iaString position;
+            position += iaString::ftoa(player->getSphere()._center._x, 0);
+            position += ",";
+            position += iaString::ftoa(player->getSphere()._center._y, 0);
+            position += ",";
+            position += iaString::ftoa(player->getSphere()._center._z, 0);
+            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.05, _window.getClientHeight() * 0.10, position);
+
             player->drawReticle(_window);
         }
         else
@@ -755,6 +761,9 @@ void IslandHopper::onRenderOrtho()
             _activeControls = false;
         }
     }
+
+
+                
 
     iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 }
