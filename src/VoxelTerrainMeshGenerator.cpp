@@ -55,6 +55,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     }
 
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
+    result->setName("group");
 
     //voxelData->setMode(iaRLEMode::Uncompressed);
 
@@ -68,6 +69,8 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         iNodeMesh* meshNode = static_cast<iNodeMesh*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeMesh));
         meshNode->setMesh(mesh);
         meshNode->setMaterial(tileInformation->_materialID);
+        meshNode->setName("mesh");
+        meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
 #if 1

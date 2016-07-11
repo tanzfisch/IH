@@ -4,6 +4,7 @@
 #include <iNodeFactory.h>
 #include <iNodeTransform.h>
 #include <iNodeModel.h>
+#include <iNodeMesh.h>
 using namespace Igor;
 
 #include "TaskGenerateVoxels.h"
@@ -206,6 +207,20 @@ bool VoxelBlock::update(iaVector3I observerPosition)
 
         if (meshVisible)
         {
+            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(_modelNodeID));
+            if (modelNode != nullptr)
+            {
+                iNode* group = static_cast<iNodeMesh*>(modelNode->getChild("group"));
+                if (group != nullptr)
+                {
+                    iNodeMesh* meshNode = static_cast<iNodeMesh*>(group->getChild("mesh"));
+                    if (meshNode != nullptr)
+                    {
+                        meshNode->setVisible(true);
+                    }
+                }
+            }
+
             visible = true;
         }
         else if (destroy)
@@ -270,7 +285,7 @@ void VoxelBlock::updateMesh()
 
             iNodeTransform* transform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
             transform->translate(_position._x, _position._y, _position._z);
-
+            
             iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
             modelNode->setModel(tileName, inputParam);
 
