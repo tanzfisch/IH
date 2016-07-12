@@ -486,7 +486,7 @@ bool VoxelTerrain::loading()
 void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 {
 	float64 lodFactor = pow(2, lod);
-	float64 actualBlockSize = _voxelBlockSize * lodFactor;
+	float64 actualBlockSize = 32 * lodFactor;
 	iaVector3I voxelBlockPosition;
 	VoxelBlock* voxelBlock = nullptr;
 

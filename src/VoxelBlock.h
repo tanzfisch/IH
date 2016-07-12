@@ -38,8 +38,7 @@ public:
 private:
 
 	const int32 _voxelBlockSize = 32;
-	const int32 _voxelBlockOverlap = 5;
-	const int32 _tileOverlap = 4;
+	const int32 _voxelBlockOverlap = 2;
 
     bool _edited = false;
 

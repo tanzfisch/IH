@@ -33,26 +33,13 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 {
     TileInformation* tileInformation = reinterpret_cast<TileInformation*>(parameter->_parameters.getDataPointer());
     const iaVector3I& absolutePos = tileInformation->_absolutePos;
-    int64 width = tileInformation->_width;
-    int64 depth = tileInformation->_depth;
-    int64 height = tileInformation->_height;
+
 	float64 scale = pow(2, tileInformation->_lod);
     iVoxelData* voxelData = tileInformation->_voxelData;
 
-    if (width >= voxelData->getWidth())
-    {
-        width = voxelData->getWidth() - 1;
-    }
-
-    if (depth >= voxelData->getDepth())
-    {
-        depth = voxelData->getDepth() - 1;
-    }
-
-    if (height >= voxelData->getHeight())
-    {
-        height = voxelData->getHeight() - 1;
-    }
+    int64 width = voxelData->getWidth() - 1;
+    int64 depth = voxelData->getDepth() - 1;
+    int64 height = voxelData->getHeight() - 1;
 
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
     result->setName("group");

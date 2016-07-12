@@ -261,9 +261,9 @@ void VoxelBlock::updateMesh()
             tileInformation._materialID = _terrainMaterialID;
             tileInformation._voxelData = _voxelData;
             tileInformation._lod = _lod;
-            tileInformation._width = _size + _tileOverlap;
-            tileInformation._depth = _size + _tileOverlap;
-            tileInformation._height = _size + _tileOverlap;
+            tileInformation._width = _size + _voxelBlockOverlap;
+            tileInformation._depth = _size + _voxelBlockOverlap;
+            tileInformation._height = _size + _voxelBlockOverlap;
 
             iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
             inputParam->_identifier = "vtg";

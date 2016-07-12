@@ -90,17 +90,9 @@ private:
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
 
-    /*! size of a voxel block
-    */
-    static constexpr float32 _voxelBlockSize = 32;
+	const uint32 _lowestLOD = 0;
 
-    /*! overlapping of voxel blocks
-    */
-    static constexpr float32 _voxelBlockOverlap = 5;
-
-	const uint32 _lowestLOD = 7;
-
-    static const int64 _voxelBlockScanDistance = 10;
+    static const int64 _voxelBlockScanDistance = 4;
 
     /*! scene
     */
