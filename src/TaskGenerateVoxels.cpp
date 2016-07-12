@@ -87,7 +87,13 @@ void TaskGenerateVoxels::run()
 
                 float64 height = (noise * 2000);
 
-                float64 diff = (height - static_cast<float64>(position._y)) / _lodFactor - 1.0;
+                float64 transdiff = height - static_cast<float64>(position._y);
+                if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)
+                {
+                    _voxelBlockInfo->_transition = true;
+                }
+
+                float64 diff = (transdiff) / _lodFactor - 1.0;
                 if (diff > 0)
                 {
                     if (diff > size._y)
@@ -105,7 +111,6 @@ void TaskGenerateVoxels::run()
                     {
                         diff -= static_cast<float64>(diffi);
                         voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
-                        _voxelBlockInfo->_transition = true;
                     }
                 }
 
