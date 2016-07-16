@@ -37,8 +37,8 @@ void TaskGenerateVoxels::run()
 	iaVector3f& offset = _voxelBlockInfo->_offset;
 	iaVector3i& size = _voxelBlockInfo->_size;
 
-    const float64 from = 0.444;
-    const float64 to = 0.45;
+    const float64 from = 0.35;
+    const float64 to = 0.36;
     float64 factor = 1.0 / (to - from);
     
     if (voxelData != nullptr)
@@ -114,6 +114,43 @@ void TaskGenerateVoxels::run()
                         voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
                     }
                 }
+				
+				/*float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
+				cavelikeliness -= 0.5;
+				if (cavelikeliness > 0.0)
+				{
+					cavelikeliness *= 1.0 / 0.5;
+					cavelikeliness *= 5;
+				}
+
+				if (cavelikeliness > 0)
+				{
+					for (int64 y = 0; y < voxelData->getHeight(); ++y)
+					{
+						pos._y = y * _lodFactor + position._y + offset._y;
+
+						if (pos._y > 200 && 
+							pos._y > height - (50 * cavelikeliness) && 
+							pos._y < height + 10)
+						{
+							float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.005, pos._y * 0.01, pos._z * 0.005), 4, 0.5);
+							if (onoff <= from)
+							{
+								if (onoff >= to)
+								{
+									float64 gradient = 1.0 - ((onoff - from) * factor);
+									voxelData->setVoxelDensity(iaVector3I(x, y, z), (gradient * 254) + 1);
+									_voxelBlockInfo->_transition = true;
+								}
+								else
+								{
+									voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
+									_voxelBlockInfo->_transition = true;
+								}
+							}
+						}
+					}
+				}*/
             }
         }
 

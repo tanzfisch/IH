@@ -10,7 +10,7 @@ using namespace Igor;
 #include "TaskGenerateVoxels.h"
 #include "VoxelTerrainMeshGenerator.h"
 
-float64 creationDistance[] = { 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3000 * 3000, 6000 * 6000, 10000 * 10000, 100000 * 100000 };
+float64 creationDistance[] = { 100 * 100, 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3200 * 3200, 6400 * 6400, 100000 * 100000 };
 
 VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene)
 {
