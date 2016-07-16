@@ -56,6 +56,7 @@ private:
 	iScene* _scene = nullptr;
 
 	iaVector3I _position;
+	iaVector3f _offset;
 	uint32 _lod = 0;
 	uint32 _size = 0;
 

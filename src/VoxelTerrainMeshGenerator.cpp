@@ -68,9 +68,9 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 		switch (tileInformation->_lod)
 		{
 		case 0:
-			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
-			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
-			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 0);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 1);
+			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 2);
 			break;
 		case 1:
 			targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("green.png"), 0);

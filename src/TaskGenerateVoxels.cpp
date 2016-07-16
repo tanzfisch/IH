@@ -34,6 +34,7 @@ void TaskGenerateVoxels::run()
 
 	iVoxelData* voxelData = _voxelBlockInfo->_voxelData;
 	iaVector3I& position = _voxelBlockInfo->_position;
+	iaVector3f& offset = _voxelBlockInfo->_offset;
 	iaVector3i& size = _voxelBlockInfo->_size;
 
     const float64 from = 0.444;
@@ -49,7 +50,7 @@ void TaskGenerateVoxels::run()
         {
             for (int64 z = 0; z < voxelData->getDepth(); ++z)
             {
-                iaVector3f pos(x * _lodFactor + position._x, 0, z * _lodFactor + position._z);
+                iaVector3f pos(x * _lodFactor + position._x + offset._x, 0, z * _lodFactor + position._z + offset._z);
 
                 float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
                 contour -= 0.7;
@@ -111,22 +112,6 @@ void TaskGenerateVoxels::run()
                     {
                         diff -= static_cast<float64>(diffi);
                         voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
-                    }
-                }
-
-                float32 xd = fmod(pos._x, 100);
-                float32 zd = fmod(pos._z, 100);
-
-                for (int64 y = 0; y < voxelData->getHeight(); ++y)
-                {
-                    pos._y = y * _lodFactor + position._y;
-                    if (pos._y > 300 && pos._y < 350)
-                    {
-                        if (xd < 50 || xd > 70 || zd < 50 || zd > 70)
-                        {
-                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
-                            _voxelBlockInfo->_transition = true;
-                        }
                     }
                 }
             }

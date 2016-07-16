@@ -22,6 +22,7 @@ struct VoxelBlockInfo
 	bool _transition = false;
     bool _generatedEnemies = false;
     iaVector3I _position;
+	iaVector3f _offset;
     iaVector3i _size;
     iVoxelData* _voxelData = nullptr;
 };
