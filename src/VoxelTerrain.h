@@ -88,7 +88,7 @@ private:
 
     /*! the voxel data
     */
-    unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
+    vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
 	const uint32 _lowestLOD = 7;
 
@@ -122,6 +122,10 @@ private:
     \param taskID id of finished task
     */
     void onTaskFinished(uint64 taskID);
+
+	bool update(VoxelBlock& voxelBlock, iaVector3I observerPosition);
+
+	void updateMesh(VoxelBlock& voxelBlock);
 
     /*! init
     */

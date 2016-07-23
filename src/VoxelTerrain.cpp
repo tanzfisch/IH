@@ -24,9 +24,16 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
+float64 creationDistance[] = { 100 * 100, 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3200 * 3200, 6400 * 6400, 100000 * 100000 };
+
 VoxelTerrain::VoxelTerrain()
 {
+	unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> voxelBlocks;
 
+	for (int i = 0; i <= _lowestLOD; ++i)
+	{
+		_voxelBlocks.push_back(voxelBlocks);
+	}
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -542,20 +549,300 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 				{
 					voxelBlockPosition.set(voxelBlockX, voxelBlockY, voxelBlockZ);
 
-					auto blockIter = _voxelBlocks.find(voxelBlockPosition);
-					if (blockIter == _voxelBlocks.end())
+					auto blockIter = _voxelBlocks[_lowestLOD].find(voxelBlockPosition);
+					if (blockIter == _voxelBlocks[_lowestLOD].end())
 					{
-						voxelBlock = new VoxelBlock(lod, voxelBlockPosition*actualBlockSize, _terrainMaterialID, _scene);
-						_voxelBlocks[voxelBlockPosition] = voxelBlock;
+						voxelBlock = new VoxelBlock(lod, voxelBlockPosition*actualBlockSize);
+						_voxelBlocks[_lowestLOD][voxelBlockPosition] = voxelBlock;
 					}
 					else
 					{
-						voxelBlock = _voxelBlocks[voxelBlockPosition];
+						voxelBlock = _voxelBlocks[_lowestLOD][voxelBlockPosition];
 					}
 
-					voxelBlock->update(lodTriggerPos);
+					update(*voxelBlock, lodTriggerPos);
 				}
 			}
+		}
+	}
+}
+
+bool VoxelTerrain::update(VoxelBlock& voxelBlock, iaVector3I observerPosition)
+{
+	bool visible = true;
+
+	if (voxelBlock._stage == Stage::Empty)
+	{
+		return visible;
+	}
+
+	uint32 halfSize = voxelBlock._size >> 1;
+
+	switch (voxelBlock._stage)
+	{
+	case Stage::Initial:
+	{
+		visible = false;
+
+		iaVector3I blockCenterPos = voxelBlock._position;
+		blockCenterPos._x += halfSize;
+		blockCenterPos._y += halfSize;
+		blockCenterPos._z += halfSize;
+
+		float64 distance = observerPosition.distance2(blockCenterPos);
+
+		if (distance < creationDistance[voxelBlock._lod])
+		{
+			if (voxelBlock._voxelBlockInfo == nullptr)
+			{
+				voxelBlock._voxelData = new iVoxelData();
+				voxelBlock._voxelData->setMode(iaRLEMode::Compressed);
+				voxelBlock._voxelData->setClearValue(0);
+
+				voxelBlock._voxelBlockInfo = new VoxelBlockInfo();
+				voxelBlock._voxelBlockInfo->_size.set(voxelBlock._voxelBlockSize + voxelBlock._voxelBlockOverlap, voxelBlock._voxelBlockSize + voxelBlock._voxelBlockOverlap, voxelBlock._voxelBlockSize + voxelBlock._voxelBlockOverlap);
+				voxelBlock._voxelBlockInfo->_position = voxelBlock._position;
+				voxelBlock._voxelBlockInfo->_offset = voxelBlock._offset;
+				voxelBlock._voxelBlockInfo->_voxelData = voxelBlock._voxelData;
+
+				TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock._voxelBlockInfo, voxelBlock._lod, static_cast<uint32>(distance * 0.9));
+				voxelBlock._taskID = iTaskManager::getInstance().addTask(task);
+			}
+
+			voxelBlock._stage = Stage::GeneratingVoxel;
+		}
+	}
+	break;
+
+	case Stage::GeneratingVoxel:
+	{
+		visible = false;
+
+		iTask* task = iTaskManager::getInstance().getTask(voxelBlock._taskID);
+		if (task == nullptr)
+		{
+			voxelBlock._taskID = iTask::INVALID_TASK_ID;
+			if (!voxelBlock._voxelBlockInfo->_transition)
+			{
+				delete voxelBlock._voxelData;
+				voxelBlock._voxelData = nullptr;
+				voxelBlock._voxelBlockInfo->_voxelData = nullptr;
+
+				voxelBlock._stage = Stage::Empty;
+			}
+			else
+			{
+				voxelBlock._stage = Stage::GeneratingMesh;
+			}
+		}
+	}
+	break;
+
+	case Stage::GeneratingMesh:
+	{
+		visible = false;
+
+		iaVector3I blockCenterPos = voxelBlock._position;
+		blockCenterPos._x += halfSize;
+		blockCenterPos._y += halfSize;
+		blockCenterPos._z += halfSize;
+
+		float64 distance = observerPosition.distance2(blockCenterPos);
+
+		if (distance < creationDistance[voxelBlock._lod])
+		{
+			updateMesh(voxelBlock);
+
+			if (voxelBlock._lod > 0)
+			{
+				if (voxelBlock._cildren[0] == nullptr)
+				{
+					voxelBlock._cildren[0] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position);					
+					voxelBlock._cildren[1] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, 0));
+					voxelBlock._cildren[2] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, halfSize));
+					voxelBlock._cildren[3] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, 0, halfSize));
+
+					voxelBlock._cildren[4] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, 0));
+					voxelBlock._cildren[5] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, 0));
+					voxelBlock._cildren[6] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, halfSize));
+					voxelBlock._cildren[7] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, halfSize));
+
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[0]->_position] = voxelBlock._cildren[0];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[1]->_position] = voxelBlock._cildren[1];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[2]->_position] = voxelBlock._cildren[2];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[3]->_position] = voxelBlock._cildren[3];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[4]->_position] = voxelBlock._cildren[4];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[5]->_position] = voxelBlock._cildren[5];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[6]->_position] = voxelBlock._cildren[6];
+					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[7]->_position] = voxelBlock._cildren[7];
+				}
+			}
+		}
+	}
+	break;
+
+	case Stage::Ready:
+	{
+		visible = false;
+		bool meshVisible = true;
+		bool destroy = false;
+
+		iaVector3I blockCenterPos = voxelBlock._position;
+		blockCenterPos._x += halfSize;
+		blockCenterPos._y += halfSize;
+		blockCenterPos._z += halfSize;
+
+		float32 distance = observerPosition.distance2(blockCenterPos);
+
+		if (voxelBlock._lod > 0)
+		{
+			bool childrenVisible = true;
+			for (int i = 0; i < 8; ++i)
+			{
+				if (!update(*(voxelBlock._cildren[i]), observerPosition))
+				{
+					childrenVisible = false;
+				}
+			}
+
+			if (childrenVisible)
+			{
+				visible = true;
+				meshVisible = false;
+			}
+			else
+			{
+				for (int i = 0; i < 8; ++i)
+				{
+					if (voxelBlock._cildren[i]->_stage == Stage::Ready)
+					{
+						iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock._cildren[i]->_transformNodeID));
+						if (transformNode != nullptr)
+						{
+							transformNode->setActive(false);
+						}
+					}
+				}
+			}
+		}
+
+		if (distance >= creationDistance[voxelBlock._lod])
+		{
+			meshVisible = false;
+
+			if (distance >= creationDistance[voxelBlock._lod] * 3.0)
+			{
+				destroy = true;
+			}
+		}
+
+		iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock._transformNodeID));
+		if (transformNode != nullptr)
+		{
+			transformNode->setActive(meshVisible);
+		}
+
+		if (meshVisible)
+		{
+			iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock._modelNodeID));
+			if (modelNode != nullptr)
+			{
+				iNode* group = static_cast<iNodeMesh*>(modelNode->getChild("group"));
+				if (group != nullptr)
+				{
+					iNodeMesh* meshNode = static_cast<iNodeMesh*>(group->getChild("mesh"));
+					if (meshNode != nullptr)
+					{
+						meshNode->setVisible(true);
+					}
+				}
+			}
+
+			visible = true;
+		}
+		else if (destroy)
+		{
+			iNodeFactory::getInstance().destroyNode(voxelBlock._transformNodeID);
+			voxelBlock._transformNodeID = iNode::INVALID_NODE_ID;
+			voxelBlock._modelNodeID = iNode::INVALID_NODE_ID;
+			voxelBlock._stage = Stage::Initial;
+
+			if (voxelBlock._voxelData != nullptr)
+			{
+				delete voxelBlock._voxelData;
+				voxelBlock._voxelData = nullptr;
+			}
+
+			if (voxelBlock._voxelBlockInfo != nullptr)
+			{
+				delete voxelBlock._voxelBlockInfo;
+				voxelBlock._voxelBlockInfo = nullptr;
+			}
+
+			visible = false;
+		}
+	}
+	break;
+	}
+
+	return visible;
+}
+
+void VoxelTerrain::updateMesh(VoxelBlock& voxelBlock)
+{
+	if (voxelBlock._transformNodeID == iNode::INVALID_NODE_ID)
+	{
+		if (voxelBlock._voxelData != nullptr)
+		{
+			TileInformation tileInformation;
+			tileInformation._materialID = _terrainMaterialID;
+			tileInformation._voxelData = voxelBlock._voxelData;
+			tileInformation._lod = voxelBlock._lod;
+			tileInformation._width = voxelBlock._size + voxelBlock._voxelBlockOverlap;
+			tileInformation._depth = voxelBlock._size + voxelBlock._voxelBlockOverlap;
+			tileInformation._height = voxelBlock._size + voxelBlock._voxelBlockOverlap;
+
+			iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
+			inputParam->_identifier = "vtg";
+			inputParam->_joinVertexes = true;
+			inputParam->_needsRenderContext = false;
+			inputParam->_modelSourceType = iModelSourceType::Generated;
+			inputParam->_loadPriority = 0;
+			inputParam->_parameters.setData(reinterpret_cast<const char*>(&tileInformation), sizeof(TileInformation));
+
+			iaString tileName = iaString::itoa(voxelBlock._position._x);
+			tileName += ":";
+			tileName += iaString::itoa(voxelBlock._position._y);
+			tileName += ":";
+			tileName += iaString::itoa(voxelBlock._position._z);
+			tileName += ":";
+			tileName += iaString::itoa(voxelBlock._lod);
+			tileName += ":";
+			tileName += iaString::itoa(voxelBlock._mutationCounter++);
+
+			iNodeTransform* transform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+
+			transform->translate(voxelBlock._position._x, voxelBlock._position._y, voxelBlock._position._z);
+			transform->translate(voxelBlock._offset);
+
+			iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+			modelNode->setModel(tileName, inputParam);
+
+			transform->insertNode(modelNode);
+
+			_scene->getRoot()->insertNode(transform);
+
+			voxelBlock._transformNodeID = transform->getID();
+			voxelBlock._modelNodeID = modelNode->getID();
+		}
+	}
+	else
+	{
+		iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock._modelNodeID));
+		if (modelNode != nullptr &&
+			modelNode->isLoaded())
+		{
+			voxelBlock._stage = Stage::Ready;
 		}
 	}
 }

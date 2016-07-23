@@ -28,12 +28,12 @@ enum class Stage
 class VoxelBlock
 {
 
+	friend class VoxelTerrain;
+
 public:
 
-	VoxelBlock(uint32 lod, iaVector3I position, uint32 terrainMaterialID, iScene* scene);
+	VoxelBlock(uint32 lod, iaVector3I position);
 	~VoxelBlock();
-
-	bool update(iaVector3I observerPosition);
 
 private:
 
@@ -43,18 +43,12 @@ private:
     bool _edited = false;
 
 	uint64 _taskID = iTask::INVALID_TASK_ID;
-
-	/*! terrain material id
-	*/
-	uint32 _terrainMaterialID = 0;
-
+	
 	uint32 _transformNodeID = iNode::INVALID_NODE_ID;
 	uint32 _modelNodeID = iNode::INVALID_NODE_ID;
 
 	uint32 _mutationCounter = 0;
-
-	iScene* _scene = nullptr;
-
+	
 	iaVector3I _position;
 	iaVector3f _offset;
 	uint32 _lod = 0;
@@ -68,7 +62,7 @@ private:
 
 	VoxelBlock* _cildren[8];
 
-	void updateMesh();
+	
 
 };
 
