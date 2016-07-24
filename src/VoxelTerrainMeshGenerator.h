@@ -18,13 +18,10 @@ namespace Igor
 struct TileInformation
 {
     iaVector3I _absolutePos;
-    int64 _width = 0;
-    int64 _depth = 0;
-    int64 _height = 0;
 	uint32 _lod = 0;
     iVoxelData* _voxelData = nullptr;
-    uint32 _lodTriggerID = 0;
     uint32 _materialID = 0;
+	uint32 _neighborsLOD = 0;
 };
 
 class VoxelTerrainMeshGenerator : public iModelDataIO

@@ -27,6 +27,8 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position)
 	{
 		_cildren[i] = nullptr;
 	}
+
+	// todo clean up scene and tasks
 }
 
 VoxelBlock::~VoxelBlock()

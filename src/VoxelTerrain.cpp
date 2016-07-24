@@ -61,7 +61,7 @@ void VoxelTerrain::init()
 	iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
 	iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
 	iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-	//iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+	iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
 	//iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
 	iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
@@ -506,7 +506,9 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
 			return;
 		}
 
-		iaVector3I lodTriggerPos(pos._x, pos._y, pos._z);
+		//iaVector3I lodTriggerPos(pos._x, pos._y, pos._z);
+		iaVector3I lodTriggerPos(9230, 450, 16250);
+		
 
 		iaVector3I center(lodTriggerPos._x, lodTriggerPos._y, lodTriggerPos._z);
 		center /= actualBlockSize;
@@ -632,6 +634,31 @@ bool VoxelTerrain::update(VoxelBlock& voxelBlock, iaVector3I observerPosition)
 			}
 			else
 			{
+				if (voxelBlock._lod > 0)
+				{
+					if (voxelBlock._cildren[0] == nullptr)
+					{
+						voxelBlock._cildren[0] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position);
+						voxelBlock._cildren[1] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, 0));
+						voxelBlock._cildren[2] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, halfSize));
+						voxelBlock._cildren[3] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, 0, halfSize));
+
+						voxelBlock._cildren[4] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, 0));
+						voxelBlock._cildren[5] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, 0));
+						voxelBlock._cildren[6] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, halfSize));
+						voxelBlock._cildren[7] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, halfSize));
+
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[0]->_position] = voxelBlock._cildren[0];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[1]->_position] = voxelBlock._cildren[1];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[2]->_position] = voxelBlock._cildren[2];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[3]->_position] = voxelBlock._cildren[3];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[4]->_position] = voxelBlock._cildren[4];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[5]->_position] = voxelBlock._cildren[5];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[6]->_position] = voxelBlock._cildren[6];
+						_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[7]->_position] = voxelBlock._cildren[7];
+					}
+				}
+
 				voxelBlock._stage = Stage::GeneratingMesh;
 			}
 		}
@@ -652,31 +679,6 @@ bool VoxelTerrain::update(VoxelBlock& voxelBlock, iaVector3I observerPosition)
 		if (distance < creationDistance[voxelBlock._lod])
 		{
 			updateMesh(voxelBlock);
-
-			if (voxelBlock._lod > 0)
-			{
-				if (voxelBlock._cildren[0] == nullptr)
-				{
-					voxelBlock._cildren[0] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position);					
-					voxelBlock._cildren[1] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, 0));
-					voxelBlock._cildren[2] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, 0, halfSize));
-					voxelBlock._cildren[3] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, 0, halfSize));
-
-					voxelBlock._cildren[4] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, 0));
-					voxelBlock._cildren[5] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, 0));
-					voxelBlock._cildren[6] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(halfSize, halfSize, halfSize));
-					voxelBlock._cildren[7] = new VoxelBlock(voxelBlock._lod - 1, voxelBlock._position + iaVector3I(0, halfSize, halfSize));
-
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[0]->_position] = voxelBlock._cildren[0];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[1]->_position] = voxelBlock._cildren[1];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[2]->_position] = voxelBlock._cildren[2];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[3]->_position] = voxelBlock._cildren[3];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[4]->_position] = voxelBlock._cildren[4];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[5]->_position] = voxelBlock._cildren[5];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[6]->_position] = voxelBlock._cildren[6];
-					_voxelBlocks[voxelBlock._lod - 1][voxelBlock._cildren[7]->_position] = voxelBlock._cildren[7];
-				}
-			}
 		}
 	}
 	break;
@@ -788,6 +790,73 @@ bool VoxelTerrain::update(VoxelBlock& voxelBlock, iaVector3I observerPosition)
 	return visible;
 }
 
+uint32 VoxelTerrain::findNeighbors(VoxelBlock& voxelBlock)
+{
+	int count = 0;
+	uint32 result = 0;
+	iaVector3I position = voxelBlock._position;
+	position._x += voxelBlock._size;
+	VoxelBlock* neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	position = voxelBlock._position;
+	position._x -= voxelBlock._size;
+	neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	position = voxelBlock._position;
+	position._y += voxelBlock._size;
+	neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	position = voxelBlock._position;
+	position._y -= voxelBlock._size;
+	neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	position = voxelBlock._position;
+	position._z += voxelBlock._size;
+	neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{		 
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	position = voxelBlock._position;
+	position._z -= voxelBlock._size;
+	neighbor = _voxelBlocks[voxelBlock._lod][position];
+	if (neighbor != nullptr && neighbor->_stage != Stage::Initial && neighbor->_stage != Stage::Empty)
+	{
+		result += 1;
+		count++;
+	}
+	result << 1;
+
+	return result;
+}
+
 void VoxelTerrain::updateMesh(VoxelBlock& voxelBlock)
 {
 	if (voxelBlock._transformNodeID == iNode::INVALID_NODE_ID)
@@ -798,10 +867,8 @@ void VoxelTerrain::updateMesh(VoxelBlock& voxelBlock)
 			tileInformation._materialID = _terrainMaterialID;
 			tileInformation._voxelData = voxelBlock._voxelData;
 			tileInformation._lod = voxelBlock._lod;
-			tileInformation._width = voxelBlock._size + voxelBlock._voxelBlockOverlap;
-			tileInformation._depth = voxelBlock._size + voxelBlock._voxelBlockOverlap;
-			tileInformation._height = voxelBlock._size + voxelBlock._voxelBlockOverlap;
-
+			tileInformation._neighborsLOD = findNeighbors(voxelBlock);
+			
 			iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
 			inputParam->_identifier = "vtg";
 			inputParam->_joinVertexes = true;

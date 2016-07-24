@@ -44,14 +44,12 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
     result->setName("group");
 
-    //voxelData->setMode(iaRLEMode::Uncompressed);
-
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
 
-    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), scale);
+    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), scale, tileInformation->_neighborsLOD);
 
-    if (mesh.get() != nullptr)
+	if (mesh.get() != nullptr)
     {
         iNodeMesh* meshNode = static_cast<iNodeMesh*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeMesh));
         meshNode->setMesh(mesh);
@@ -60,7 +58,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 1
+#if 0
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
@@ -128,8 +126,6 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 			result->insertNode(physicsNode);
 		}
     }
-
-    //voxelData->setMode(iaRLEMode::Compressed);
 
     return result;
 }

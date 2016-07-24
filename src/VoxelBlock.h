@@ -37,6 +37,8 @@ public:
 
 private:
 
+	uint32 _neighborsLOD = 0;
+
 	const int32 _voxelBlockSize = 32;
 	const int32 _voxelBlockOverlap = 4;
 
@@ -61,8 +63,6 @@ private:
 	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
 	VoxelBlock* _cildren[8];
-
-	
 
 };
 
