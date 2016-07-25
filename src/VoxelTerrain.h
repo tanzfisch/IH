@@ -90,7 +90,7 @@ private:
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
-	const uint32 _lowestLOD = 1;
+	const uint32 _lowestLOD = 7;
 
     static const int64 _voxelBlockScanDistance = 10;
 
@@ -123,11 +123,11 @@ private:
     */
     void onTaskFinished(uint64 taskID);
 
-	bool update(VoxelBlock& voxelBlock, iaVector3I observerPosition);
+	bool update(VoxelBlock& voxelBlock, iaVector3d observerPosition);
 
-	void updateMesh(VoxelBlock& voxelBlock);
+	void updateMesh(VoxelBlock& voxelBlock, iaVector3d observerPosition);
 
-	uint32 findNeighbors(VoxelBlock& voxelBlock);
+    uint32 calcLODTransition(VoxelBlock& voxelBlock, iaVector3d observerPosition);
 
     /*! init
     */
