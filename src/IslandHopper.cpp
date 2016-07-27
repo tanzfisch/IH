@@ -122,7 +122,7 @@ void IslandHopper::initScene()
     _scene = iSceneFactory::getInstance().createScene();
     _view.setScene(_scene);
 
-    // light
+    // 1
     _lightTranslate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
     _lightTranslate->translate(100, 100, 100);
     _lightRotate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
