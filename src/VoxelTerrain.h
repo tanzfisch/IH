@@ -88,11 +88,11 @@ private:
 
     /*! the voxel data
     */
-    vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
+    unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
 
-	const uint32 _lowestLOD = 7;
+	const uint32 _lowestLOD = 1;
 
-    static const int64 _voxelBlockScanDistance = 10;
+    static const int64 _voxelBlockScanDistance = 4;
 
     /*! scene
     */
@@ -123,11 +123,11 @@ private:
     */
     void onTaskFinished(uint64 taskID);
 
-	bool update(VoxelBlock& voxelBlock, iaVector3d observerPosition);
+	bool update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 
-	void updateMesh(VoxelBlock& voxelBlock, iaVector3d observerPosition);
+	void updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 
-    uint32 calcLODTransition(VoxelBlock& voxelBlock, iaVector3d observerPosition);
+    uint32 calcLODTransition(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 
     /*! init
     */

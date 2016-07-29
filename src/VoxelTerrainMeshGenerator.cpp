@@ -34,8 +34,8 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     TileInformation* tileInformation = reinterpret_cast<TileInformation*>(parameter->_parameters.getDataPointer());
     const iaVector3I& absolutePos = tileInformation->_absolutePos;
 
-	float64 scale = pow(2, tileInformation->_lod);
     iVoxelData* voxelData = tileInformation->_voxelData;
+    iVoxelData* voxelDataNextLOD = tileInformation->_voxelDataNextLOD;
 
     int64 width = voxelData->getWidth() - 1;
     int64 depth = voxelData->getDepth() - 1;
@@ -46,8 +46,10 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
+    contouringCubes.setVoxelDataNextLOD(voxelDataNextLOD);
+    contouringCubes.setNextLODOffset(iaVector3I(), tileInformation->_offsetToNextLOD);
 
-    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), scale, tileInformation->_neighborsLOD);
+    shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), tileInformation->_lod, tileInformation->_neighborsLOD);
 
 	if (mesh.get() != nullptr)
     {
@@ -58,7 +60,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 1
+#if 0
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);

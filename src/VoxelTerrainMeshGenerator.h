@@ -20,6 +20,8 @@ struct TileInformation
     iaVector3I _absolutePos;
 	uint32 _lod = 0;
     iVoxelData* _voxelData = nullptr;
+    iVoxelData* _voxelDataNextLOD = nullptr;
+    iaVector3f _offsetToNextLOD;
     uint32 _materialID = 0;
 	uint32 _neighborsLOD = 0;
 };

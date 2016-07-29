@@ -37,11 +37,14 @@ public:
 	VoxelBlock(uint32 lod, iaVector3I position);
 	~VoxelBlock();
 
+    iVoxelData* getVoxelData() const;
+    VoxelBlock* getParent() const;
+
 private:
 
 	uint32 _neighborsLOD = 0;
 	
-	const int32 _voxelBlockOverlap = 4;
+	const int32 _voxelBlockOverlap = 2;
 
     bool _edited = false;
 
@@ -63,7 +66,8 @@ private:
 
 	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
-	VoxelBlock* _cildren[8];
+    VoxelBlock* _parent = nullptr;
+	VoxelBlock* _children[8];
 
 };
 

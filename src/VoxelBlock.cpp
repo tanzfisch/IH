@@ -25,7 +25,7 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position)
 
 	for (int i = 0; i < 8; ++i)
 	{
-		_cildren[i] = nullptr;
+		_children[i] = nullptr;
 	}
 
 	// todo clean up scene and tasks
@@ -42,5 +42,15 @@ VoxelBlock::~VoxelBlock()
 	{
 		delete _voxelBlockInfo;
 	}
+}
+
+iVoxelData* VoxelBlock::getVoxelData() const
+{
+    return _voxelData;
+}
+
+VoxelBlock*  VoxelBlock::getParent() const
+{
+    return _parent;
 }
 
