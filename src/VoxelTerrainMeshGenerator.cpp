@@ -46,8 +46,6 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
-    contouringCubes.setVoxelDataNextLOD(voxelDataNextLOD);
-    contouringCubes.setNextLODOffset(iaVector3I(), tileInformation->_offsetToNextLOD);
 
     shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), tileInformation->_lod, tileInformation->_neighborsLOD);
 
@@ -117,7 +115,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
         result->insertNode(meshNode);
 
-		if (tileInformation->_lod == 0)
+/*		if (tileInformation->_lod == 0)
 		{
 			iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
 			iaMatrixf offset;
@@ -126,7 +124,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 			physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
 
 			result->insertNode(physicsNode);
-		}
+		}*/
     }
 
     return result;

@@ -24,7 +24,7 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-float64 creationDistance[] = { 150 * 150, 300 * 300, 600 * 600, 1200 * 1200, 2500 * 2500, 5000 * 5000, 10000 * 10000, 100000 * 100000 };
+float64 creationDistance[] = { 150 * 150, 300 * 300, 600 * 600, 1200 * 1200, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
 
 VoxelTerrain::VoxelTerrain()
 {
@@ -56,8 +56,8 @@ void VoxelTerrain::init()
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
     iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 }
@@ -456,7 +456,7 @@ void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelega
 }
 
 void VoxelTerrain::onHandle()
-{
+{	
     static uint64 counter = 0;
 
     if (counter++ % 1 == 0)
@@ -500,7 +500,7 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
         {
             return;
         }
-        pos.set(9243, 144, 16322);
+		pos.set(9243, 144, 16322);
 
         iaVector3I center(pos._x, pos._y, pos._z);
         center /= actualBlockSize;
@@ -608,7 +608,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
     break;
 
     case Stage::GeneratingVoxel:
-    {
+    {		
         visible = false;
 
         iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_taskID);
@@ -616,7 +616,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
         {
             voxelBlock->_taskID = iTask::INVALID_TASK_ID;
             if (!voxelBlock->_voxelBlockInfo->_transition)
-            {
+            {				
                 delete voxelBlock->_voxelData;
                 voxelBlock->_voxelData = nullptr;
                 voxelBlock->_voxelBlockInfo->_voxelData = nullptr;
@@ -624,7 +624,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
                 voxelBlock->_stage = Stage::Empty;
             }
             else
-            {
+            {		
                 if (voxelBlock->_lod > 0)
                 {
                     if (voxelBlock->_children[0] == nullptr)
