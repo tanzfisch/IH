@@ -34,7 +34,7 @@ public:
 
     static const int32 _voxelBlockSize = 32;
 
-	VoxelBlock(uint32 lod, iaVector3I position);
+	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
 	~VoxelBlock();
 
     iVoxelData* getVoxelData() const;
@@ -44,7 +44,7 @@ private:
 
 	uint32 _neighborsLOD = 0;
 	
-	const int32 _voxelBlockOverlap = 2;
+	const int32 _voxelBlockOverlap = 4;
 
     bool _edited = false;
 
@@ -54,9 +54,10 @@ private:
 	uint32 _modelNodeID = iNode::INVALID_NODE_ID;
 
 	uint32 _mutationCounter = 0;
+
+    iaVector3I _parentAdress;
 	
 	iaVector3I _position;
-	iaVector3f _offset;
 	uint32 _lod = 0;
 	uint32 _size = 0;
 

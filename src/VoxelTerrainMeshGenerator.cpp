@@ -36,6 +36,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iVoxelData* voxelData = tileInformation->_voxelData;
     iVoxelData* voxelDataNextLOD = tileInformation->_voxelDataNextLOD;
+    
 
     int64 width = voxelData->getWidth() - 1;
     int64 depth = voxelData->getDepth() - 1;
@@ -46,6 +47,8 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iContouringCubes contouringCubes;
     contouringCubes.setVoxelData(voxelData);
+    contouringCubes.setVoxelDataNextLOD(voxelDataNextLOD);
+    contouringCubes.setNextLODVoxelOffset(tileInformation->_voxelOffsetToNextLOD);
 
     shared_ptr<iMesh> mesh = contouringCubes.compile(iaVector3I(), iaVector3I(width, height, depth), tileInformation->_lod, tileInformation->_neighborsLOD);
 

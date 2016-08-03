@@ -24,7 +24,7 @@ TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 lo
     con_assert(voxelBlockInfo->_voxelData != nullptr, "zero pointer");
     con_assert(lod >= 0, "lod out of range");
 
-    _lodFactor = pow(2, lod);
+    _lodFactor = static_cast<uint32>(pow(2, lod));
     _voxelBlockInfo = voxelBlockInfo;
 }
 
@@ -87,6 +87,8 @@ void TaskGenerateVoxels::run()
                 }
 
                 float64 height = (noise * 2000);
+
+                height = 128 + (sin(pos._x * 0.2) + sin(pos._z * 0.2)) * 2;
 
                 float64 transdiff = height - static_cast<float64>(position._y);
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)

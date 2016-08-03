@@ -90,7 +90,7 @@ private:
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
 
-	const uint32 _lowestLOD = 7;
+	const uint32 _lowestLOD = 2;
 
     static const int64 _voxelBlockScanDistance = 10;
 
