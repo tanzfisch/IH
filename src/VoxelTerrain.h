@@ -92,7 +92,7 @@ private:
 
 	const uint32 _lowestLOD = 2;
 
-    static const int64 _voxelBlockScanDistance = 10;
+    static const int64 _voxelBlockScanDistance = 5;
 
     /*! scene
     */

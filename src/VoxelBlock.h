@@ -44,7 +44,7 @@ private:
 
 	uint32 _neighborsLOD = 0;
 	
-	const int32 _voxelBlockOverlap = 4;
+	const int32 _voxelBlockOverlap = 4; // TODO should be 3 right?!
 
     bool _edited = false;
 

@@ -36,11 +36,10 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     iVoxelData* voxelData = tileInformation->_voxelData;
     iVoxelData* voxelDataNextLOD = tileInformation->_voxelDataNextLOD;
-    
 
-    int64 width = voxelData->getWidth() - 1;
-    int64 depth = voxelData->getDepth() - 1;
-    int64 height = voxelData->getHeight() - 1;
+    int64 width = voxelData->getWidth() - 2;
+    int64 height = voxelData->getHeight() - 2;
+    int64 depth = voxelData->getDepth() - 2;
 
     iNode* result = iNodeFactory::getInstance().createNode(iNodeType::iNode);
     result->setName("group");

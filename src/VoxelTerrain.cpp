@@ -57,7 +57,7 @@ void VoxelTerrain::init()
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
     iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 }
@@ -596,6 +596,16 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
                 voxelBlock->_voxelBlockInfo->_size.set(voxelBlock->_voxelBlockSize + voxelBlock->_voxelBlockOverlap, voxelBlock->_voxelBlockSize + voxelBlock->_voxelBlockOverlap, voxelBlock->_voxelBlockSize + voxelBlock->_voxelBlockOverlap);
                 voxelBlock->_voxelBlockInfo->_position = voxelBlock->_position;
                 voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData;
+                
+                if (voxelBlock->_lod > 0)
+                {
+                    float32 value = pow(2, voxelBlock->_lod - 1) - 0.5;
+                    voxelBlock->_voxelBlockInfo->_offset.set(-value, value, -value);
+                }
+                else
+                {
+                    voxelBlock->_voxelBlockInfo->_offset.set(0, 0, 0);
+                }
 
                 TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, voxelBlock->_lod, static_cast<uint32>(distance * 0.9));
                 voxelBlock->_taskID = iTaskManager::getInstance().addTask(task);
