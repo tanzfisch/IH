@@ -88,7 +88,9 @@ void TaskGenerateVoxels::run()
 
                 float64 height = (noise * 2000);
 
-                height = 128 + (sin(pos._x * 0.2) + sin(pos._z * 0.2)) * 2;
+                height = 129 + (sin(pos._x * 0.25) + sin(pos._z * 0.25)) * 0.49;
+
+                //height = 130.5;
 
                 float64 transdiff = height - static_cast<float64>(position._y);
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)

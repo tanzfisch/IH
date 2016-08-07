@@ -33,6 +33,7 @@ class VoxelBlock
 public:
 
     static const int32 _voxelBlockSize = 32;
+    static const int32 _voxelBlockOverlap = 2; 
 
 	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
 	~VoxelBlock();
@@ -43,8 +44,6 @@ public:
 private:
 
 	uint32 _neighborsLOD = 0;
-	
-	const int32 _voxelBlockOverlap = 4; // TODO should be 3 right?!
 
     bool _edited = false;
 
