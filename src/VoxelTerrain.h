@@ -90,9 +90,9 @@ private:
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
 
-	const uint32 _lowestLOD = 2;
+	const uint32 _lowestLOD = 7;
 
-    static const int64 _voxelBlockScanDistance = 5;
+    static const int64 _voxelBlockScanDistance = 10;
 
     /*! scene
     */

@@ -17,6 +17,7 @@
 #include <iPhysicsBody.h>
 #include <iMesh.h>
 #include <iStatistics.h>
+#include <iContouringCubes.h>
 using namespace Igor;
 
 #include <iaConsole.h>
@@ -57,7 +58,7 @@ void VoxelTerrain::init()
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
     iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 }
@@ -500,7 +501,7 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
         {
             return;
         }
-        pos.set(9243, 128, 16322);
+        //pos.set(9243, 150, 16322);
 
         iaVector3I center(pos._x, pos._y, pos._z);
         center /= actualBlockSize;
@@ -598,16 +599,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
                                                         VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap);
                 voxelBlock->_voxelBlockInfo->_position = voxelBlock->_position;
                 voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData;
-
-                if (voxelBlock->_lod > 0)
-                {
-                    float32 value = pow(2, voxelBlock->_lod - 1) - 0.5;
-                    voxelBlock->_voxelBlockInfo->_offset.set(-value, value, -value);
-                }
-                else
-                {
-                    voxelBlock->_voxelBlockInfo->_offset.set(0, 0, 0);
-                }
+                voxelBlock->_voxelBlockInfo->_offset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
 
                 TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, voxelBlock->_lod, static_cast<uint32>(distance * 0.9));
                 voxelBlock->_taskID = iTaskManager::getInstance().addTask(task);

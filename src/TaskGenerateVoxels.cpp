@@ -88,9 +88,8 @@ void TaskGenerateVoxels::run()
 
                 float64 height = (noise * 2000);
 
-                height = 129 + (sin(pos._x * 0.25) + sin(pos._z * 0.25)) * 0.49;
-
-                //height = 130.5;
+                //height = 128 + (sin(pos._x * 0.5) + sin(pos._z * 0.5)) * 0.499;
+                //height = 512;
 
                 float64 transdiff = height - static_cast<float64>(position._y);
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)
@@ -119,7 +118,7 @@ void TaskGenerateVoxels::run()
                     }
                 }
 
-                /*float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
+                float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
                 cavelikeliness -= 0.5;
                 if (cavelikeliness > 0.0)
                 {
@@ -154,7 +153,7 @@ void TaskGenerateVoxels::run()
                             }
                         }
                     }
-                }*/
+                }
             }
         }
 #else
