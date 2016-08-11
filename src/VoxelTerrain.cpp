@@ -732,12 +732,13 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
 
         if (destroy)
         {
-            iNodeFactory::getInstance().destroyNode(voxelBlock->_transformNodeID);
+            iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeID);
             voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
             voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
             voxelBlock->_stage = Stage::Initial;
 
-            if (voxelBlock->_voxelData != nullptr)
+            // TODO need a save way to delete voxel data. currently there is a problem with mesh generation that might have still jobs in the queue using the voxel data that we want to delete
+           /* if (voxelBlock->_voxelData != nullptr)
             {
                 delete voxelBlock->_voxelData;
                 voxelBlock->_voxelData = nullptr;
@@ -747,7 +748,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
             {
                 delete voxelBlock->_voxelBlockInfo;
                 voxelBlock->_voxelBlockInfo = nullptr;
-            }
+            }*/
 
             visible = false;
         }
