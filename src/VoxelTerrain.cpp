@@ -458,12 +458,7 @@ void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelega
 
 void VoxelTerrain::onHandle()
 {
-    static uint64 counter = 0;
-
-    if (counter++ % 1 == 0)
-    {
-        handleVoxelBlocks(_lowestLOD);
-    }
+    handleVoxelBlocks(_lowestLOD);
 }
 
 void VoxelTerrain::onTaskFinished(uint64 taskID)
@@ -675,6 +670,7 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
         visible = false;
         bool meshVisible = true;
         bool destroy = false;
+        bool regenerate = false;
 
         if (voxelBlock->_lod > 0)
         {
@@ -719,9 +715,10 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
         }
 
         uint32 neighborsLOD = calcLODTransition(voxelBlock, observerPosition);
-        if (voxelBlock->_neighborsLOD != neighborsLOD)
+        if (voxelBlock->_neighborsLOD != neighborsLOD ||
+            voxelBlock->_dirty)
         {
-            destroy = true;
+            regenerate = true;
         }
 
         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
@@ -730,25 +727,41 @@ bool VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
             transformNode->setActive(meshVisible);
         }
 
-        if (destroy)
+        if (regenerate)
+        {
+            voxelBlock->_nodesToDestroy.push_back(voxelBlock->_transformNodeID);
+            voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
+            voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
+            voxelBlock->_stage = Stage::GeneratingMesh;
+        }
+        else if (destroy)
         {
             iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeID);
             voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
             voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
-            voxelBlock->_stage = Stage::Initial;
 
-            // TODO need a save way to delete voxel data. currently there is a problem with mesh generation that might have still jobs in the queue using the voxel data that we want to delete
-           /* if (voxelBlock->_voxelData != nullptr)
+            if (voxelBlock->_edited)
             {
+                voxelBlock->_stage = Stage::GeneratingMesh;
+            }
+            else
+            {
+                voxelBlock->_stage = Stage::Initial;
+
+                // TODO need a save way to delete voxel data. currently there is a problem with mesh generation that might have still jobs in the queue using the voxel data that we want to delete
+                // TODO maybe we copy the data before we give it to mesh generation
+                /* if (voxelBlock->_voxelData != nullptr)
+                {
                 delete voxelBlock->_voxelData;
                 voxelBlock->_voxelData = nullptr;
-            }
+                }
 
-            if (voxelBlock->_voxelBlockInfo != nullptr)
-            {
+                if (voxelBlock->_voxelBlockInfo != nullptr)
+                {
                 delete voxelBlock->_voxelBlockInfo;
                 voxelBlock->_voxelBlockInfo = nullptr;
-            }*/
+                }*/
+            }
 
             visible = false;
         }
@@ -997,6 +1010,12 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPositio
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
+            for (uint32 nodeID : voxelBlock->_nodesToDestroy)
+            {
+                iNodeFactory::getInstance().destroyNodeAsync(nodeID);
+            }
+            voxelBlock->_nodesToDestroy.clear();
+
             voxelBlock->_stage = Stage::Ready;
         }
     }

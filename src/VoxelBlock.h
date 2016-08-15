@@ -45,7 +45,11 @@ private:
 
 	uint32 _neighborsLOD = 0;
 
+    bool _dirty = false;
+
     bool _edited = false;
+
+    vector<uint32> _nodesToDestroy;
 
 	uint64 _taskID = iTask::INVALID_TASK_ID;
 	
