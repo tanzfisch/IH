@@ -470,7 +470,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::F7:
-                player->setPosition(iaVector3f(16912.3, 328.994, 31719.6));
+                player->setPosition(iaVector3f(16912.3, 428.994, 31719.6));
                 break;
 
             case iKeyCode::F8:
