@@ -132,11 +132,15 @@ void TaskGenerateVoxels::run()
                     {
                         pos._y = y * _lodFactor + position._y + offset._y;
 
-                        if (pos._y > 200 &&
-                            pos._y > height - (50 * cavelikeliness) &&
+                        if (pos._y > 180 &&
+                            pos._y > height - 50 &&
                             pos._y < height + 10)
                         {
-                            float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.005, pos._y * 0.01, pos._z * 0.005), 4, 0.5);
+                            float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.005, pos._y * 0.005, pos._z * 0.005), 4, 0.5);
+
+                            float64 diff = (pos._y - (height - 50)) / 50.0;
+                            onoff += (1.0 - diff) * 0.1;
+
                             if (onoff <= from)
                             {
                                 if (onoff >= to)
