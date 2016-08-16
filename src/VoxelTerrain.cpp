@@ -59,8 +59,6 @@ void VoxelTerrain::init()
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
     //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
-
-    iTaskManager::getInstance().registerTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 }
 
 void VoxelTerrain::deinit()
@@ -76,8 +74,6 @@ void VoxelTerrain::deinit()
     {
         _sleep(1000);
     }
-
-    iTaskManager::getInstance().unregisterTaskFinishedDelegate(iTaskFinishedDelegate(this, &VoxelTerrain::onTaskFinished));
 
     con_endl("clear blocks ...");
     /* TODO 	for (auto blockIter : _voxelBlocks)
@@ -314,138 +310,6 @@ void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVecto
     }
 }
 
-#define array3D(x, y, z, f) ((x) + (f) * ((y) + (f) * (z)))
-
-void VoxelTerrain::refreshTile(iaVector3I tilepos)
-{
-    /*	auto tileIter = _tileDataSets.find(tilepos);
-        if (tileIter != _tileDataSets.end())
-        {
-            (*tileIter).second._destroyNodeIDs.push_back((*tileIter).second._transformNodeID);
-            (*tileIter).second._modelNodeID = iNode::INVALID_NODE_ID;
-            (*tileIter).second._transformNodeID = iNode::INVALID_NODE_ID;
-        }*/
-}
-
-void VoxelTerrain::handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos, uint32 lod)
-{
-    /*	TileInformation tileInformation;
-        tileInformation._materialID = _terrainMaterialID;
-        tileInformation._voxelData = voxelData;
-        tileInformation._lodTriggerID = lodTrigger->getID();
-        tileInformation._lod = lod;
-
-        iaVector3I tilePos = blockPos;
-        iaVector3I tileIndexPos = tilePos;
-        tileIndexPos /= _voxelBlockSize;
-
-        float32 distance = lodTriggerPos.distance2(tilePos);
-
-        auto tileIter = _tileDataSets.find(tileIndexPos);
-        if (tileIter == _tileDataSets.end())
-        {
-            TileData tileData;
-            tileData._transformNodeID = iNode::INVALID_NODE_ID;
-            tileData._modelNodeID = iNode::INVALID_NODE_ID;
-            _tileDataSets[tileIndexPos] = tileData;
-
-            tileIter = _tileDataSets.find(tileIndexPos);
-        }
-
-        if (distance < _tileCreationDistance &&
-            (*tileIter).second._transformNodeID == iNode::INVALID_NODE_ID)
-        {
-            tileInformation._width = _voxelBlockSize + _tileOverlap;
-            tileInformation._depth = _voxelBlockSize + _tileOverlap;
-            tileInformation._height = _voxelBlockSize + _tileOverlap;
-
-            iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
-            inputParam->_identifier = "vtg";
-            inputParam->_joinVertexes = true;
-            inputParam->_needsRenderContext = false;
-            inputParam->_modelSourceType = iModelSourceType::Generated;
-            inputParam->_loadPriority = static_cast<uint32>(distance);
-            inputParam->_parameters.setData(reinterpret_cast<const char*>(&tileInformation), sizeof(TileInformation));
-
-            iaString tileName = iaString::itoa(tilePos._x);
-            tileName += ":";
-            tileName += iaString::itoa(tilePos._y);
-            tileName += ":";
-            tileName += iaString::itoa(tilePos._z);
-            tileName += ":";
-            tileName += iaString::itoa((*tileIter).second._mutationCounter++);
-
-            iNodeTransform* transform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-            transform->translate(tilePos._x, tilePos._y, tilePos._z);
-
-            iNodeLODSwitch* lodSwitch = static_cast<iNodeLODSwitch*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLODSwitch));
-            lodSwitch->addTrigger(lodTrigger);
-
-            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-            modelNode->setModel(tileName, inputParam);
-
-            transform->insertNode(lodSwitch);
-            lodSwitch->insertNode(modelNode);
-
-            lodSwitch->setThresholds(modelNode, 0.0f, _tileVisualDistance);
-            _scene->getRoot()->insertNode(transform);
-
-            (*tileIter).second._transformNodeID = transform->getID();
-            (*tileIter).second._modelNodeID = modelNode->getID();
-        }
-
-        if (!(*tileIter).second._destroyNodeIDs.empty())
-        {
-            bool destroy = false;
-            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode((*tileIter).second._modelNodeID));
-            if (modelNode != nullptr)
-            {
-                if (modelNode->isLoaded())
-                {
-                    destroy = true;
-                }
-            }
-            else
-            {
-                destroy = true;
-            }
-
-            if (destroy)
-            {
-                for (auto id : (*tileIter).second._destroyNodeIDs)
-                {
-                    iNode* node = iNodeFactory::getInstance().getNode(id);
-                    if (node != nullptr)
-                    {
-                        iNodeFactory::getInstance().destroyNode(node);
-                    }
-                }
-
-                (*tileIter).second._destroyNodeIDs.clear();
-            }
-        }
-
-        if (distance > _tileDestructionDistance)
-        {
-            if ((*tileIter).second._transformNodeID != iNode::INVALID_NODE_ID)
-            {
-                iNodeFactory::getInstance().destroyNode((*tileIter).second._transformNodeID);
-            }
-
-            if (!(*tileIter).second._destroyNodeIDs.empty())
-            {
-                for (auto id : (*tileIter).second._destroyNodeIDs)
-                {
-                    iNodeFactory::getInstance().destroyNode(id);
-                }
-
-                (*tileIter).second._destroyNodeIDs.clear();
-            }
-
-            _tileDataSets.erase(tileIter);
-        }*/
-}
-
 void VoxelTerrain::registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate)
 {
     _dataGeneratedEvent.append(voxelDataGeneratedDelegate);
@@ -459,17 +323,6 @@ void VoxelTerrain::unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelega
 void VoxelTerrain::onHandle()
 {
     handleVoxelBlocks(_lowestLOD);
-}
-
-void VoxelTerrain::onTaskFinished(uint64 taskID)
-{
-    _runningTaskMutex.lock();
-    auto task = find(_runningTasks.begin(), _runningTasks.end(), taskID);
-    if (task != _runningTasks.end())
-    {
-        _runningTasks.erase(task);
-    }
-    _runningTaskMutex.unlock();
 }
 
 bool VoxelTerrain::loading()

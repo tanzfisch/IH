@@ -66,9 +66,7 @@ public:
     
     void setVoxelDensity(iaVector3I pos, uint8 density);
     uint8 getVoxelDensity(iaVector3I pos);
-
-    void refreshTile(iaVector3I tilepos);
-
+    
     bool loading();
 
     void registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate);
@@ -115,13 +113,6 @@ private:
     void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
     void handleVoxelBlocks(uint32 lod);
-    void handleMeshTiles(iVoxelData* voxelData, const iaVector3I& blockPos, iNodeLODTrigger* lodTrigger, const iaVector3I& lodTriggerPos, uint32 lod);
-
-    /*! called when task was finished
-
-    \param taskID id of finished task
-    */
-    void onTaskFinished(uint64 taskID);
 
 	bool update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 

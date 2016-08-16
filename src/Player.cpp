@@ -201,7 +201,7 @@ iaVector3I Player::getGunPointPosition()
 
 void Player::dig(uint64 toolSize, uint8 toolDensity)
 {
-    iaVector3I center = getGunPointPosition();
+  /*  iaVector3I center = getGunPointPosition();
     if (center.length2() > 0)
     {
         int64 toolRadius = toolSize / 2;
@@ -258,11 +258,11 @@ void Player::dig(uint64 toolSize, uint8 toolDensity)
                 for (int z = modifyFrom._z; z <= modifyTo._z; ++z)
                 {
                     iaVector3I pos(x, y, z);
-                    VoxelTerrain::getInstance().refreshTile(pos);
+                    // VoxelTerrain::getInstance().refreshTile(pos);
                 }
             }
         }
-    }
+    }*/
 }
 
 void Player::shootSecondaryWeapon(iView& view, const iaVector3f& screenCoordinates)
