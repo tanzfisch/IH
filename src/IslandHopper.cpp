@@ -163,7 +163,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(201.5 - i * 1);
+        waterNode->setWaterPosition(301.5 - i * 2);
 
         if (i == 9)
         {
@@ -192,7 +192,7 @@ void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
 	//matrix.translate(10000, 9400, 10000);
-    matrix.translate(9216, 350, 16224);
+    matrix.translate(9216, 750, 16224);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
     

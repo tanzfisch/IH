@@ -74,14 +74,16 @@ Player::Player(iScene* scene, const iaMatrixf& matrix)
     iNodeTransform* transformLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
     transformLeftGun->translate(-0.5, -0.4, -0.75);
     transformLeftGun->scale(0.1, 0.1, 1);
-    iNodeModel* leftgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-    leftgun->setModel("crate.ompf", nullptr);
+
+    /*iNodeModel* leftgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+    leftgun->setModel("crate.ompf", nullptr);*/
 
     iNodeTransform* transformRightGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
     transformRightGun->translate(0.5, -0.4, -0.75);
     transformRightGun->scale(0.1, 0.1, 1);
-    iNodeModel* rightgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-    rightgun->setModel("crate.ompf", nullptr);
+
+    /*iNodeModel* rightgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+    rightgun->setModel("crate.ompf", nullptr);*/
 
     iNodeTransform* transformLeftGunEmitter = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
     transformLeftGunEmitter->translate(-0.5, -0.4, -1.25);
@@ -106,8 +108,8 @@ Player::Player(iScene* scene, const iaMatrixf& matrix)
     transformRecoilLeftGun->insertNode(transformLeftGunEmitter);
     transformRecoilRightGun->insertNode(transformRightGunEmitter);
 
-    transformLeftGun->insertNode(leftgun);
-    transformRightGun->insertNode(rightgun);
+    //transformLeftGun->insertNode(leftgun);
+    //transformRightGun->insertNode(rightgun);
 
     transformLeftGunEmitter->insertNode(emitterLeftGun);
     transformRightGunEmitter->insertNode(emitterRightGun);
