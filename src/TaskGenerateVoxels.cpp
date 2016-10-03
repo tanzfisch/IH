@@ -53,7 +53,7 @@ void TaskGenerateVoxels::run()
                 iaVector3f pos(x * _lodFactor + position._x + offset._x, 0, z * _lodFactor + position._z + offset._z);
 
                 float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
-                contour -= 0.7;
+                contour -= 0.705;
 
                 if (contour > 0.0)
                 {

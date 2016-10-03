@@ -38,6 +38,7 @@ using namespace IgorAux;
 #include <iOctree.h>
 #include <iPhysics.h>
 #include <iPhysicsMaterialCombo.h>
+#include <iNodeWater.h>
 using namespace Igor;
 
 #include "Player.h"
@@ -138,13 +139,13 @@ void IslandHopper::initScene()
     // reate a sky box and add it to scene
     iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
     skyBoxNode->setTextures(
-        "skybox_default/front.png",
-        "skybox_default/back.png",
-        "skybox_default/left.png",
-        "skybox_default/right.png",
-        "skybox_default/top.png",
-        "skybox_default/bottom.png");
-    skyBoxNode->setTextureScale(10);
+        "skybox_day/front.jpg",
+        "skybox_day/back.jpg",
+        "skybox_day/left.jpg",
+        "skybox_day/right.jpg",
+        "skybox_day/top.jpg",
+        "skybox_day/bottom.jpg");
+    skyBoxNode->setTextureScale(1);
     // create a sky box material
     _materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
     iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
@@ -155,13 +156,43 @@ void IslandHopper::initScene()
     skyBoxNode->setMaterial(_materialSkyBox);
     // insert sky box to scene
     _scene->getRoot()->insertNode(skyBoxNode);
+
+    // TODO just provisorical water
+    // create a water plane and add it to scene
+
+    for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
+    {
+        iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
+        waterNode->setWaterPosition(201.5 - i * 1);
+
+        if (i == 9)
+        {
+            waterNode->setAmbient(iaColor4f(0, 0.4 - static_cast<float64>(i) * 0.01, 0.95 - static_cast<float64>(i) * 0.08, 1.0));
+        }
+        else
+        {
+            waterNode->setAmbient(iaColor4f(0, 0.4 - static_cast<float64>(i) * 0.01, 0.95 - static_cast<float64>(i) * 0.08, 0.2 + static_cast<float64>(i) * 0.01));
+        }
+        
+        // create a water material
+        uint64 materialWater = iMaterialResourceFactory::getInstance().createMaterial();
+        iMaterialResourceFactory::getInstance().getMaterialGroup(materialWater)->setOrder(300 - i);
+        iMaterialResourceFactory::getInstance().getMaterial(materialWater)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+        iMaterialResourceFactory::getInstance().getMaterial(materialWater)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+        iMaterialResourceFactory::getInstance().getMaterialGroup(materialWater)->getMaterial()->setName("WaterPlane");
+
+        // and set the water material
+        waterNode->setMaterial(materialWater);
+        // insert sky box to scene
+        _scene->getRoot()->insertNode(waterNode);
+    }
 }
 
 void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
 	//matrix.translate(10000, 9400, 10000);
-    matrix.translate(9216, 250, 16224);
+    matrix.translate(9216, 350, 16224);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
     
