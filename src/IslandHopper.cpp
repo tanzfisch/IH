@@ -192,7 +192,7 @@ void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
 	//matrix.translate(10000, 9400, 10000);
-    matrix.translate(9216, 750, 16224);
+    matrix.translate(9986, 400, 8977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
     
@@ -493,7 +493,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::F5:
-                player->setPosition(iaVector3f(9230, 450, 16250));
+                player->setPosition(iaVector3f(9986, 400, 8977));
                 break;
 
             case iKeyCode::F6:
@@ -501,11 +501,11 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::F7:
-                player->setPosition(iaVector3f(16912.3, 428.994, 31719.6));
+                player->setPosition(iaVector3f(16912.3, 1000, 31719.6));
                 break;
 
             case iKeyCode::F8:
-                player->setPosition(iaVector3f(31841.6, 300.569, 29283.8));
+                player->setPosition(iaVector3f(10841.6, 3000, 25283.8));
                 break;
             }
         }
