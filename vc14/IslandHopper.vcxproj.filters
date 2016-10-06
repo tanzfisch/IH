@@ -15,18 +15,6 @@
     <ClCompile Include="..\src\main.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Granade.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Turret.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\MuzzleFlash.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\StaticEnemy.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\IslandHopper.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -72,20 +60,20 @@
     <ClCompile Include="..\src\VoxelBlock.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Granade.cpp">
+      <Filter>src\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MuzzleFlash.cpp">
+      <Filter>src\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\StaticEnemy.cpp">
+      <Filter>src\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Turret.cpp">
+      <Filter>src\Entities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Granade.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Turret.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\MuzzleFlash.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\StaticEnemy.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\IslandHopper.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -130,6 +118,18 @@
     </ClInclude>
     <ClInclude Include="..\src\VoxelBlock.h">
       <Filter>src\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Granade.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\MuzzleFlash.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\StaticEnemy.h">
+      <Filter>src\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Turret.h">
+      <Filter>src\Entities</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
