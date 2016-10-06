@@ -57,7 +57,7 @@ void TaskGenerateVoxels::run()
 
                 if (contour > 0.0)
                 {
-                    contour *= 1.0 / 0.3;
+                    contour *= 3;
                 }
 
                 float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
@@ -65,21 +65,35 @@ void TaskGenerateVoxels::run()
 
                 if (noise < 0.0)
                 {
-                    noise *= 0.25;
+                    noise *= 0.35;
                 }
                 else
                 {
                     noise *= 2.0;
                 }
 
-                noise += 0.005;
+                noise += 0.0025;
 
                 if (noise < 0.0)
                 {
-                    noise *= 5.0;
+                    noise *= 2.0;
                 }
 
-                noise += 0.15;
+                noise += 0.0025;
+
+                if (noise < 0.0)
+                {
+                    noise *= 2.0;
+                }
+
+                noise += 0.01;
+
+                if (noise < 0.0)
+                {
+                    noise *= 1000.0;
+                }
+
+                noise += 0.12;
 
                 if (noise < 0)
                 {
