@@ -349,7 +349,7 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
         {
             return;
         }
-        //pos.set(9243, 150, 16322);
+        //pos.set(9986, 310, 8977);
 
         iaVector3I center(pos._x, pos._y, pos._z);
         center /= actualBlockSize;
