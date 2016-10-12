@@ -65,7 +65,7 @@ void TaskGenerateVoxels::run()
 
                 if (noise < 0.0)
                 {
-                    noise *= 0.35;
+                    noise *= 0.5;
                 }
                 else
                 {
@@ -109,7 +109,7 @@ void TaskGenerateVoxels::run()
                     _voxelBlockInfo->_transition = true;
                 }
 
-                float64 diff = (transdiff) / _lodFactor - 1.0;
+                float64 diff = (transdiff / static_cast<float64>(_lodFactor));
                 if (diff > 0)
                 {
                     if (diff > size._y)
@@ -120,7 +120,7 @@ void TaskGenerateVoxels::run()
                     int64 diffi = static_cast<uint64>(diff);
                     if (diffi > 0)
                     {
-                        voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 255);
+                        voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 128);
                     }
 
                     if (diffi < voxelData->getHeight())
@@ -179,22 +179,22 @@ void TaskGenerateVoxels::run()
             {
                 for (int64 z = 0; z < voxelData->getDepth(); ++z)
                 {
-                    iaVector3f pos(x * _lodFactor + position._x + offset._x, 
-                        y * _lodFactor + position._y + offset._y, 
+                    iaVector3f pos(x * _lodFactor + position._x + offset._x,
+                        y * _lodFactor + position._y + offset._y,
                         z * _lodFactor + position._z + offset._z);
 
-                    if (pos._y > 300 && pos._y < 400)
+                    if (pos._y > 200 && pos._y < 341 + (sin(pos._x * 0.01) + sin(pos._z * 0.01)) * 20.0)
                     {
-                        float32 dx = fmod(pos._x, 64);
+                        /*float32 dx = fmod(pos._x, 64);
                         float32 dy = fmod(pos._y, 64);
                         float32 dz = fmod(pos._z, 64);
 
                         if (dx > 16 && dx < 32 &&
                             dy > 16 && dy < 32)
                             //&&
-                            //dz > 20 && dz < 60)
+                            //dz > 20 && dz < 60)*/
                         {
-                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 128);
+                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 1);
                             _voxelBlockInfo->_transition = true;
                         }
                     }
