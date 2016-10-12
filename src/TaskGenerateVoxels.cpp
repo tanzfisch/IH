@@ -101,7 +101,7 @@ void TaskGenerateVoxels::run()
                 }
 
                 float64 height = (noise * 2000);
-                //height = 330 + (sin(pos._x * 0.5) + sin(pos._z * 0.5)) * 0.499;
+                //height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 3.0;
 
                 float64 transdiff = height - static_cast<float64>(position._y);
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)
@@ -183,16 +183,20 @@ void TaskGenerateVoxels::run()
                         y * _lodFactor + position._y + offset._y, 
                         z * _lodFactor + position._z + offset._z);
 
-                    float32 dx = fmod(pos._x, 32);
-                    float32 dy = fmod(pos._y, 32);
-                    float32 dz = fmod(pos._z, 32);
-
-                    if (dx > 12 && dx < 16 &&
-                        dy > 12 && dy < 16 &&
-                        dz > 12 && dz < 16)
+                    if (pos._y > 300 && pos._y < 400)
                     {
-                        voxelData->setVoxelDensity(iaVector3I(x, y, z), 255);
-                        _voxelBlockInfo->_transition = true;
+                        float32 dx = fmod(pos._x, 64);
+                        float32 dy = fmod(pos._y, 64);
+                        float32 dz = fmod(pos._z, 64);
+
+                        if (dx > 16 && dx < 32 &&
+                            dy > 16 && dy < 32)
+                            //&&
+                            //dz > 20 && dz < 60)
+                        {
+                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 128);
+                            _voxelBlockInfo->_transition = true;
+                        }
                     }
                 }
             }

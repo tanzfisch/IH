@@ -33,7 +33,7 @@ class VoxelBlock
 public:
 
     static const int32 _voxelBlockSize = 32;
-    static const int32 _voxelBlockOverlap = 2; 
+    static const int32 _voxelBlockOverlap = 4; 
 
 	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
 	~VoxelBlock();
