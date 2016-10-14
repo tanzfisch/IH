@@ -25,6 +25,9 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
+// #define FIX_POSITION
+// #define WIREFRAME
+
 float64 creationDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
 
 VoxelTerrain::VoxelTerrain()
@@ -57,8 +60,11 @@ void VoxelTerrain::init()
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-    //iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+
+#ifdef WIREFRAME
+    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+#endif
 }
 
 void VoxelTerrain::deinit()
@@ -349,7 +355,10 @@ void VoxelTerrain::handleVoxelBlocks(uint32 lod)
         {
             return;
         }
-        //pos.set(9986, 310, 8977);
+
+#ifdef FIX_POSITION
+        pos.set(9986, 310, 8977);
+#endif
 
         iaVector3I center(pos._x, pos._y, pos._z);
         center /= actualBlockSize;
