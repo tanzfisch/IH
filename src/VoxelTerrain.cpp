@@ -25,8 +25,8 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-// #define FIX_POSITION
-// #define WIREFRAME
+//#define FIX_POSITION
+//#define WIREFRAME
 
 float64 creationDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
 
