@@ -183,19 +183,23 @@ void TaskGenerateVoxels::run()
                         y * _lodFactor + position._y + offset._y,
                         z * _lodFactor + position._z + offset._z);
 
-                    if (pos._y > 200 && pos._y < 341 + (sin(pos._x * 0.01) + sin(pos._z * 0.01)) * 20.0)
+                    if (pos._y > 0 && pos._y < 2000)
                     {
-                        /*float32 dx = fmod(pos._x, 64);
-                        float32 dy = fmod(pos._y, 64);
-                        float32 dz = fmod(pos._z, 64);
+                        float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.001, pos._y * 0.001, pos._z * 0.001), 4, 0.5);
 
-                        if (dx > 16 && dx < 32 &&
-                            dy > 16 && dy < 32)
-                            //&&
-                            //dz > 20 && dz < 60)*/
+                        if (onoff <= from)
                         {
-                            voxelData->setVoxelDensity(iaVector3I(x, y, z), 1);
-                            _voxelBlockInfo->_transition = true;
+                            if (onoff >= to)
+                            {
+                                float64 gradient = 1.0 - ((onoff - from) * factor);
+                                voxelData->setVoxelDensity(iaVector3I(x, y, z), (gradient * 254) + 1);
+                                _voxelBlockInfo->_transition = true;
+                            }
+                            else
+                            {
+                                voxelData->setVoxelDensity(iaVector3I(x, y, z), 128);
+                                _voxelBlockInfo->_transition = true;
+                            }
                         }
                     }
                 }
