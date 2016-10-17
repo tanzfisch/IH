@@ -139,12 +139,12 @@ void IslandHopper::initScene()
     // reate a sky box and add it to scene
     iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
     skyBoxNode->setTextures(
-        "skybox_day/front.jpg",
-        "skybox_day/back.jpg",
-        "skybox_day/left.jpg",
-        "skybox_day/right.jpg",
-        "skybox_day/top.jpg",
-        "skybox_day/bottom.jpg");
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg"),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg"),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg"),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg"),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg"),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg"));
     skyBoxNode->setTextureScale(1);
     // create a sky box material
     _materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
@@ -173,7 +173,7 @@ void IslandHopper::initScene()
         {
             waterNode->setAmbient(iaColor4f(0, 0.4 - static_cast<float64>(i) * 0.01, 0.95 - static_cast<float64>(i) * 0.08, 0.2 + static_cast<float64>(i) * 0.01));
         }
-        
+
         // create a water material
         uint64 materialWater = iMaterialResourceFactory::getInstance().createMaterial();
         iMaterialResourceFactory::getInstance().getMaterialGroup(materialWater)->setOrder(300 - i);
@@ -191,11 +191,11 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
-	//matrix.translate(10000, 9400, 10000);
+    //matrix.translate(10000, 9400, 10000);
     matrix.translate(9986, 550, 8977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
-    
+
     /*iaMatrixf enemyMatrix;
     enemyMatrix._pos.set(10000, 9400, 10000 - 200);
     BossEnemy* boss = new BossEnemy(_scene, enemyMatrix, _playerID);
@@ -204,7 +204,7 @@ void IslandHopper::initPlayer()
 
 void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)
 {
-	return;
+    return;
 
     iaVector3I pos;
     iaVector3I diff;
@@ -701,25 +701,25 @@ void IslandHopper::onHandle()
     }
     else
     {
-    /*    BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
-        if (boss == nullptr)
-        {
-            vector<uint64> ids;
-            EntityManager::getInstance().getEntities(ids);
-
-            for (auto id : ids)
+        /*    BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
+            if (boss == nullptr)
             {
-                if (_playerID != id)
+                vector<uint64> ids;
+                EntityManager::getInstance().getEntities(ids);
+
+                for (auto id : ids)
                 {
-                    Entity* entity = EntityManager::getInstance().getEntity(id);
-                    if (entity != nullptr &&
-                        entity->getType() == EntityType::Vehicle)
+                    if (_playerID != id)
                     {
-                        EntityManager::getInstance().getEntity(id)->kill();
+                        Entity* entity = EntityManager::getInstance().getEntity(id);
+                        if (entity != nullptr &&
+                            entity->getType() == EntityType::Vehicle)
+                        {
+                            EntityManager::getInstance().getEntity(id)->kill();
+                        }
                     }
                 }
-            }
-        }*/
+            }*/
 
         EntityManager::getInstance().handle();
     }
@@ -751,13 +751,13 @@ void IslandHopper::onRenderOrtho()
     }
     else
     {
-      /*  BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
-        if (boss == nullptr)
-        {
-            iRenderer::getInstance().setColor(iaColor4f(0, 1, 0, 1));
-            iRenderer::getInstance().setFontSize(40.0f);
-            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "you win!", iHorrizontalAlign::Center, iVerticalAlign::Center);            
-        }*/
+        /*  BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
+          if (boss == nullptr)
+          {
+              iRenderer::getInstance().setColor(iaColor4f(0, 1, 0, 1));
+              iRenderer::getInstance().setFontSize(40.0f);
+              iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "you win!", iHorrizontalAlign::Center, iVerticalAlign::Center);
+          }*/
 
         Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
         if (player != nullptr)
@@ -794,7 +794,7 @@ void IslandHopper::onRenderOrtho()
     }
 
 
-                
+
 
     iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 }
