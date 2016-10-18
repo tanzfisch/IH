@@ -114,7 +114,11 @@ private:
 
     void handleVoxelBlocks(uint32 lod);
 
-	bool update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+	void update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+
+    bool updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+
+    void updateGeometry(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 
 	void updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 
