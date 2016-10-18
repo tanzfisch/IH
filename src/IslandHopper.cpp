@@ -139,12 +139,12 @@ void IslandHopper::initScene()
     // reate a sky box and add it to scene
     iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
     skyBoxNode->setTextures(
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg"),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg"),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg"),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg"),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg"),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg"));
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp));
     skyBoxNode->setTextureScale(1);
     // create a sky box material
     _materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
