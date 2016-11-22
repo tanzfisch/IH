@@ -48,14 +48,6 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
         };
     };
 
-/*    struct TileData
-    {
-        uint32 _transformNodeID = iNode::INVALID_NODE_ID;
-        uint32 _modelNodeID = iNode::INVALID_NODE_ID;
-        vector<uint32> _destroyNodeIDs;
-        uint32 _mutationCounter = 0;
-    };*/
-
 public:
 
     /*! sets lod trigger node to monitor
@@ -88,15 +80,17 @@ private:
     */
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
 
-	const uint32 _lowestLOD = 7;
+    /*! lowest configured LOD
+    */
+	const uint32 _lowestLOD = 1;
 
-    static const int64 _voxelBlockScanDistance = 10;
+    /*! voxel block update radius
+    */
+    static const int64 _voxelBlockScanDistance = 5;
 
     /*! scene
     */
     iScene* _scene = nullptr;
-
-    iScene* _effectScene = nullptr;
 
     /*! terrain material id
     */

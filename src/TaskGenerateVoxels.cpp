@@ -101,7 +101,7 @@ void TaskGenerateVoxels::run()
                 }
 
                 float64 height = (noise * 2000);
-                //height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 3.0;
+                height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 3.0;
 
                 float64 transdiff = height - static_cast<float64>(position._y) - offset._y;
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)
@@ -147,7 +147,7 @@ void TaskGenerateVoxels::run()
                         if (pos._y > 180 &&
                             pos._y > height - 50 &&
                             pos._y < height + 10)
-                        {
+{
                             float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.005, pos._y * 0.005, pos._z * 0.005), 4, 0.5);
 
                             float64 diff = (pos._y - (height - 50)) / 50.0;
