@@ -106,7 +106,7 @@ private:
 
     void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
-    void handleVoxelBlocks(uint32 lod);
+    void handleVoxelBlocks();
 
 	void update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
 

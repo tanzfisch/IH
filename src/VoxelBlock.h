@@ -19,6 +19,7 @@ namespace Igor
 enum class Stage
 {
     Initial,
+    Setup,
     GeneratingVoxel,
     GeneratingMesh,
     Ready,
