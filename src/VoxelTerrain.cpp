@@ -643,16 +643,8 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerP
                         childrenVisible = false;
                     }
                 }
-            }
 
-            if (childrenVisible)
-            {
-                visible = true;
-                meshVisible = false;
-            }
-            else
-            {
-                if (voxelBlock->_children[0] != nullptr)
+                if (!childrenVisible)
                 {
                     for (int i = 0; i < 8; ++i)
                     {
@@ -669,36 +661,33 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerP
                     }
                 }
             }
+
+            if (childrenVisible)
+            {
+                visible = true;
+                meshVisible = false;
+            }
         }
     }
     else
     {
         meshVisible = false;
+    }  
+
+    iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+    if (modelNode != nullptr && 
+        modelNode->isLoaded())
+    {
+        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
+        if (transformNode != nullptr)
+        {
+            transformNode->setActive(meshVisible);
+        }
     }
 
-    if (voxelBlock->_nodesToDestroy.size() > 0)
+    if (meshVisible)
     {
         visible = true;
-    }
-    else
-    {
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
-        if (modelNode != nullptr)
-        {
-            if (modelNode->isLoaded())
-            {
-                iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
-                if (transformNode != nullptr)
-                {
-                    transformNode->setActive(meshVisible);
-
-                    if (meshVisible)
-                    {
-                        visible = true;
-                    }
-                }
-            }
-        }
     }
 
     return visible;
