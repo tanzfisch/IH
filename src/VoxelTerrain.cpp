@@ -26,7 +26,7 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 
 //#define FIX_POSITION
-// #define FIX_HEIGHT
+//#define FIX_HEIGHT
 //#define WIREFRAME
 
 float64 visibleDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
@@ -124,143 +124,15 @@ uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 {
     uint8 result = 0;
 
-    /*	iaVector3I voxelBlock(pos);
-        voxelBlock /= _voxelBlockSize;
-
-        iaVector3I voxelRelativePos(pos);
-
-        voxelRelativePos._x = voxelRelativePos._x % static_cast<int64>(_voxelBlockSize);
-        voxelRelativePos._y = voxelRelativePos._y % static_cast<int64>(_voxelBlockSize);
-        voxelRelativePos._z = voxelRelativePos._z % static_cast<int64>(_voxelBlockSize);
-
-        VoxelBlockInfo* block = nullptr;
-
-        auto blockIter = _voxelBlocks.find(voxelBlock);
-        if (blockIter != _voxelBlocks.end())
-        {
-            block = _voxelBlocks[voxelBlock];
-            if (block->_generatedVoxels)
-            {
-                result = block->_voxelData->getVoxelDensity(voxelRelativePos);
-            }
-        }*/
-
     return result;
 }
 
 void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
 {
-    /*	auto blockIter = _voxelBlocks.find(voxelBlock);
-        if (blockIter != _voxelBlocks.end())
-        {
-            VoxelBlockInfo* block = _voxelBlocks[voxelBlock];
-            if (block->_generatedVoxels)
-            {
-                block->_voxelData->setVoxelDensity(voxelRelativePos, density);
-            }
-        }*/
 }
 
 void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 {
-    /*	iaVector3I voxelBlock(pos);
-        voxelBlock /= _voxelBlockSize;
-
-        iaVector3I voxelRelativePos(pos);
-
-        voxelRelativePos._x = voxelRelativePos._x % static_cast<int64>(_voxelBlockSize);
-        voxelRelativePos._y = voxelRelativePos._y % static_cast<int64>(_voxelBlockSize);
-        voxelRelativePos._z = voxelRelativePos._z % static_cast<int64>(_voxelBlockSize);
-
-        VoxelBlockInfo* block = nullptr;
-
-        auto blockIter = _voxelBlocks.find(voxelBlock);
-        if (blockIter != _voxelBlocks.end())
-        {
-            block = _voxelBlocks[voxelBlock];
-            if (block->_generatedVoxels)
-            {
-                block->_voxelData->setVoxelDensity(voxelRelativePos, density);
-            }
-        }
-
-        if (voxelRelativePos._x < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockX(voxelBlock);
-            voxelBlockX._x--;
-            iaVector3I voxelRelativePosX(voxelRelativePos);
-            voxelRelativePosX._x += _voxelBlockSize;
-            setVoxelDensity(voxelBlockX, voxelRelativePosX, density);
-        }
-
-        if (voxelRelativePos._y < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockY(voxelBlock);
-            voxelBlockY._y--;
-            iaVector3I voxelRelativePosY(voxelRelativePos);
-            voxelRelativePosY._y += _voxelBlockSize;
-            setVoxelDensity(voxelBlockY, voxelRelativePosY, density);
-        }
-
-        if (voxelRelativePos._z < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockZ(voxelBlock);
-            voxelBlockZ._z--;
-            iaVector3I voxelRelativePosZ(voxelRelativePos);
-            voxelRelativePosZ._z += _voxelBlockSize;
-            setVoxelDensity(voxelBlockZ, voxelRelativePosZ, density);
-        }
-
-        if (voxelRelativePos._x < _voxelBlockOverlap &&
-            voxelRelativePos._y < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockXY(voxelBlock);
-            voxelBlockXY._x--;
-            voxelBlockXY._y--;
-            iaVector3I voxelRelativePosXY(voxelRelativePos);
-            voxelRelativePosXY._x += _voxelBlockSize;
-            voxelRelativePosXY._y += _voxelBlockSize;
-            setVoxelDensity(voxelBlockXY, voxelRelativePosXY, density);
-        }
-
-        if (voxelRelativePos._x < _voxelBlockOverlap &&
-            voxelRelativePos._z < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockXZ(voxelBlock);
-            voxelBlockXZ._x--;
-            voxelBlockXZ._z--;
-            iaVector3I voxelRelativePosXZ(voxelRelativePos);
-            voxelRelativePosXZ._x += _voxelBlockSize;
-            voxelRelativePosXZ._z += _voxelBlockSize;
-            setVoxelDensity(voxelBlockXZ, voxelRelativePosXZ, density);
-        }
-
-        if (voxelRelativePos._y < _voxelBlockOverlap &&
-            voxelRelativePos._z < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockYZ(voxelBlock);
-            voxelBlockYZ._y--;
-            voxelBlockYZ._z--;
-            iaVector3I voxelRelativePosYZ(voxelRelativePos);
-            voxelRelativePosYZ._y += _voxelBlockSize;
-            voxelRelativePosYZ._z += _voxelBlockSize;
-            setVoxelDensity(voxelBlockYZ, voxelRelativePosYZ, density);
-        }
-
-        if (voxelRelativePos._x < _voxelBlockOverlap &&
-            voxelRelativePos._y < _voxelBlockOverlap &&
-            voxelRelativePos._z < _voxelBlockOverlap)
-        {
-            iaVector3I voxelBlockXYZ(voxelBlock);
-            voxelBlockXYZ._x--;
-            voxelBlockXYZ._y--;
-            voxelBlockXYZ._z--;
-            iaVector3I voxelRelativePosXYZ(voxelRelativePos);
-            voxelRelativePosXYZ._x += _voxelBlockSize;
-            voxelRelativePosXYZ._y += _voxelBlockSize;
-            voxelRelativePosXYZ._z += _voxelBlockSize;
-            setVoxelDensity(voxelBlockXYZ, voxelRelativePosXYZ, density);
-        }*/
 }
 
 void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
@@ -347,7 +219,6 @@ void VoxelTerrain::handleVoxelBlocks()
     float64 lodFactor = pow(2, _lowestLOD);
     float64 actualBlockSize = VoxelBlock::_voxelBlockSize * lodFactor;
     iaVector3I voxelBlockPosition;
-    VoxelBlock* voxelBlock = nullptr;
 
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
@@ -368,7 +239,7 @@ void VoxelTerrain::handleVoxelBlocks()
 
         iaVector3d centerPos(pos._x, pos._y, pos._z);
 
-        if (counter % 60 == 0)
+        if (counter % 100 == 0)
         {
             iaVector3I center(pos._x, pos._y, pos._z);
             center /= actualBlockSize;
@@ -414,8 +285,7 @@ void VoxelTerrain::handleVoxelBlocks()
                         auto blockIter = _voxelBlocks.find(voxelBlockPosition);
                         if (blockIter == _voxelBlocks.end())
                         {
-                            voxelBlock = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
-                            _voxelBlocks[voxelBlockPosition] = voxelBlock;
+                            _voxelBlocks[voxelBlockPosition] = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
                         }
                     }
                 }
@@ -424,12 +294,9 @@ void VoxelTerrain::handleVoxelBlocks()
 
         for (auto block : _voxelBlocks)
         {
-            voxelBlock = block.second;
-
-            update(voxelBlock, centerPos);
-            updateGeometry(voxelBlock, centerPos);
-            updateVisibility(voxelBlock, centerPos);
-
+            update(block.second, centerPos);
+            updateGeometry(block.second, centerPos);
+            updateVisibility(block.second, centerPos);
             // todo need to remove voxel blocks from _voxelBlocks if not in use anymore
         }
     }
@@ -590,12 +457,7 @@ void VoxelTerrain::updateGeometry(VoxelBlock* voxelBlock, iaVector3d observerPos
     {
         if (voxelBlock->_stage == Stage::GeneratingMesh)
         {
-            float64 distance = observerPosition.distance2(voxelBlock->_blockCenterPos);
-
-            if (distance < visibleDistance[voxelBlock->_lod])
-            {
-                updateMesh(voxelBlock, observerPosition);
-            }
+            updateMesh(voxelBlock, observerPosition);
         }
 
         if (voxelBlock->_children[0] != nullptr)
@@ -916,7 +778,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPositio
 
             if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
             {
-                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+                iNodeFactory::getInstance().destroyNode(voxelBlock->_transformNodeIDCurrent);
             }
 
             voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;
