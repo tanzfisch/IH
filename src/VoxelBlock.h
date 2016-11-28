@@ -52,16 +52,15 @@ private:
     */
     bool _dirty = false;
 
-    /*! list of nodes that are not used anymore
-    */
-    vector<uint32> _nodesToDestroy;
-
     /*! id of voxel generation task
     
     there is only one at a time needed
     */
 	uint64 _voxelGenerationTaskID = iTask::INVALID_TASK_ID;
 	
+    uint32 _transformNodeIDToDestroy = iNode::INVALID_NODE_ID;
+    uint32 _modelNodeIDToDestroy = iNode::INVALID_NODE_ID;
+
 	uint32 _transformNodeID = iNode::INVALID_NODE_ID;
 	uint32 _modelNodeID = iNode::INVALID_NODE_ID;
 
@@ -71,6 +70,7 @@ private:
 
     iaVector3I _parentAdress;
 	
+    iaVector3d _blockCenterPos;
 	iaVector3I _position;
 	uint32 _lod = 0;
 	uint32 _size = 0;

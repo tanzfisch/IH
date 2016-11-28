@@ -86,7 +86,7 @@ private:
 
     /*! voxel block update radius
     */
-    static const int64 _voxelBlockScanDistance = 4;
+    static const int64 _voxelBlockScanDistance = 5;
 
     /*! scene
     */

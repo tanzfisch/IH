@@ -442,13 +442,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
         return;
     }
 
-    float64 halfSize = static_cast<float64>(voxelBlock->_size >> 1);
-
-    iaVector3d blockCenterPos(static_cast<float64>(voxelBlock->_position._x) + halfSize,
-        static_cast<float64>(voxelBlock->_position._y) + halfSize,
-        static_cast<float64>(voxelBlock->_position._z) + halfSize);
-
-    float64 distance = observerPosition.distance2(blockCenterPos);
+    float64 distance = observerPosition.distance2(voxelBlock->_blockCenterPos);
 
     switch (voxelBlock->_stage)
     {
@@ -469,8 +463,8 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
 
             voxelBlock->_voxelBlockInfo = new VoxelBlockInfo();
             voxelBlock->_voxelBlockInfo->_size.set(VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap,
-                                                    VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap,
-                                                    VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap);
+                VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap,
+                VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap);
             voxelBlock->_voxelBlockInfo->_position = voxelBlock->_position;
             voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData;
             voxelBlock->_voxelBlockInfo->_offset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
@@ -503,6 +497,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
                 {
                     if (voxelBlock->_children[0] == nullptr)
                     {
+                        float64 halfSize = static_cast<float64>(voxelBlock->_size >> 1);
                         voxelBlock->_children[0] = new VoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position, iaVector3I(0, 0, 0));
                         voxelBlock->_children[1] = new VoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, 0, 0), iaVector3I(1, 0, 0));
                         voxelBlock->_children[2] = new VoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, 0, halfSize), iaVector3I(1, 0, 1));
@@ -534,7 +529,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
     {
         if (distance >= visibleDistance[voxelBlock->_lod] * 3.0)
         {
-            iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeID);
+            /*iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeID);
             voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
             voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
 
@@ -544,8 +539,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
             }
             voxelBlock->_nodesToDestroy.clear();
 
-
-            voxelBlock->_stage = Stage::Initial;
+            voxelBlock->_stage = Stage::Initial;*/
 
             // TODO free voxel data here
             // TODO need a save way to delete voxel data. currently there is a problem with mesh generation that might have still jobs in the queue using the voxel data that we want to delete
@@ -568,10 +562,17 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
             if (voxelBlock->_neighborsLOD != neighborsLOD ||
                 voxelBlock->_dirty)
             {
-                voxelBlock->_nodesToDestroy.push_back(voxelBlock->_transformNodeID);
-                voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
-                voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
-                voxelBlock->_stage = Stage::GeneratingMesh;
+                iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+                if (modelNode != nullptr &&
+                    modelNode->isLoaded() && 
+                    voxelBlock->_transformNodeIDToDestroy == iNode::INVALID_NODE_ID)
+                {
+                    voxelBlock->_transformNodeIDToDestroy = voxelBlock->_transformNodeID;
+                    voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
+                    voxelBlock->_modelNodeIDToDestroy = voxelBlock->_modelNodeID;
+                    voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
+                    voxelBlock->_stage = Stage::GeneratingMesh;
+                }
             }
         }
     }
@@ -593,13 +594,7 @@ void VoxelTerrain::updateGeometry(VoxelBlock* voxelBlock, iaVector3d observerPos
     {
         if (voxelBlock->_stage == Stage::GeneratingMesh)
         {
-            float64 halfSize = static_cast<float64>(voxelBlock->_size >> 1);
-
-            iaVector3d blockCenterPos(static_cast<float64>(voxelBlock->_position._x) + halfSize,
-                static_cast<float64>(voxelBlock->_position._y) + halfSize,
-                static_cast<float64>(voxelBlock->_position._z) + halfSize);
-
-            float64 distance = observerPosition.distance2(blockCenterPos);
+            float64 distance = observerPosition.distance2(voxelBlock->_blockCenterPos);
 
             if (distance < visibleDistance[voxelBlock->_lod])
             {
@@ -619,26 +614,22 @@ void VoxelTerrain::updateGeometry(VoxelBlock* voxelBlock, iaVector3d observerPos
 
 bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerPosition)
 {
-    bool visible = false;
-    bool meshVisible = true;
+    bool childrenVisible = false;
+    bool meshVisible = false;
 
     if (voxelBlock->_stage == Stage::Empty)
     {
         return true;
     }
 
-    float64 halfSize = static_cast<float64>(voxelBlock->_size >> 1);
-
-    iaVector3d blockCenterPos(static_cast<float64>(voxelBlock->_position._x) + halfSize,
-        static_cast<float64>(voxelBlock->_position._y) + halfSize,
-        static_cast<float64>(voxelBlock->_position._z) + halfSize);
-
-    float64 distance = observerPosition.distance2(blockCenterPos);
+    float64 distance = observerPosition.distance2(voxelBlock->_blockCenterPos);
+    if (distance < visibleDistance[voxelBlock->_lod])
+    {
+        meshVisible = true;
+    }
 
     if (voxelBlock->_lod > 0)
     {
-        bool childrenVisible = false;
-
         if (voxelBlock->_children[0] != nullptr)
         {
             childrenVisible = true;
@@ -666,39 +657,29 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerP
                     }
                 }
             }
+            else
+            {
+                meshVisible = false;
+            }
         }
+    }
 
-        if (childrenVisible)
+    if (voxelBlock->_modelNodeID != iNode::INVALID_NODE_ID)
+    {
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+        if (modelNode != nullptr &&
+            modelNode->isLoaded())
         {
-            visible = true;
-            meshVisible = false;
+            iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
+            if (transformNode != nullptr)
+            {
+                transformNode->setActive(meshVisible);
+            }
         }
     }
 
-    if (distance >= visibleDistance[voxelBlock->_lod])
-    {
-        meshVisible = false;
-    }  
-
-    iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
-    if (modelNode != nullptr && 
-        modelNode->isLoaded())
-    {
-        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
-        if (transformNode != nullptr)
-        {
-            transformNode->setActive(meshVisible);
-        }
-    }
-
-    if (meshVisible)
-    {
-        visible = true;
-    }
-
-    return visible;
+    return (childrenVisible || meshVisible);
 }
-
 
 #define NEIGHBOR_XPOSITIVE 0x20
 #define NEIGHBOR_XNEGATIVE 0x10
@@ -930,12 +911,12 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPositio
                 }
             }
 
-            for (uint32 nodeID : voxelBlock->_nodesToDestroy)
+            if (voxelBlock->_transformNodeIDToDestroy != iNode::INVALID_NODE_ID)
             {
-                iNodeFactory::getInstance().destroyNodeAsync(nodeID);
+                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDToDestroy);
+                voxelBlock->_transformNodeIDToDestroy = iNode::INVALID_NODE_ID;
+                voxelBlock->_modelNodeIDToDestroy = iNode::INVALID_NODE_ID;
             }
-
-            voxelBlock->_nodesToDestroy.clear();
 
             voxelBlock->_stage = Stage::Ready;
         }
