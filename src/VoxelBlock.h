@@ -44,19 +44,29 @@ public:
 
 private:
 
+    /*! bit mask with current neighbors LOD settings
+    */
 	uint32 _neighborsLOD = 0;
 
+    /*! if dirty the tile has to be regenerated
+    */
     bool _dirty = false;
 
-    bool _edited = false;
-
+    /*! list of nodes that are not used anymore
+    */
     vector<uint32> _nodesToDestroy;
 
-	uint64 _taskID = iTask::INVALID_TASK_ID;
+    /*! id of voxel generation task
+    
+    there is only one at a time needed
+    */
+	uint64 _voxelGenerationTaskID = iTask::INVALID_TASK_ID;
 	
 	uint32 _transformNodeID = iNode::INVALID_NODE_ID;
 	uint32 _modelNodeID = iNode::INVALID_NODE_ID;
 
+    /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models
+    */
 	uint32 _mutationCounter = 0;
 
     iaVector3I _parentAdress;

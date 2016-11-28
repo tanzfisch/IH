@@ -82,11 +82,11 @@ private:
 
     /*! lowest configured LOD
     */
-	const uint32 _lowestLOD = 7;
+	const uint32 _lowestLOD = 1;
 
     /*! voxel block update radius
     */
-    static const int64 _voxelBlockScanDistance = 10;
+    static const int64 _voxelBlockScanDistance = 4;
 
     /*! scene
     */
