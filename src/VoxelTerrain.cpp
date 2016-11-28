@@ -26,7 +26,7 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 
 //#define FIX_POSITION
-#define FIX_HEIGHT
+// #define FIX_HEIGHT
 //#define WIREFRAME
 
 float64 visibleDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
@@ -562,15 +562,11 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3d observerPosition)
             if (voxelBlock->_neighborsLOD != neighborsLOD ||
                 voxelBlock->_dirty)
             {
-                iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+                iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
                 if (modelNode != nullptr &&
-                    modelNode->isLoaded() && 
-                    voxelBlock->_transformNodeIDToDestroy == iNode::INVALID_NODE_ID)
+                    modelNode->isLoaded())
                 {
-                    voxelBlock->_transformNodeIDToDestroy = voxelBlock->_transformNodeID;
-                    voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
-                    voxelBlock->_modelNodeIDToDestroy = voxelBlock->_modelNodeID;
-                    voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
+                    voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
                     voxelBlock->_stage = Stage::GeneratingMesh;
                 }
             }
@@ -645,14 +641,17 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerP
             {
                 for (int i = 0; i < 8; ++i)
                 {
-                    iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_modelNodeID));
-                    if (modelNode != nullptr &&
-                        modelNode->isLoaded())
+                    if (voxelBlock->_children[i]->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
                     {
-                        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeID));
-                        if (transformNode != nullptr)
+                        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_modelNodeIDCurrent));
+                        if (modelNode != nullptr &&
+                            modelNode->isLoaded())
                         {
-                            transformNode->setActive(false);
+                            iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeIDCurrent));
+                            if (transformNode != nullptr)
+                            {
+                                transformNode->setActive(false);
+                            }
                         }
                     }
                 }
@@ -664,17 +663,21 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerP
         }
     }
 
-    if (voxelBlock->_modelNodeID != iNode::INVALID_NODE_ID)
+    if (voxelBlock->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
     {
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
-            iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeID));
+            iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
             if (transformNode != nullptr)
             {
                 transformNode->setActive(meshVisible);
             }
+        }
+        else
+        {
+            meshVisible = false;
         }
     }
 
@@ -844,7 +847,7 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock, iaVector3d observ
 
 void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPosition)
 {
-    if (voxelBlock->_transformNodeID == iNode::INVALID_NODE_ID)
+    if (voxelBlock->_transformNodeIDQueued == iNode::INVALID_NODE_ID)
     {
         if (voxelBlock->_voxelData != nullptr)
         {
@@ -891,13 +894,13 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPositio
 
             _scene->getRoot()->insertNode(transform);
 
-            voxelBlock->_transformNodeID = transform->getID();
-            voxelBlock->_modelNodeID = modelNode->getID();
+            voxelBlock->_transformNodeIDQueued = transform->getID();
+            voxelBlock->_modelNodeIDQueued = modelNode->getID();
         }
     }
-    else
+    else if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID)
     {
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeID));
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
@@ -911,12 +914,14 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPositio
                 }
             }
 
-            if (voxelBlock->_transformNodeIDToDestroy != iNode::INVALID_NODE_ID)
+            if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
             {
-                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDToDestroy);
-                voxelBlock->_transformNodeIDToDestroy = iNode::INVALID_NODE_ID;
-                voxelBlock->_modelNodeIDToDestroy = iNode::INVALID_NODE_ID;
+                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
             }
+
+            voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;
+            voxelBlock->_modelNodeIDCurrent = voxelBlock->_modelNodeIDQueued;
+            voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
 
             voxelBlock->_stage = Stage::Ready;
         }

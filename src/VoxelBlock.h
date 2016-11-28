@@ -58,11 +58,11 @@ private:
     */
 	uint64 _voxelGenerationTaskID = iTask::INVALID_TASK_ID;
 	
-    uint32 _transformNodeIDToDestroy = iNode::INVALID_NODE_ID;
-    uint32 _modelNodeIDToDestroy = iNode::INVALID_NODE_ID;
+    uint32 _transformNodeIDCurrent = iNode::INVALID_NODE_ID;
+    uint32 _modelNodeIDCurrent = iNode::INVALID_NODE_ID;
 
-	uint32 _transformNodeID = iNode::INVALID_NODE_ID;
-	uint32 _modelNodeID = iNode::INVALID_NODE_ID;
+	uint32 _transformNodeIDQueued = iNode::INVALID_NODE_ID;
+	uint32 _modelNodeIDQueued = iNode::INVALID_NODE_ID;
 
     /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models
     */
