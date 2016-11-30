@@ -75,7 +75,7 @@ private:
 	uint32 _lod = 0;
 	uint32 _size = 0;
 
-    /*! if true mesh is in visible range
+    /*! if true mesh is in visible range (and SHOULD be visible)
     */
     bool _meshVisible = false;
 
@@ -87,6 +87,7 @@ private:
 
     VoxelBlock* _parent = nullptr;
 	VoxelBlock* _children[8];
+	VoxelBlock* _neighbors[6];
 
 };
 

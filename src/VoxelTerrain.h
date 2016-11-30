@@ -80,6 +80,9 @@ private:
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
+	iaVector3I _lastObserverPosition;
+	bool _firstUpdate = true;
+
     /*! lowest configured LOD
 
     max 7
@@ -88,7 +91,7 @@ private:
 
     /*! voxel block update radius
     */
-    static const int64 _voxelBlockScanDistance = 10;
+	static const int64 _voxelBlockScanDistance = 10;
 
 	/*! root node of terrain
 	*/
