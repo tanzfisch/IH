@@ -78,7 +78,7 @@ private:
 
     /*! the voxel data
     */
-    unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> _voxelBlocks;
+    vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
     /*! lowest configured LOD
 
@@ -110,15 +110,15 @@ private:
 
     void handleVoxelBlocks();
 
-	void update(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+	void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-    bool updateVisibility(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+    bool updateVisibility(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-    void updateGeometry(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+    void updateGeometry(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-	void updateMesh(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+	void updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-    uint32 calcLODTransition(VoxelBlock* voxelBlock, iaVector3d observerPosition);
+    uint32 calcLODTransition(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
     /*! init
     */

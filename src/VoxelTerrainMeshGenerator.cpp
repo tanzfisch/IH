@@ -17,10 +17,18 @@ using namespace Igor;
 
 #include "EntityManager.h"
 
+iaRandomNumberGenerator* VoxelTerrainMeshGenerator::_rand = nullptr; // debug only. creates mem leak
+
 VoxelTerrainMeshGenerator::VoxelTerrainMeshGenerator()
 {
     _identifier = "vtg";
     _name = "Voxel Terrain Generator";
+
+    if (_rand == nullptr)
+    {
+        _rand = new iaRandomNumberGenerator();
+        _rand->setSeed(1234);
+    }
 }
 
 iModelDataIO* VoxelTerrainMeshGenerator::createInstance()
@@ -60,10 +68,34 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 1
+#if 0
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+
+        targetMaterial->setAmbient(iaColor3f(0.7f, 0.7f, 0.7f));
+        targetMaterial->setDiffuse(iaColor3f(0.9f, 0.9f, 0.9f));
+        targetMaterial->setSpecular(iaColor3f(0.1f, 0.1f, 0.1f));
+        targetMaterial->setEmissive(iaColor3f(0.05f, 0.05f, 0.05f));
+        targetMaterial->setShininess(100.0f);
+
+#else
+
+#if 1
+        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 0);
+        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 1);
+        targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);
+
+        float32 r = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
+        float32 g = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
+        float32 b = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
+
+        targetMaterial->setAmbient(iaColor3f(r * 0.7f, g* 0.7f, b* 0.7f));
+        targetMaterial->setDiffuse(iaColor3f(r * 0.9f, g* 0.9f, b* 0.9f));
+        targetMaterial->setSpecular(iaColor3f(r * 0.1f, g* 0.1f, b* 0.1f));
+        targetMaterial->setEmissive(iaColor3f(r * 0.05f, g* 0.05f, b* 0.05f));
+        targetMaterial->setShininess(100.0f);
+
 #else
 		switch (tileInformation->_lod)
 		{
@@ -108,12 +140,14 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
             targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("black.png"), 2);
             break;
 		} 
-#endif
+
         targetMaterial->setAmbient(iaColor3f(0.7f, 0.7f, 0.7f));
         targetMaterial->setDiffuse(iaColor3f(0.9f, 0.9f, 0.9f));
         targetMaterial->setSpecular(iaColor3f(0.1f, 0.1f, 0.1f));
         targetMaterial->setEmissive(iaColor3f(0.05f, 0.05f, 0.05f));
         targetMaterial->setShininess(100.0f);
+#endif
+#endif
 
         result->insertNode(meshNode);
 
@@ -131,4 +165,5 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
     return result;
 }
+
 

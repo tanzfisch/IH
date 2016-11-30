@@ -2,6 +2,7 @@
 #define __GENERATORTERRAIN__
 
 #include <iaVector3.h>
+#include <iaRandomNumberGenerator.h>
 using namespace IgorAux;
 
 #include <iModelDataIO.h>
@@ -70,6 +71,8 @@ public:
     \returns new instance
     */
     static iModelDataIO* createInstance();
+
+    static iaRandomNumberGenerator* _rand;
 
 };
 

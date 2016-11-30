@@ -70,10 +70,14 @@ private:
 
     iaVector3I _parentAdress;
 	
-    iaVector3d _blockCenterPos;
+    iaVector3I _blockCenterPos;
 	iaVector3I _position;
 	uint32 _lod = 0;
 	uint32 _size = 0;
+
+    /*! if true mesh is in visible range
+    */
+    bool _meshVisible = false;
 
     Stage _stage = Stage::Initial;
 	
