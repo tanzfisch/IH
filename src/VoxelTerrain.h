@@ -90,9 +90,9 @@ private:
     */
     static const int64 _voxelBlockScanDistance = 10;
 
-    /*! scene
-    */
-    iScene* _scene = nullptr;
+	/*! root node of terrain
+	*/
+	iNode* _rootNode = nullptr;
 
     /*! terrain material id
     */
@@ -122,7 +122,7 @@ private:
 
     /*! init
     */
-    void init();
+    void init(iScene* scene);
 
     /*! deinit
     */

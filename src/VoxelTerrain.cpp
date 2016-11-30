@@ -49,13 +49,20 @@ VoxelTerrain::~VoxelTerrain()
 void VoxelTerrain::setScene(iScene* scene)
 {
     con_assert(scene != nullptr, "zero pointer");
-    _scene = scene;
-
-    init();
+    con_assert(_rootNode == nullptr, "already initialized");
+    
+    if (scene != nullptr &&
+        _rootNode == nullptr)
+    {
+        init(scene);
+    }
 }
 
-void VoxelTerrain::init()
+void VoxelTerrain::init(iScene* scene)
 {
+    _rootNode = iNodeFactory::getInstance().createNode(iNodeType::iNode);
+    scene->getRoot()->insertNode(_rootNode);
+
     iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
 
     iModelResourceFactory::getInstance().registerModelDataIO("vtg", &VoxelTerrainMeshGenerator::createInstance);
@@ -595,7 +602,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
 
             transform->insertNode(modelNode);
 
-            _scene->getRoot()->insertNode(transform);
+            _rootNode->insertNode(transform);
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();
