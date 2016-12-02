@@ -17,18 +17,10 @@ using namespace Igor;
 
 #include "EntityManager.h"
 
-iaRandomNumberGenerator* VoxelTerrainMeshGenerator::_rand = nullptr; // debug only. creates mem leak
-
 VoxelTerrainMeshGenerator::VoxelTerrainMeshGenerator()
 {
     _identifier = "vtg";
     _name = "Voxel Terrain Generator";
-
-    if (_rand == nullptr)
-    {
-        _rand = new iaRandomNumberGenerator();
-        _rand->setSeed(1234);
-    }
 }
 
 iModelDataIO* VoxelTerrainMeshGenerator::createInstance()
@@ -40,7 +32,6 @@ iModelDataIO* VoxelTerrainMeshGenerator::createInstance()
 iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModelDataInputParameter* parameter)
 {
     TileInformation* tileInformation = reinterpret_cast<TileInformation*>(parameter->_parameters.getDataPointer());
-    const iaVector3I& absolutePos = tileInformation->_absolutePos;
 
     iVoxelData* voxelData = tileInformation->_voxelData;
     iVoxelData* voxelDataNextLOD = tileInformation->_voxelDataNextLOD;
@@ -86,9 +77,12 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 1);
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);
 
-        float32 r = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
-        float32 g = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
-        float32 b = ((_rand->getNext() % 70) + 15.0f) / 100.0f;
+        iaRandomNumberGenerator rand;
+        rand.setSeed(reinterpret_cast<uint32>(voxelData));
+
+        float32 r = ((rand.getNext() % 70) + 15.0f) / 100.0f;
+        float32 g = ((rand.getNext() % 70) + 15.0f) / 100.0f;
+        float32 b = ((rand.getNext() % 70) + 15.0f) / 100.0f;
 
         targetMaterial->setAmbient(iaColor3f(r * 0.7f, g* 0.7f, b* 0.7f));
         targetMaterial->setDiffuse(iaColor3f(r * 0.9f, g* 0.9f, b* 0.9f));

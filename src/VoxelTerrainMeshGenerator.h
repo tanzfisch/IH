@@ -20,15 +20,16 @@ namespace Igor
 */
 struct TileInformation
 {
-    /*! absolute position of tile in voxel coordinates
-    */
-    iaVector3I _absolutePos;
-
     /*! level of details
     */
 	uint32 _lod = 0;
 
+    /*! voxel data of current tile
+    */
     iVoxelData* _voxelData = nullptr;
+
+    /*! voxel data of current tile but from next lower LOD
+    */
     iVoxelData* _voxelDataNextLOD = nullptr;
 
     /*! offset to next LOD in real world coordinates
@@ -39,11 +40,13 @@ struct TileInformation
     */
     uint32 _materialID = 0;
 
-    /*! 
+    /*! neighbors LOD flags
     */
 	uint32 _neighborsLOD = 0;
 };
 
+/*! voxel terrain mesh generator
+*/
 class VoxelTerrainMeshGenerator : public iModelDataIO
 {
 
@@ -71,8 +74,6 @@ public:
     \returns new instance
     */
     static iModelDataIO* createInstance();
-
-    static iaRandomNumberGenerator* _rand;
 
 };
 
