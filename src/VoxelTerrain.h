@@ -80,8 +80,13 @@ private:
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
-	iaVector3I _lastObserverPosition;
-	bool _firstUpdate = true;
+    /*! keep observer position since last discovery
+    */
+	iaVector3I _lastDiscoveryPosition;
+
+    /*! dirty flag if it is time for a rediscovery
+    */
+	bool _dirtyDiscovery = true;
 
     /*! lowest configured LOD
 
@@ -104,6 +109,18 @@ private:
     /*! lod trigger node id
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
+
+    /*! discovers if there are unknown blocks of lowest LOD near by
+
+    \param observerPosition current observer position
+    */
+    void discoverBlocks(const iaVector3I& observerPosition);
+
+    /*! updates blocks
+
+    \param observerPosition current observer position
+    */
+    void updateBlocks(const iaVector3I& observerPosition);
 
     /*! called per frame
     */

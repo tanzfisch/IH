@@ -199,12 +199,6 @@ bool VoxelTerrain::loading()
 
 void VoxelTerrain::handleVoxelBlocks()
 {
-	float64 lodFactor = pow(2, _lowestLOD);
-	float64 actualBlockSize = VoxelBlock::_voxelBlockSize * lodFactor;
-	iaVector3I voxelBlockPosition;
-
-	auto& voxelBlocks = _voxelBlocks[_lowestLOD];
-
 	iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
 	if (lodTrigger != nullptr)
 	{
@@ -222,72 +216,88 @@ void VoxelTerrain::handleVoxelBlocks()
 		pos._y = 310;
 #endif
 
-		iaVector3I observerPosition(pos._x + 0.5, pos._y + 0.5, pos._z + 0.5);
-
-		if (_firstUpdate || observerPosition.distance2(_lastObserverPosition) > actualBlockSize * actualBlockSize)
-		{
-			_firstUpdate = false;
-			_lastObserverPosition = observerPosition;
-
-			iaVector3I center(pos._x, pos._y, pos._z);
-			center /= actualBlockSize;
-
-			iaVector3I start(center);
-			start._x -= _voxelBlockScanDistance;
-			start._y -= _voxelBlockScanDistance;
-			start._z -= _voxelBlockScanDistance;
-
-			iaVector3I stop(center);
-			stop._x += _voxelBlockScanDistance;
-			stop._y += _voxelBlockScanDistance;
-			stop._z += _voxelBlockScanDistance;
-
-			if (start._x < 0)
-			{
-				start._x = 0;
-			}
-
-			if (start._y < 0)
-			{
-				start._y = 0;
-			}
-
-			if (start._y > 3)
-			{
-				start._y = 3;
-			}
-
-			if (start._z < 0)
-			{
-				start._z = 0;
-			}
-
-			for (int64 voxelBlockX = start._x; voxelBlockX < stop._x; ++voxelBlockX)
-			{
-				for (int64 voxelBlockY = start._y; voxelBlockY < stop._y; ++voxelBlockY)
-				{
-					for (int64 voxelBlockZ = start._z; voxelBlockZ < stop._z; ++voxelBlockZ)
-					{
-						voxelBlockPosition.set(voxelBlockX, voxelBlockY, voxelBlockZ);
-
-						auto blockIter = voxelBlocks.find(voxelBlockPosition);
-						if (blockIter == voxelBlocks.end())
-						{
-							voxelBlocks[voxelBlockPosition] = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
-						}
-					}
-				}
-			}
-		}
-
-		for (auto block : voxelBlocks)
-		{
-			update(block.second, observerPosition);
-			updateGeometry(block.second, observerPosition);
-			updateVisibility(block.second, observerPosition);
-			// todo need to remove voxel blocks from _voxelBlocks if not in use anymore
-		}
+		iaVector3I observerPosition(pos._x, pos._y, pos._z);
+        discoverBlocks(observerPosition);
+        updateBlocks(observerPosition);
 	}
+}
+
+void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
+{
+    auto& voxelBlocks = _voxelBlocks[_lowestLOD];
+
+    for (auto block : voxelBlocks)
+    {
+        update(block.second, observerPosition);
+        updateGeometry(block.second, observerPosition);
+        updateVisibility(block.second, observerPosition);
+        // todo need to remove voxel blocks from _voxelBlocks if not in use anymore
+    }
+}
+
+void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
+{
+    float64 lodFactor = pow(2, _lowestLOD);
+    float64 actualBlockSize = VoxelBlock::_voxelBlockSize * lodFactor;
+
+    if (_dirtyDiscovery || observerPosition.distance2(_lastDiscoveryPosition) > actualBlockSize * actualBlockSize)
+    {
+        _dirtyDiscovery = false;
+        _lastDiscoveryPosition = observerPosition;
+
+        iaVector3I center = observerPosition;
+        center /= actualBlockSize;
+
+        iaVector3I start(center);
+        start._x -= _voxelBlockScanDistance;
+        start._y -= _voxelBlockScanDistance;
+        start._z -= _voxelBlockScanDistance;
+
+        iaVector3I stop(center);
+        stop._x += _voxelBlockScanDistance;
+        stop._y += _voxelBlockScanDistance;
+        stop._z += _voxelBlockScanDistance;
+
+        if (start._x < 0)
+        {
+            start._x = 0;
+        }
+
+        if (start._y < 0)
+        {
+            start._y = 0;
+        }
+
+        if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
+        {
+            start._y = 3;
+        }
+
+        if (start._z < 0)
+        {
+            start._z = 0;
+        }
+
+        auto& voxelBlocks = _voxelBlocks[_lowestLOD];
+        iaVector3I voxelBlockPosition;
+
+        for (int64 voxelBlockX = start._x; voxelBlockX < stop._x; ++voxelBlockX)
+        {
+            for (int64 voxelBlockY = start._y; voxelBlockY < stop._y; ++voxelBlockY)
+            {
+                for (int64 voxelBlockZ = start._z; voxelBlockZ < stop._z; ++voxelBlockZ)
+                {
+                    voxelBlockPosition.set(voxelBlockX, voxelBlockY, voxelBlockZ);
+
+                    auto blockIter = voxelBlocks.find(voxelBlockPosition);
+                    if (blockIter == voxelBlocks.end())
+                    {
+                        voxelBlocks[voxelBlockPosition] = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
+                    }
+                }
+            }
+        }
+    }
 }
 
 void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
