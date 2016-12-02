@@ -42,6 +42,20 @@ VoxelBlock::~VoxelBlock()
 	}
 }
 
+void VoxelBlock::setInVisibilityRange(bool visibility)
+{
+    if (_inVisibleRange != visibility)
+    {
+        _inVisibleRange = visibility;
+        _dirtyNeighbors = true;
+    }
+}
+
+bool VoxelBlock::getInVisibilityRange() const
+{
+    return _inVisibleRange;
+}
+
 iVoxelData* VoxelBlock::getVoxelData() const
 {
     return _voxelData;

@@ -42,6 +42,9 @@ public:
     iVoxelData* getVoxelData() const;
     VoxelBlock* getParent() const;
 
+    void setInVisibilityRange(bool visibility);
+    bool getInVisibilityRange() const;
+
 private:
 
     /*! bit mask with current neighbors LOD settings
@@ -50,7 +53,7 @@ private:
 
     /*! if dirty the tile has to be regenerated
     */
-    bool _dirty = false;
+    bool _dirty = true;
 
     /*! id of voxel generation task
     
@@ -75,9 +78,13 @@ private:
 	uint32 _lod = 0;
 	uint32 _size = 0;
 
-    /*! if true mesh is in visible range (and SHOULD be visible)
+    /*! if true mesh is in visible range (and SHOULD be visible) 
+    
+    but can be actually not rendered because e.g. the mesh is not ready yet
     */
-    bool _meshVisible = false;
+    bool _inVisibleRange = false;
+
+    bool _dirtyNeighbors = true;
 
     Stage _stage = Stage::Initial;
 	
@@ -87,7 +94,6 @@ private:
 
     VoxelBlock* _parent = nullptr;
 	VoxelBlock* _children[8];
-	VoxelBlock* _neighbors[6];
 
 };
 
