@@ -45,6 +45,10 @@ public:
     void setInVisibilityRange(bool visibility);
     bool getInVisibilityRange() const;
 
+    void setNeighborsDirty();
+
+    void setNeighbor(uint32 neighborIndex, VoxelBlock* neighbor);
+
 private:
 
     /*! bit mask with current neighbors LOD settings
@@ -94,6 +98,8 @@ private:
 
     VoxelBlock* _parent = nullptr;
 	VoxelBlock* _children[8];
+
+    VoxelBlock* _neighbors[6];
 
 };
 

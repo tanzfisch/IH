@@ -106,7 +106,8 @@ void IslandHopper::initViews()
     _window.addView(&_view);
     _window.addView(&_viewOrtho);
 #if 1
-    _window.setSize(1024, 768);
+    _window.setSize(1280, 600);
+    _window.setPosition(10, 10);
 #else
     _window.setSizeByDesktop();
     _window.setFullscreen();

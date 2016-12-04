@@ -126,6 +126,8 @@ private:
     */
     void onHandle();
 
+    void findNeighbours(VoxelBlock* voxelBlock);
+
     void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
     void handleVoxelBlocks();
@@ -138,7 +140,7 @@ private:
 
 	void updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-    uint32 calcLODTransition(VoxelBlock* voxelBlock, iaVector3I observerPosition);
+    uint32 calcLODTransition(VoxelBlock* voxelBlock);
 
     /*! init
     */
