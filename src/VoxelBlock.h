@@ -77,9 +77,22 @@ private:
 
     iaVector3I _parentAdress;
 	
+    /*! center position of block
+    */
     iaVector3I _blockCenterPos;
+
+    /*! blocks position 
+
+    -x,-y,-z corner
+    */
 	iaVector3I _position;
+
+    /*! level of detail of this block
+    */
 	uint32 _lod = 0;
+
+    /*! size of this block based on LOD
+    */
 	uint32 _size = 0;
 
     /*! if true mesh is in visible range (and SHOULD be visible) 
@@ -88,12 +101,20 @@ private:
     */
     bool _inVisibleRange = false;
 
+    /*! if true neighbours changed and we might have to regenerate the mesh
+    */
     bool _dirtyNeighbors = true;
 
-    Stage _stage = Stage::Initial;
+    /*! current state of the block
+    */
+    Stage _state = Stage::Initial;
 	
+    /*! the actual voxel data
+    */
 	iVoxelData* _voxelData = nullptr;
 
+    /*! voxel block info
+    */
 	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
     VoxelBlock* _parent = nullptr;

@@ -1,4 +1,4 @@
-#include "TaskGenerateVoxels.h""
+#include "TaskGenerateVoxels.h"
 
 #include <iModelResourceFactory.h>
 #include <iTextureResourceFactory.h>
@@ -12,19 +12,14 @@ using namespace Igor;
 #include <iaConsole.h>
 using namespace IgorAux;
 
-int32 TaskGenerateVoxels::_seed = 0;
-vector<iSpheref> TaskGenerateVoxels::_metaballs;
-vector<iSpheref> TaskGenerateVoxels::_holes;
-mutex TaskGenerateVoxels::_initMutex;
-
-TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 lod, uint32 priority)
+TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 priority)
     : iTask(nullptr, priority, false)
 {
     con_assert(voxelBlockInfo != nullptr, "zero pointer");
     con_assert(voxelBlockInfo->_voxelData != nullptr, "zero pointer");
     con_assert(lod >= 0, "lod out of range");
 
-    _lodFactor = static_cast<uint32>(pow(2, lod));
+    
     _voxelBlockInfo = voxelBlockInfo;
 }
 
@@ -34,8 +29,10 @@ void TaskGenerateVoxels::run()
 
     iVoxelData* voxelData = _voxelBlockInfo->_voxelData;
     iaVector3I& position = _voxelBlockInfo->_position;
-    iaVector3f& offset = _voxelBlockInfo->_offset;
+    iaVector3f& lodOffset = _voxelBlockInfo->_lodOffset;
     iaVector3i& size = _voxelBlockInfo->_size;
+
+    uint32 lodFactor = static_cast<uint32>(pow(2, _voxelBlockInfo->_lod));
 
     const float64 from = 0.35;
     const float64 to = 0.36;
@@ -50,7 +47,7 @@ void TaskGenerateVoxels::run()
         {
             for (int64 z = 0; z < voxelData->getDepth(); ++z)
             {
-                iaVector3f pos(x * _lodFactor + position._x + offset._x, 0, z * _lodFactor + position._z + offset._z);
+                iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
 
                 float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
                 contour -= 0.7;
@@ -103,21 +100,21 @@ void TaskGenerateVoxels::run()
                 float64 height = (noise * 2000);
                 //height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 
-                float64 transdiff = height - static_cast<float64>(position._y) - offset._y;
-                if (transdiff > 0 && transdiff <= voxelData->getHeight() * _lodFactor)
+                float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
+                if (transdiff > 0 && transdiff <= voxelData->getHeight() * lodFactor)
                 {
                     _voxelBlockInfo->_transition = true;
                 }
 
-                float64 diff = (transdiff / static_cast<float64>(_lodFactor));
-                if (diff > 0)
+                float64 heightDiff = (transdiff / static_cast<float64>(lodFactor));
+                if (heightDiff > 0)
                 {
-                    if (diff > size._y)
+                    if (heightDiff > size._y)
                     {
-                        diff = size._y;
+                        heightDiff = size._y;
                     }
 
-                    int64 diffi = static_cast<uint64>(diff);
+                    int64 diffi = static_cast<uint64>(heightDiff);
                     if (diffi > 0)
                     {
                         voxelData->setVoxelPole(iaVector3I(x, 0, z), diffi, 128);
@@ -125,8 +122,8 @@ void TaskGenerateVoxels::run()
 
                     if (diffi < voxelData->getHeight())
                     {
-                        diff -= static_cast<float64>(diffi);
-                        voxelData->setVoxelDensity(iaVector3I(x, diffi, z), (diff * 254) + 1);
+                        heightDiff -= static_cast<float64>(diffi);
+                        voxelData->setVoxelDensity(iaVector3I(x, diffi, z), static_cast<uint8>((heightDiff * 254.0) + 1.0));
                     }
                 }
 
@@ -142,7 +139,7 @@ void TaskGenerateVoxels::run()
                 {
                     for (int64 y = 0; y < voxelData->getHeight(); ++y)
                     {
-                        pos._y = y * _lodFactor + position._y + offset._y;
+                        pos._y = y * lodFactor + position._y + lodOffset._y;
 
                         if (pos._y > 180 &&
                             pos._y > height - 50 &&
@@ -158,7 +155,7 @@ void TaskGenerateVoxels::run()
                                 if (onoff >= to)
                                 {
                                     float64 gradient = 1.0 - ((onoff - from) * factor);
-                                    voxelData->setVoxelDensity(iaVector3I(x, y, z), (gradient * 254) + 1);
+                                    voxelData->setVoxelDensity(iaVector3I(x, y, z), static_cast<uint8>((gradient * 254.0) + 1.0));
                                     _voxelBlockInfo->_transition = true;
                                 }
                                 else
@@ -179,9 +176,9 @@ void TaskGenerateVoxels::run()
             {
                 for (int64 z = 0; z < voxelData->getDepth(); ++z)
                 {
-                    iaVector3f pos(x * _lodFactor + position._x + offset._x,
-                        y * _lodFactor + position._y + offset._y,
-                        z * _lodFactor + position._z + offset._z);
+                    iaVector3f pos(x * lodFactor + position._x + offset._x,
+                        y * lodFactor + position._y + offset._y,
+                        z * lodFactor + position._z + offset._z);
 
                     if (pos._y > 0 && pos._y < 2000)
                     {
@@ -206,8 +203,6 @@ void TaskGenerateVoxels::run()
             }
         }
 #endif
-
-        _voxelBlockInfo->_generatedVoxels = true;
     }
 
     finishTask();

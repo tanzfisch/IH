@@ -425,7 +425,6 @@ void IslandHopper::deinit()
     iTaskManager::getInstance().abortTask(_taskFlushModels);
     iTaskManager::getInstance().abortTask(_taskFlushTextures);
 
-    VoxelTerrain::getInstance().unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
     VoxelTerrain::getInstance().destroyInstance();
 
     iSceneFactory::getInstance().destroyScene(_scene);
@@ -670,7 +669,6 @@ void IslandHopper::initVoxelData()
     {
         VoxelTerrain::getInstance().setLODTrigger(player->getLODTriggerID());
     }
-    VoxelTerrain::getInstance().registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate(this, &IslandHopper::onVoxelDataGenerated));
 }
 
 void IslandHopper::handleMouse()

@@ -25,11 +25,16 @@ namespace Igor
 
 iaEVENT(VoxelDataGeneratedEvent, VoxelDataGeneratedDelegate, void, (const iaVector3I& min, const iaVector3I& max), (min, max));
 
+/*! 
+    \todo should not be a singleton
+*/
 class VoxelTerrain : public iaSingleton<VoxelTerrain>
 {
 
-    friend class iaSingleton<VoxelTerrain>;
+    friend class iaSingleton<VoxelTerrain>; 
 
+    /*! voxel block adress hasher
+    */
     class VectorHasher
     {
     public:
@@ -39,6 +44,8 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
         }
     };
 
+    /*! voxel block position comparsion
+    */
     class VectorEqualFn
     {
     public:
@@ -49,32 +56,40 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
     };
 
 public:
+    
+    /*! sets the scene and initializes the terrain
+
+    \param scene the scene to put the terrain in
+    */
+    void setScene(iScene* scene);
 
     /*! sets lod trigger node to monitor
+
+    \param lodTriggerID the lod trigger's id
     */
     void setLODTrigger(uint32 lodTriggerID);
 
     void castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside);
-    
     void setVoxelDensity(iaVector3I pos, uint8 density);
     uint8 getVoxelDensity(iaVector3I pos);
-    
-    bool loading();
-
-    void registerVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate);
-    void unregisterVoxelDataGeneratedDelegate(VoxelDataGeneratedDelegate voxelDataGeneratedDelegate);
-
-    void setScene(iScene* scene);
 
 private:
 
-    VoxelDataGeneratedEvent _dataGeneratedEvent;
-
-    /*! list with ids of currently running tasks
+    /*! amount of configured LOD
     */
-    vector<uint64> _runningTasks;
+    static const uint32 _lodCount = 8;
 
-	mutex _runningTaskMutex;
+    /*! visible distance for all the LOD
+    */
+    static const float64 _visibleDistance[_lodCount];
+
+    /*! lowest configured LOD
+    */
+    static const uint32 _lowestLOD = _lodCount - 1;
+
+    /*! voxel block discovery distance
+    */
+    static const int64 _voxelBlockDiscoveryDistance = 10;
 
     /*! the voxel data
     */
@@ -87,18 +102,6 @@ private:
     /*! dirty flag if it is time for a rediscovery
     */
 	bool _dirtyDiscovery = true;
-
-    /*! lowest configured LOD
-
-    max 7
-    */
-	const uint32 _lowestLOD = 4;
-
-    /*! voxel block discovery distance
-
-    min 2
-    */
-	static const int64 _voxelBlockDiscoveryDistance = 10;
 
 	/*! root node of terrain
 	*/
@@ -146,8 +149,6 @@ private:
     */
     void cleanUpVoxelBlock(VoxelBlock* voxelBlock);
 
-    void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
-
     /*! main handle callback
     */
     void handleVoxelBlocks();
@@ -161,6 +162,10 @@ private:
 	void updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
     uint32 calcLODTransition(VoxelBlock* voxelBlock);
+
+    /*! \deprecated
+    */
+    void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
     /*! init
     */

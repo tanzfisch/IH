@@ -16,15 +16,35 @@ namespace Igor
     class iVoxelData;
 }
 
+/*! voxel block information
+
+contains information needed to be able to generate the voxel data for specified voxel block
+*/
 struct VoxelBlockInfo
 {
-    bool _generatedVoxels = false;
-	bool _transition = false;
-    bool _generatedEnemies = false;
+    /*! absolute position of voxel block
+    */
     iaVector3I _position;
-	iaVector3f _offset;
+
+    /*! level of detail dependent offset to absolute grid
+    */
+	iaVector3f _lodOffset;
+
+    /*! level of detail of this block
+    */
+    uint32 _lod;
+
+    /*! size of voxel block in voxel
+    */
     iaVector3i _size;
+
+    /*! the destination voxel data structure
+    */
     iVoxelData* _voxelData = nullptr;
+
+    /*! true if the generated voxel data contains a air-solid transition
+    */
+    bool _transition = false;
 };
 
 class TaskGenerateVoxels : public iTask
@@ -36,7 +56,7 @@ public:
 
     \param window window connected to render context
     */
-    TaskGenerateVoxels(VoxelBlockInfo* voxelBlock, uint32 lod, uint32 priority);
+    TaskGenerateVoxels(VoxelBlockInfo* voxelBlock, uint32 priority);
 
     /*! does nothing
     */
@@ -50,16 +70,10 @@ protected:
 
 private:
 
-    static vector<iSpheref> _metaballs;
-    static vector<iSpheref> _holes;
-    static int32 _seed;
-    static mutex _initMutex;
-
     /*! the data to work with
     */
 	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
-	uint32 _lodFactor = 0;
 };
 
 #endif
