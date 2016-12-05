@@ -469,7 +469,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
                         for (int i = 0; i < 8; ++i)
                         {
-                            findNeighbours(voxelBlock);
+                            findNeighbours(voxelBlock->_children[i]);
                         }
                     }
                 }
