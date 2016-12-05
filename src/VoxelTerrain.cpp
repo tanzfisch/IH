@@ -249,14 +249,14 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
         center /= actualBlockSize;
 
         iaVector3I start(center);
-        start._x -= _voxelBlockScanDistance;
-        start._y -= _voxelBlockScanDistance;
-        start._z -= _voxelBlockScanDistance;
+        start._x -= _voxelBlockDiscoveryDistance;
+        start._y -= _voxelBlockDiscoveryDistance;
+        start._z -= _voxelBlockDiscoveryDistance;
 
         iaVector3I stop(center);
-        stop._x += _voxelBlockScanDistance;
-        stop._y += _voxelBlockScanDistance;
-        stop._z += _voxelBlockScanDistance;
+        stop._x += _voxelBlockDiscoveryDistance;
+        stop._y += _voxelBlockDiscoveryDistance;
+        stop._z += _voxelBlockDiscoveryDistance;
 
         if (start._x < 0)
         {
@@ -300,7 +300,46 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
     }
 }
 
-void VoxelTerrain::findNeighbours(VoxelBlock* voxelBlock)
+void VoxelTerrain::detachNeighbours(VoxelBlock* voxelBlock)
+{
+    if (voxelBlock->_neighbors[0] != nullptr)
+    {
+        voxelBlock->_neighbors[0]->_neighbors[1] = nullptr;
+        voxelBlock->_neighbors[0] = nullptr;
+    }
+
+    if (voxelBlock->_neighbors[1] != nullptr)
+    {
+        voxelBlock->_neighbors[1]->_neighbors[0] = nullptr;
+        voxelBlock->_neighbors[1] = nullptr;
+    }
+
+    if (voxelBlock->_neighbors[2] != nullptr)
+    {
+        voxelBlock->_neighbors[2]->_neighbors[3] = nullptr;
+        voxelBlock->_neighbors[2] = nullptr;
+    }
+
+    if (voxelBlock->_neighbors[3] != nullptr)
+    {
+        voxelBlock->_neighbors[3]->_neighbors[2] = nullptr;
+        voxelBlock->_neighbors[3] = nullptr;
+    }
+
+    if (voxelBlock->_neighbors[4] != nullptr)
+    {
+        voxelBlock->_neighbors[4]->_neighbors[5] = nullptr;
+        voxelBlock->_neighbors[4] = nullptr;
+    }
+
+    if (voxelBlock->_neighbors[5] != nullptr)
+    {
+        voxelBlock->_neighbors[5]->_neighbors[4] = nullptr;
+        voxelBlock->_neighbors[5] = nullptr;
+    }
+}
+
+void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
 {
     auto voxelBlocks = _voxelBlocks[voxelBlock->_lod];
 
@@ -469,7 +508,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
                         for (int i = 0; i < 8; ++i)
                         {
-                            findNeighbours(voxelBlock->_children[i]);
+                            attachNeighbours(voxelBlock->_children[i]);
                         }
                     }
                 }
@@ -482,34 +521,9 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::Ready:
     {
-        if (distanceSquare >= visibleDistance[voxelBlock->_lod] * 3.0)
+        if (distanceSquare >= visibleDistance[voxelBlock->_lod] * 4.0)
         {
-            /*iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeID);
-            voxelBlock->_transformNodeID = iNode::INVALID_NODE_ID;
-            voxelBlock->_modelNodeID = iNode::INVALID_NODE_ID;
-
-            for (uint32 nodeID : voxelBlock->_nodesToDestroy)
-            {
-                iNodeFactory::getInstance().destroyNodeAsync(nodeID);
-            }
-            voxelBlock->_nodesToDestroy.clear();
-
-            voxelBlock->_stage = Stage::Initial;*/
-
-            // TODO free voxel data here
-            // TODO need a save way to delete voxel data. currently there is a problem with mesh generation that might have still jobs in the queue using the voxel data that we want to delete
-            // TODO maybe we copy the data before we give it to mesh generation
-            /* if (voxelBlock->_voxelData != nullptr)
-            {
-            delete voxelBlock->_voxelData;
-            voxelBlock->_voxelData = nullptr;
-            }
-
-            if (voxelBlock->_voxelBlockInfo != nullptr)
-            {
-            delete voxelBlock->_voxelBlockInfo;
-            voxelBlock->_voxelBlockInfo = nullptr;
-            }*/
+            cleanUpVoxelBlock(voxelBlock);
         }
         else if (voxelBlock->getInVisibilityRange())
         {
@@ -547,6 +561,51 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         for (int i = 0; i < 8; ++i)
         {
             update(voxelBlock->_children[i], observerPosition);
+        }
+    }
+}
+
+void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
+{
+    if (voxelBlock->_modelNodeIDQueued == iNode::INVALID_NODE_ID)
+    {
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
+        if (modelNode != nullptr &&
+            modelNode->isLoaded())
+        {
+            iNodeFactory::getInstance().destroyNode(voxelBlock->_transformNodeIDCurrent);
+            voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
+            voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
+            voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
+            voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
+            voxelBlock->_mutationCounter = 0;
+            voxelBlock->_stage = Stage::Initial;
+            voxelBlock->_inVisibleRange = false;
+            voxelBlock->_dirtyNeighbors = false;
+
+            detachNeighbours(voxelBlock);
+
+            /*! can't delete that yet. access ist not thread safe
+            */
+            /*if (voxelBlock->_voxelData != nullptr)
+            {
+                delete voxelBlock->_voxelData;
+                voxelBlock->_voxelData = nullptr;
+            }
+
+            if (voxelBlock->_voxelBlockInfo != nullptr)
+            {
+                delete voxelBlock->_voxelBlockInfo;
+                voxelBlock->_voxelBlockInfo = nullptr;
+            }*/
+        }
+    }
+
+    if (voxelBlock->_children[0] != nullptr)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            cleanUpVoxelBlock(voxelBlock->_children[i]);
         }
     }
 }

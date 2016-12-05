@@ -92,11 +92,13 @@ private:
 
     max 7
     */
-	const uint32 _lowestLOD = 7;
+	const uint32 _lowestLOD = 4;
 
-    /*! voxel block update radius
+    /*! voxel block discovery distance
+
+    min 2
     */
-	static const int64 _voxelBlockScanDistance = 10;
+	static const int64 _voxelBlockDiscoveryDistance = 10;
 
 	/*! root node of terrain
 	*/
@@ -126,10 +128,28 @@ private:
     */
     void onHandle();
 
-    void findNeighbours(VoxelBlock* voxelBlock);
+    /*! finds and attaches neighbours of a block
+
+    \param voxelBlock the block to find neighbour for
+    */
+    void attachNeighbours(VoxelBlock* voxelBlock);
+
+    /*! detaches the blocks neighbours
+
+    \param voxelBlock the block to detach
+    */
+    void detachNeighbours(VoxelBlock* voxelBlock);
+
+    /*! clean up and release memory from a block
+
+    \param voxelBlock the voxel block to clear
+    */
+    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);
 
     void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
+    /*! main handle callback
+    */
     void handleVoxelBlocks();
 
 	void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
