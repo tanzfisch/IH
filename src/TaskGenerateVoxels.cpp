@@ -17,8 +17,6 @@ TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 pr
 {
     con_assert(voxelBlockInfo != nullptr, "zero pointer");
     con_assert(voxelBlockInfo->_voxelData != nullptr, "zero pointer");
-    con_assert(lod >= 0, "lod out of range");
-
     
     _voxelBlockInfo = voxelBlockInfo;
 }
