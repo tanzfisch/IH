@@ -557,7 +557,7 @@ void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
             voxelBlock->_inVisibleRange = false;
             voxelBlock->_dirtyNeighbors = true;
 
-            detachNeighbours(voxelBlock);
+            //detachNeighbours(voxelBlock); // no need to detach if not deleted
 
             /*! can't delete that yet. access ist not thread safe
             */
