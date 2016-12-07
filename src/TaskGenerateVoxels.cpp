@@ -12,12 +12,14 @@ using namespace Igor;
 #include <iaConsole.h>
 using namespace IgorAux;
 
+#define SIN_WAVE_TERRAIN
+
 TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 priority)
     : iTask(nullptr, priority, false)
 {
     con_assert(voxelBlockInfo != nullptr, "zero pointer");
     con_assert(voxelBlockInfo->_voxelData != nullptr, "zero pointer");
-    
+
     _voxelBlockInfo = voxelBlockInfo;
 }
 
@@ -96,7 +98,9 @@ void TaskGenerateVoxels::run()
                 }
 
                 float64 height = (noise * 2000);
-                //height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
+#ifdef SIN_WAVE_TERRAIN
+                height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
+#endif
 
                 float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * lodFactor)

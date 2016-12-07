@@ -25,7 +25,7 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-//#define FIX_POSITION
+#define FIX_POSITION
 //#define FIX_HEIGHT
 //#define WIREFRAME
 
@@ -251,10 +251,10 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
             start._y = 0;
         }
 
-        if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
+       /* if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
         {
             start._y = 3;
-        }
+        }*/
 
         if (start._z < 0)
         {
@@ -464,7 +464,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                 delete voxelBlock->_voxelData;
                 voxelBlock->_voxelData = nullptr;
                 voxelBlock->_voxelBlockInfo->_voxelData = nullptr;
-
                 voxelBlock->_state = Stage::Empty;
             }
             else
@@ -514,9 +513,9 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             if (voxelBlock->_dirtyNeighbors)
             {
                 uint32 neighborsLOD = calcLODTransition(voxelBlock);
-                if (voxelBlock->_neighborsLOD != neighborsLOD)
+                if (voxelBlock->_neighboursLOD != neighborsLOD)
                 {
-                    voxelBlock->_neighborsLOD = neighborsLOD;
+                    voxelBlock->_neighboursLOD = neighborsLOD;
                     voxelBlock->_dirty = true;
                 }
 
@@ -791,8 +790,8 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
             }
 
             tileInformation._lod = voxelBlock->_lod;
-            tileInformation._neighborsLOD = voxelBlock->_neighborsLOD;
-            voxelBlock->_neighborsLOD = tileInformation._neighborsLOD;
+            tileInformation._neighboursLOD = voxelBlock->_neighboursLOD;
+            voxelBlock->_neighboursLOD = tileInformation._neighboursLOD;
 
             iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
             inputParam->_identifier = "vtg";
@@ -820,7 +819,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
             modelNode->setModel(tileName, inputParam);
 
             transform->insertNode(modelNode);
-            _rootNode->insertNodeAsync(transform);
+            _rootNode->insertNode(transform);
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();
@@ -828,6 +827,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
     }
     else if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID)
     {
+        static int count = 0;
         iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
         if (modelNode != nullptr &&
             modelNode->isLoaded())

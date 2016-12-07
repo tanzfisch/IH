@@ -53,7 +53,7 @@ private:
 
     /*! bit mask with current neighbors LOD settings
     */
-	uint32 _neighborsLOD = 0;
+	uint32 _neighboursLOD = 0;
 
     /*! if dirty the tile has to be regenerated
     */

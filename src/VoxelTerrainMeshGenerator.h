@@ -42,7 +42,7 @@ struct TileInformation
 
     /*! neighbors LOD flags
     */
-	uint32 _neighborsLOD = 0;
+	uint32 _neighboursLOD = 0;
 };
 
 /*! voxel terrain mesh generator
