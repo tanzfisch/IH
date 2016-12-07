@@ -75,6 +75,14 @@ public:
 
 private:
 
+    /*! performance section
+    */
+    uint32 _discoverBlocksSection = 0;
+
+    /*! performance section
+    */
+    uint32 _updateBlocksSection = 0;
+
     /*! amount of configured LOD
     */
     static const uint32 _lodCount = 8;

@@ -39,6 +39,9 @@ VoxelTerrain::VoxelTerrain()
     {
         _voxelBlocks.push_back(voxelBlocks);
     }
+
+    _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
+    _updateBlocksSection = iStatistics::getInstance().registerSection("VT:update", 3);
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -190,22 +193,29 @@ void VoxelTerrain::handleVoxelBlocks()
 #endif
 
         iaVector3I observerPosition(pos._x, pos._y, pos._z);
+
+        iStatistics::getInstance().beginSection(_discoverBlocksSection);
         discoverBlocks(observerPosition);
+        iStatistics::getInstance().endSection(_discoverBlocksSection);
+ 
+        iStatistics::getInstance().beginSection(_updateBlocksSection);
         updateBlocks(observerPosition);
+        iStatistics::getInstance().endSection(_updateBlocksSection);
     }
 }
 
 void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 {
     auto& voxelBlocks = _voxelBlocks[_lowestLOD];
-
+    
     for (auto block : voxelBlocks)
     {
         update(block.second, observerPosition);
         updateGeometry(block.second, observerPosition);
         updateVisibility(block.second, observerPosition);
-        // todo need to remove voxel blocks from _voxelBlocks if not in use anymore
     }
+
+    // todo need to remove voxel blocks from _voxelBlocks if not in use anymore
 }
 
 void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
@@ -810,8 +820,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
             modelNode->setModel(tileName, inputParam);
 
             transform->insertNode(modelNode);
-
-            _rootNode->insertNode(transform);
+            _rootNode->insertNodeAsync(transform);
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();

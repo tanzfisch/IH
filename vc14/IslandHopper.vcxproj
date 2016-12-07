@@ -192,6 +192,7 @@ xcopy "$(TargetDir)$(TargetName).exe" "..\bin\" /Y /D
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>Igor.lib;IgorAux.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\3rd\Igor\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "$(TargetDir)$(TargetName).exe" "..\..\..\bin\" /Y /D</Command>
@@ -216,6 +217,7 @@ xcopy "$(TargetDir)$(TargetName).exe" "..\bin\" /Y /D
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>Igor.lib;IgorAux.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\Igor\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy "..\..\Igor\bin\*.dll" "$(ProjectDir)..\bin\" /Y /D
