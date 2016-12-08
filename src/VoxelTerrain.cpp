@@ -25,7 +25,7 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-#define FIX_POSITION
+//#define FIX_POSITION
 //#define FIX_HEIGHT
 //#define WIREFRAME
 
@@ -251,10 +251,10 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
             start._y = 0;
         }
 
-       /* if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
+        if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
         {
             start._y = 3;
-        }*/
+        }
 
         if (start._z < 0)
         {
