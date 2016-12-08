@@ -25,9 +25,9 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-//#define FIX_POSITION
-//#define FIX_HEIGHT
-//#define WIREFRAME
+// #define FIX_POSITION
+// #define FIX_HEIGHT
+// #define WIREFRAME
 
 const float64 VoxelTerrain::_visibleDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
 
@@ -445,7 +445,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             voxelBlock->_voxelBlockInfo->_lodOffset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
             voxelBlock->_voxelBlockInfo->_lod = voxelBlock->_lod;
 
-            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, static_cast<uint32>(distanceSquare * 0.9));
+            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, static_cast<uint32>(distanceSquare * 0.001));
             voxelBlock->_voxelGenerationTaskID = iTaskManager::getInstance().addTask(task);
         }
 
