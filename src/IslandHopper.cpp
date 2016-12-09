@@ -397,7 +397,7 @@ void IslandHopper::init()
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-    iStatistics::getInstance().setVerbosity(iRenderStatisticsVerbosity::None);
+    iStatistics::getInstance().setVerbosity(iRenderStatisticsVerbosity::FPSMetricsAndTasks);
 
     uint64 particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
     iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->setName("PMat");

@@ -25,9 +25,9 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 
-// #define FIX_POSITION
-// #define FIX_HEIGHT
-// #define WIREFRAME
+//#define FIX_POSITION
+//#define FIX_HEIGHT
+//#define WIREFRAME
 
 const float64 VoxelTerrain::_visibleDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
 
@@ -192,7 +192,16 @@ void VoxelTerrain::handleVoxelBlocks()
         pos._y = 310;
 #endif
 
-        iaVector3I observerPosition(pos._x, pos._y, pos._z);
+        const uint64 gridMask = 0xffffffffffffffe0;
+        // reduce to 32m grid
+        uint64 x = static_cast<uint64>(pos._x) & gridMask;
+        uint64 y = static_cast<uint64>(pos._y) & gridMask;
+        uint64 z = static_cast<uint64>(pos._z) & gridMask;
+        // move to center of block
+        x += 16;
+        y += 16;
+        z += 16;
+        iaVector3I observerPosition(x, y, z);
 
         iStatistics::getInstance().beginSection(_discoverBlocksSection);
         discoverBlocks(observerPosition);
@@ -445,7 +454,9 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             voxelBlock->_voxelBlockInfo->_lodOffset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
             voxelBlock->_voxelBlockInfo->_lod = voxelBlock->_lod;
 
-            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, static_cast<uint32>(distanceSquare * 0.001));
+            uint32 priority = distanceSquare * 0.001; // TODO make hight LOD higher priority
+
+            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, priority);
             voxelBlock->_voxelGenerationTaskID = iTaskManager::getInstance().addTask(task);
         }
 
@@ -621,6 +632,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock, iaVector3I observerP
 
     bool childrenVisible = false;
     bool meshVisible = voxelBlock->getInVisibilityRange();
+    bool meshActuallyVisible = false;
 
     if (voxelBlock->_lod > 0)
     {
@@ -823,6 +835,8 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();
+
+            voxelBlock->_dirty = false;
         }
     }
     else if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID)
