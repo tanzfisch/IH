@@ -66,14 +66,6 @@ void VoxelBlock::setNeighborsDirty()
             _neighbors[i]->_dirtyNeighbors = true;
         }
     }
-
-    if (_children[0] != nullptr)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            _children[i]->setNeighborsDirty();
-        }
-    }
 }
 
 void VoxelBlock::setNeighbor(uint32 neighbourIndex, VoxelBlock* neighbour)
