@@ -41,7 +41,7 @@ VoxelTerrain::VoxelTerrain()
     }
 
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
-    _updateBlocksSection = iStatistics::getInstance().registerSection("VT:update", 3);
+    _updateBlocksSection = iStatistics::getInstance().registerSection("VT:blocks", 3);
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -438,7 +438,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         break;
 
     case Stage::Setup:
-    {
+    {    
         if (voxelBlock->_voxelBlockInfo == nullptr)
         {
             voxelBlock->_voxelData = new iVoxelData();
@@ -466,7 +466,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::GeneratingVoxel:
     {
-        iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);
+        iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);       
         if (task == nullptr)
         {
             voxelBlock->_voxelGenerationTaskID = iTask::INVALID_TASK_ID;
@@ -506,9 +506,8 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                         }
                     }
                 }
-
                 voxelBlock->_state = Stage::GeneratingMesh;
-            }
+            }            
         }
     }
     break;
