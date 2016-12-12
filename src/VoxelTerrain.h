@@ -163,9 +163,7 @@ private:
 
 	void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
-    bool updateVisibility(VoxelBlock* voxelBlock, iaVector3I observerPosition);
-
-    void updateGeometry(VoxelBlock* voxelBlock, iaVector3I observerPosition);
+    bool updateVisibility(VoxelBlock* voxelBlock);
 
 	void updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
