@@ -42,6 +42,7 @@ VoxelTerrain::VoxelTerrain()
 
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
     _updateBlocksSection = iStatistics::getInstance().registerSection("VT:blocks", 3);
+    _debugSection = iStatistics::getInstance().registerSection("VT:debug", 4);
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -336,58 +337,76 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
 
     iaVector3I neighbourPos;
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._x += voxelBlock->_size;
-    auto neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[0] == nullptr)
     {
-        voxelBlock->_neighbors[0] = (*neighbour).second;
-        (*neighbour).second->_neighbors[1] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._x += voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[0] = (*neighbour).second;
+            (*neighbour).second->_neighbors[1] = voxelBlock;
+        }
     }
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._x -= voxelBlock->_size;
-    neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[1] == nullptr)
     {
-        voxelBlock->_neighbors[1] = (*neighbour).second;
-        (*neighbour).second->_neighbors[0] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._x -= voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[1] = (*neighbour).second;
+            (*neighbour).second->_neighbors[0] = voxelBlock;
+        }
     }
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._y += voxelBlock->_size;
-    neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[2] == nullptr)
     {
-        voxelBlock->_neighbors[2] = (*neighbour).second;
-        (*neighbour).second->_neighbors[3] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._y += voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[2] = (*neighbour).second;
+            (*neighbour).second->_neighbors[3] = voxelBlock;
+        }
     }
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._y -= voxelBlock->_size;
-    neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[3] == nullptr)
     {
-        voxelBlock->_neighbors[3] = (*neighbour).second;
-        (*neighbour).second->_neighbors[2] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._y -= voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[3] = (*neighbour).second;
+            (*neighbour).second->_neighbors[2] = voxelBlock;
+        }
     }
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._z += voxelBlock->_size;
-    neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[4] == nullptr)
     {
-        voxelBlock->_neighbors[4] = (*neighbour).second;
-        (*neighbour).second->_neighbors[5] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._z += voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[4] = (*neighbour).second;
+            (*neighbour).second->_neighbors[5] = voxelBlock;
+        }
     }
 
-    neighbourPos = voxelBlock->_position;
-    neighbourPos._z -= voxelBlock->_size;
-    neighbour = voxelBlocks.find(neighbourPos);
-    if (neighbour != voxelBlocks.end())
+    if (voxelBlock->_neighbors[5] == nullptr)
     {
-        voxelBlock->_neighbors[5] = (*neighbour).second;
-        (*neighbour).second->_neighbors[4] = voxelBlock;
+        neighbourPos = voxelBlock->_position;
+        neighbourPos._z -= voxelBlock->_size;
+        auto neighbour = voxelBlocks.find(neighbourPos);
+        if (neighbour != voxelBlocks.end())
+        {
+            voxelBlock->_neighbors[5] = (*neighbour).second;
+            (*neighbour).second->_neighbors[4] = voxelBlock;
+        }
     }
 }
 
@@ -438,6 +457,8 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::Setup:
     {    
+        
+        
         if (voxelBlock->_voxelBlockInfo == nullptr)
         {
             voxelBlock->_voxelData = new iVoxelData();
@@ -461,11 +482,13 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         }
 
         voxelBlock->_state = Stage::GeneratingVoxel;
+        
     }
     break;
 
     case Stage::GeneratingVoxel:
     {
+        
         iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);       
         if (task == nullptr)
         {
@@ -500,15 +523,63 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                             voxelBlock->_children[i]->_parent = voxelBlock;
                         }
 
+                        iStatistics::getInstance().beginSection(_debugSection);
+
+                        //   4-----5
+                        //  /|    /|
+                        // 7-----6 |
+                        // | 0---|-1
+                        // |/    |/
+                        // 3-----2
+
+                        voxelBlock->_children[0]->_neighbors[0] = voxelBlock->_children[1];
+                        voxelBlock->_children[1]->_neighbors[1] = voxelBlock->_children[0];
+
+                        voxelBlock->_children[3]->_neighbors[0] = voxelBlock->_children[2];
+                        voxelBlock->_children[2]->_neighbors[1] = voxelBlock->_children[3];
+
+                        voxelBlock->_children[4]->_neighbors[0] = voxelBlock->_children[4];
+                        voxelBlock->_children[5]->_neighbors[1] = voxelBlock->_children[5];
+
+                        voxelBlock->_children[7]->_neighbors[0] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbors[1] = voxelBlock->_children[7];
+
+                        voxelBlock->_children[0]->_neighbors[2] = voxelBlock->_children[4];
+                        voxelBlock->_children[4]->_neighbors[3] = voxelBlock->_children[0];
+
+                        voxelBlock->_children[1]->_neighbors[2] = voxelBlock->_children[5];
+                        voxelBlock->_children[5]->_neighbors[3] = voxelBlock->_children[1];
+
+                        voxelBlock->_children[2]->_neighbors[2] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbors[3] = voxelBlock->_children[2];
+
+                        voxelBlock->_children[3]->_neighbors[2] = voxelBlock->_children[7];
+                        voxelBlock->_children[7]->_neighbors[3] = voxelBlock->_children[3];
+
+                        voxelBlock->_children[0]->_neighbors[4] = voxelBlock->_children[3];
+                        voxelBlock->_children[3]->_neighbors[5] = voxelBlock->_children[0];
+
+                        voxelBlock->_children[1]->_neighbors[4] = voxelBlock->_children[2];
+                        voxelBlock->_children[2]->_neighbors[5] = voxelBlock->_children[1];
+
+                        voxelBlock->_children[4]->_neighbors[4] = voxelBlock->_children[7];
+                        voxelBlock->_children[7]->_neighbors[5] = voxelBlock->_children[4];
+
+                        voxelBlock->_children[5]->_neighbors[4] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbors[5] = voxelBlock->_children[5];
+
                         for (int i = 0; i < 8; ++i)
                         {
                             attachNeighbours(voxelBlock->_children[i]);
                         }
+
+                        iStatistics::getInstance().endSection(_debugSection);
                     }
                 }
                 voxelBlock->_state = Stage::GeneratingMesh;
             }            
         }
+        
     }
     break;
 

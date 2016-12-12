@@ -83,6 +83,8 @@ private:
     */
     uint32 _updateBlocksSection = 0;
 
+    uint32 _debugSection = 0;
+
     /*! amount of configured LOD
     */
     static const uint32 _lodCount = 8;
