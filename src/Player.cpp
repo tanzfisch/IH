@@ -166,7 +166,7 @@ void Player::hitBy(uint64 entityID)
 iaVector3I Player::getGunPointPosition()
 {
     iaVector3I result;
-    iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().getNode(_cameraNodeID));
+    /*iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().getNode(_cameraNodeID));
     if (camera != nullptr)
     {
         iaMatrixf modelMatrix;
@@ -196,7 +196,7 @@ iaVector3I Player::getGunPointPosition()
 
             result = outside;
         }
-    }
+    }*/
 
     return result;
 }

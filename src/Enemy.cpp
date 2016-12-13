@@ -137,7 +137,7 @@ iaVector3f Enemy::updatePos()
 
 void Enemy::handle()
 {
-    if (!VoxelTerrain::getInstance().isInstantiated())
+/*    if (!VoxelTerrain::getInstance().isInstantiated())
     {
         return;
     }
@@ -181,7 +181,7 @@ void Enemy::handle()
         {
             _idleCounter = rand() % 5 + 50;
         }
-    }
+    }*/
 }
 
 void Enemy::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep, int threadIndex)

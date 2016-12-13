@@ -63,7 +63,7 @@ iaVector3f Turret::updatePos()
 
 void Turret::handle()
 {
-    if (!_initilized)
+/*    if (!_initilized)
     {
         iNodeModel* turret = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(_turretNodeID));
         if (turret != nullptr)
@@ -182,5 +182,5 @@ void Turret::handle()
                 }
             }
         }
-    }
+    }*/
 }

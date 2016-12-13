@@ -69,9 +69,13 @@ public:
     */
     void setLODTrigger(uint32 lodTriggerID);
 
-    void castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside);
+    /*void castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside);
     void setVoxelDensity(iaVector3I pos, uint8 density);
-    uint8 getVoxelDensity(iaVector3I pos);
+    uint8 getVoxelDensity(iaVector3I pos);*/
+
+    /*! called per frame
+    */
+    void onHandle();
 
 private:
 
@@ -136,10 +140,6 @@ private:
     \param observerPosition current observer position
     */
     void updateBlocks(const iaVector3I& observerPosition);
-
-    /*! called per frame
-    */
-    void onHandle();
 
     /*! finds and attaches neighbours of a block
 

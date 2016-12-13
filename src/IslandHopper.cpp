@@ -207,7 +207,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
 {
     return;
 
-    iaVector3I pos;
+    /*iaVector3I pos;
     iaVector3I diff;
     diff = max;
     diff -= min;
@@ -259,7 +259,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
         }
     }/**/
 
-    count = 0;
+    /*count = 0;
 
     for (int i = 0; i < 800; ++i)
     {

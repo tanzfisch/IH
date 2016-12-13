@@ -100,22 +100,22 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
     _lodTrigger = lodTriggerID;
 }
 
-uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
+/*uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
 {
     uint8 result = 0;
 
     return result;
-}
+}*/
 
 void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
 {
 }
 
-void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
+/*void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
 {
-}
+}*/
 
-void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
+/*void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
 {
     iaVector3I u(from);
     iaVector3I delta(to);
@@ -167,7 +167,7 @@ void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVecto
             u._z += step._z;
         }
     }
-}
+}*/
 
 void VoxelTerrain::onHandle()
 {
