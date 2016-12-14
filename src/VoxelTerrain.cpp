@@ -24,6 +24,7 @@ using namespace Igor;
 using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
+#include "TaskVoxelTerrain.h"
 
 //#define FIX_POSITION
 //#define FIX_HEIGHT
@@ -67,9 +68,12 @@ void VoxelTerrain::init(iScene* scene)
     _rootNode = iNodeFactory::getInstance().createNode(iNodeType::iNode);
     scene->getRoot()->insertNode(_rootNode);
 
-    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
-
     iModelResourceFactory::getInstance().registerModelDataIO("vtg", &VoxelTerrainMeshGenerator::createInstance);
+
+//    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
+
+    iTaskManager::getInstance().addTask(new TaskVoxelTerrain(this));
+
 
     // set up terrain material
     _terrainMaterialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
@@ -90,7 +94,7 @@ void VoxelTerrain::deinit()
 
     iModelResourceFactory::getInstance().unregisterModelDataIO("vtg");
 
-    iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
+    // iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
 
     // TODO cleanup
 }
@@ -169,10 +173,10 @@ void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelati
     }
 }*/
 
-void VoxelTerrain::onHandle()
+/*void VoxelTerrain::onHandle()
 {
     handleVoxelBlocks();
-}
+}*/
 
 void VoxelTerrain::handleVoxelBlocks()
 {
@@ -641,7 +645,7 @@ void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
-            iNodeFactory::getInstance().destroyNode(voxelBlock->_transformNodeIDCurrent);
+            iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
             voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
             voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
             voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
@@ -717,7 +721,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                                 iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeIDCurrent));
                                 if (transformNode != nullptr)
                                 {
-                                    transformNode->setActive(false);
+                                    transformNode->setActiveAsync(false);
                                 }
                             }
                         }
@@ -739,7 +743,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                 iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
                 if (transformNode != nullptr)
                 {
-                    transformNode->setActive(meshVisible);
+                    transformNode->setActiveAsync(meshVisible);
                 }
             }
             else
@@ -922,7 +926,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
 
             if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
             {
-                iNodeFactory::getInstance().destroyNode(voxelBlock->_transformNodeIDCurrent);
+                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
             }
 
             voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;

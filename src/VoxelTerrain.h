@@ -30,6 +30,8 @@ iaEVENT(VoxelDataGeneratedEvent, VoxelDataGeneratedDelegate, void, (const iaVect
 class VoxelTerrain
 {
 
+    friend class TaskVoxelTerrain;
+
     /*! voxel block adress hasher
     */
     class VectorHasher

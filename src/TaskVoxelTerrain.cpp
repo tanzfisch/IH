@@ -22,7 +22,7 @@ void TaskVoxelTerrain::run()
 {
     if (_voxelTerrain != nullptr)
     {
-       // TODO _voxelTerrain->handleVoxelBlocks();
+        _voxelTerrain->handleVoxelBlocks();
     }
     finishTask();
 }
