@@ -67,6 +67,8 @@ private:
     iNodeTransform* _lightRotate = nullptr;
     iNodeLight* _lightNode = nullptr;
 
+
+    VoxelTerrain* _voxelTerrain = nullptr;
     
     uint32 _materialWithTextureAndBlending = 0;
     uint32 _octreeMaterial = 0;
@@ -103,7 +105,9 @@ private:
     void initViews();
     void initScene();
     void initPlayer();
+
     void initVoxelData();
+    void deinitVoxelData();
 
 };
 

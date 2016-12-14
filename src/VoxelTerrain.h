@@ -6,7 +6,6 @@ using namespace Igor;
 
 #include <iaEvent.h>
 #include <iaVector3.h>
-#include <iaSingleton.h>
 using namespace IgorAux;
 
 #include <unordered_map>
@@ -28,10 +27,8 @@ iaEVENT(VoxelDataGeneratedEvent, VoxelDataGeneratedDelegate, void, (const iaVect
 /*! 
     \todo should not be a singleton
 */
-class VoxelTerrain : public iaSingleton<VoxelTerrain>
+class VoxelTerrain
 {
-
-    friend class iaSingleton<VoxelTerrain>; 
 
     /*! voxel block adress hasher
     */
@@ -56,6 +53,14 @@ class VoxelTerrain : public iaSingleton<VoxelTerrain>
     };
 
 public:
+
+    /*! init
+    */
+    VoxelTerrain();
+
+    /*! deinit
+    */
+    ~VoxelTerrain();
     
     /*! sets the scene and initializes the terrain
 
@@ -87,7 +92,7 @@ private:
     */
     uint32 _updateBlocksSection = 0;
 
-    uint32 _debugSection = 0;
+    uint32 _debugSection = 0; // todo remove later
 
     /*! amount of configured LOD
     */
@@ -182,14 +187,6 @@ private:
     /*! deinit
     */
     void deinit();
-
-    /*! init
-    */
-    VoxelTerrain();
-
-    /*! deinit
-    */
-    ~VoxelTerrain();
 
 };
 

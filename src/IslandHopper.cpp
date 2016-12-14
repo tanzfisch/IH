@@ -379,6 +379,8 @@ void IslandHopper::init()
 {
     con(" -- OpenGL 3D Test --" << endl);
 
+    
+
     initViews();
     initScene();
 
@@ -425,7 +427,7 @@ void IslandHopper::deinit()
     iTaskManager::getInstance().abortTask(_taskFlushModels);
     iTaskManager::getInstance().abortTask(_taskFlushTextures);
 
-    VoxelTerrain::getInstance().destroyInstance();
+    deinitVoxelData();
 
     iSceneFactory::getInstance().destroyScene(_scene);
 
@@ -436,9 +438,10 @@ void IslandHopper::deinit()
     _window.removeView(&_view);
     _window.removeView(&_viewOrtho);
 
-    if (_font)
+    if (_font != nullptr)
     {
         delete _font;
+        _font = nullptr;
     }
 }
 
@@ -661,13 +664,24 @@ void IslandHopper::onWindowResized(int32 clientWidth, int32 clientHeight)
     _viewOrtho.setOrthogonal(0, static_cast<float32>(clientWidth), static_cast<float32>(clientHeight), 0);
 }
 
+void IslandHopper::deinitVoxelData()
+{
+    if (_voxelTerrain != nullptr)
+    {
+        delete _voxelTerrain;
+        _voxelTerrain = nullptr;
+    }
+}
+
 void IslandHopper::initVoxelData()
 {
-    VoxelTerrain::getInstance().setScene(_scene);
+    _voxelTerrain = new VoxelTerrain();
+
+    _voxelTerrain->setScene(_scene);
     Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
     if (player != nullptr)
     {
-        VoxelTerrain::getInstance().setLODTrigger(player->getLODTriggerID());
+        _voxelTerrain->setLODTrigger(player->getLODTriggerID());
     }
 }
 
