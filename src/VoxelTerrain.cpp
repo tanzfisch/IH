@@ -41,7 +41,6 @@ VoxelTerrain::VoxelTerrain()
 
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
     _updateBlocksSection = iStatistics::getInstance().registerSection("VT:blocks", 3);
-    _debugSection = iStatistics::getInstance().registerSection("VT:debug", 4);
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -519,8 +518,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                             voxelBlock->_children[i]->_parent = voxelBlock;
                         }
 
-                        iStatistics::getInstance().beginSection(_debugSection);
-
                         //   4-----5
                         //  /|    /|
                         // 7-----6 |
@@ -568,14 +565,11 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                         {
                             attachNeighbours(voxelBlock->_children[i]);
                         }
-
-                        iStatistics::getInstance().endSection(_debugSection);
                     }
                 }
                 voxelBlock->_state = Stage::GeneratingMesh;
             }            
         }
-        
     }
     break;
 
@@ -893,7 +887,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
             voxelBlock->_dirty = false;
         }
     }
-    else if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID)
+    else
     {
         static int count = 0;
         iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
