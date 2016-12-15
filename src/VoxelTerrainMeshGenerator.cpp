@@ -71,7 +71,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         targetMaterial->setShininess(100.0f);
 #else
 
-#if 0
+#if 1
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 0);
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 1);
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);

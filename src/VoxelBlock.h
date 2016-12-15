@@ -87,6 +87,8 @@ private:
     */
 	iaVector3I _position;
 
+    iaVector3I _positionInLOD;
+
     /*! level of detail of this block
     */
 	uint32 _lod = 0;

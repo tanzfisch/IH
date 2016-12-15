@@ -26,11 +26,9 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 #include "TaskVoxelTerrain.h"
 
-//#define FIX_POSITION
-#define FIX_HEIGHT
-#define WIREFRAME
-
-const float64 VoxelTerrain::_visibleDistance[] = { 100 * 100, 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3200 * 3200, 6400 * 6400, 100000 * 100000 };
+// #define FIX_POSITION
+// #define FIX_HEIGHT
+// #define WIREFRAME
 
 VoxelTerrain::VoxelTerrain()
 {
@@ -197,16 +195,7 @@ void VoxelTerrain::handleVoxelBlocks()
         pos._y = 310;
 #endif
 
-        const uint64 gridMask = 0xffffffffffffffe0;
-        // reduce to 32m grid
-        uint64 x = static_cast<uint64>(pos._x) & gridMask;
-        uint64 y = static_cast<uint64>(pos._y) & gridMask;
-        uint64 z = static_cast<uint64>(pos._z) & gridMask;
-        // move to center of block
-        x += 16;
-        y += 16;
-        z += 16;
-        iaVector3I observerPosition(x, y, z);
+        iaVector3I observerPosition(pos._x, pos._y, pos._z);
 
         iStatistics::getInstance().beginSection(_discoverBlocksSection);
         discoverBlocks(observerPosition);
@@ -227,8 +216,6 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
         update(block.second, observerPosition);
         updateVisibility(block.second);
     }
-
-    // todo need to remove voxel blocks from _voxelBlocks if not in use anymore
 }
 
 void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
@@ -420,21 +407,29 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     {
         return;
     }
-
-    float64 distanceSquare = observerPosition.distance2(voxelBlock->_blockCenterPos);
+    
+    iaVector3I distance = observerPosition;
+    distance /= voxelBlock->_size;
+    distance -= voxelBlock->_positionInLOD;
+    distance._x = abs(distance._x);
+    distance._y = abs(distance._y);
+    distance._z = abs(distance._z);
 
     bool inVisibleRange = false;
-    bool childrenInVisibleRange = false;
 
-    if (voxelBlock->_lod == _lowestLOD &&
-        distanceSquare < _visibleDistance[voxelBlock->_lod])
+    if (voxelBlock->_lod == _lowestLOD)
     {
-        inVisibleRange = true;
+        if (distance._x <= _voxelBlockDiscoveryDistance && distance._y <= _voxelBlockDiscoveryDistance && distance._z <= _voxelBlockDiscoveryDistance)
+        {
+            inVisibleRange = true;
+        }        
     }
 
     if (voxelBlock->_children[0] != nullptr)
     {
-        if (distanceSquare < _visibleDistance[voxelBlock->_lod - 1])
+        bool childrenInVisibleRange = false;
+
+        if(distance._x <= 1 && distance._y <= 1 && distance._z <= 1)
         {
             childrenInVisibleRange = true;
         }
@@ -453,7 +448,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     switch (voxelBlock->_state)
     {
     case Stage::Initial:
-        if (distanceSquare < _visibleDistance[voxelBlock->_lod] * 2.0)
+        if (distance._x <= 4 && distance._y <= 4 && distance._z <= 4)
         {
             voxelBlock->_state = Stage::Setup;
         }
@@ -477,7 +472,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             voxelBlock->_voxelBlockInfo->_lod = voxelBlock->_lod;
 
             // lower lods need higher priority to build
-            uint32  priority = distanceSquare * 0.00001 + (_lowestLOD - voxelBlock->_lod) * 10000;
+            uint32  priority = _lowestLOD - voxelBlock->_lod + 1;
 
             TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, priority);
             voxelBlock->_voxelGenerationTaskID = iTaskManager::getInstance().addTask(task);
@@ -590,7 +585,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::Ready:
     {
-        if (distanceSquare >= _visibleDistance[voxelBlock->_lod] * 4.0)
+        if (distance._x > 8 && distance._y > 8 && distance._z > 8)
         {
             cleanUpVoxelBlock(voxelBlock);
         }
@@ -690,73 +685,67 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
     bool blockVisible = voxelBlock->getInVisibilityRange();
     bool meshVisible = blockVisible;
 
-    if (blockVisible)
+    if (voxelBlock->_children[0] != nullptr)
     {
-        if (voxelBlock->_lod > 0)
+        childrenVisible = true;
+        for (int i = 0; i < 8; ++i)
         {
-            if (voxelBlock->_children[0] != nullptr)
+            if (!updateVisibility(voxelBlock->_children[i]))
             {
-                childrenVisible = true;
-                for (int i = 0; i < 8; ++i)
-                {
-                    if (!updateVisibility(voxelBlock->_children[i]))
-                    {
-                        childrenVisible = false;
-                    }
-                }
-
-                if (!childrenVisible)
-                {
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        if (voxelBlock->_children[i]->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
-                        {
-                            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_modelNodeIDCurrent));
-                            if (modelNode != nullptr &&
-                                modelNode->isLoaded())
-                            {
-                                iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeIDCurrent));
-                                if (transformNode != nullptr)
-                                {
-                                    transformNode->setActiveAsync(false);
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    meshVisible = false;
-                }
+                childrenVisible = false;
             }
         }
 
-        if (voxelBlock->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
+        if (!childrenVisible)
         {
-            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
-            if (modelNode != nullptr &&
-                modelNode->isLoaded())
+            for (int i = 0; i < 8; ++i)
             {
-                iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
-                if (transformNode != nullptr)
+                if (voxelBlock->_children[i]->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
                 {
-                    transformNode->setActiveAsync(meshVisible);
+                    iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_modelNodeIDCurrent));
+                    if (modelNode != nullptr &&
+                        modelNode->isLoaded())
+                    {
+                        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeIDCurrent));
+                        if (transformNode != nullptr)
+                        {
+                            transformNode->setActiveAsync(false);
+                        }
+                    }
                 }
-            }
-            else
-            {
-                meshVisible = false;
             }
         }
         else
         {
             meshVisible = false;
         }
-
-        return (childrenVisible || meshVisible);
     }
 
-    return false;
+    if (voxelBlock->_modelNodeIDCurrent != iNode::INVALID_NODE_ID)
+    {
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
+        if (modelNode != nullptr &&
+            modelNode->isLoaded())
+        {
+            iNode* group = static_cast<iNodeMesh*>(modelNode->getChild("group"));
+            if (group != nullptr)
+            {
+                iNodeMesh* meshNode = static_cast<iNodeMesh*>(group->getChild("mesh"));
+                if (meshNode != nullptr)
+                {
+                    meshNode->setVisible(meshVisible);
+                }
+            }
+
+            iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
+            if (transformNode != nullptr)
+            {
+                transformNode->setActiveAsync(meshVisible);
+            }
+        }
+    }
+
+    return (meshVisible || childrenVisible);
 }
 
 #define HIGHER_NEIGHBOR_LOD_XPOSITIVE 0x20
@@ -911,16 +900,6 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
-            iNode* group = static_cast<iNodeMesh*>(modelNode->getChild("group"));
-            if (group != nullptr)
-            {
-                iNodeMesh* meshNode = static_cast<iNodeMesh*>(group->getChild("mesh"));
-                if (meshNode != nullptr)
-                {
-                    meshNode->setVisible(true);
-                }
-            }
-
             if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
             {
                 iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);

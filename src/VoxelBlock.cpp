@@ -16,6 +16,8 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
     _position = position;
     _lod = lod;
     _size = _voxelBlockSize * pow(2, lod);
+    _positionInLOD = _position;
+    _positionInLOD /= _size;
     _parentAdress = parentAdress;
 
     float64 halfSize = static_cast<float64>(_size >> 1);

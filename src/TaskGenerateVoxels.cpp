@@ -12,7 +12,7 @@ using namespace Igor;
 #include <iaConsole.h>
 using namespace IgorAux;
 
-#define SIN_WAVE_TERRAIN
+// #define SIN_WAVE_TERRAIN
 
 TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 priority)
     : iTask(nullptr, priority, false)
