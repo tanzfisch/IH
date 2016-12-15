@@ -80,10 +80,6 @@ public:
     void setVoxelDensity(iaVector3I pos, uint8 density);
     uint8 getVoxelDensity(iaVector3I pos);*/
 
-    /*! called per frame
-    */
-    void onHandle();
-
 private:
 
     /*! performance section
@@ -174,7 +170,7 @@ private:
 
     bool updateVisibility(VoxelBlock* voxelBlock);
 
-	void updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition);
+	void updateMesh(VoxelBlock* voxelBlock);
 
     uint32 calcLODTransition(VoxelBlock* voxelBlock);
 

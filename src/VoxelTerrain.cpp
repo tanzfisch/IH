@@ -27,10 +27,10 @@ using namespace IgorAux;
 #include "TaskVoxelTerrain.h"
 
 //#define FIX_POSITION
-//#define FIX_HEIGHT
-//#define WIREFRAME
+#define FIX_HEIGHT
+#define WIREFRAME
 
-const float64 VoxelTerrain::_visibleDistance[] = { 150 * 150, 300 * 300, 700 * 700, 1500 * 1500, 3000 * 3000, 6000 * 6000, 12000 * 12000, 100000 * 100000 };
+const float64 VoxelTerrain::_visibleDistance[] = { 100 * 100, 200 * 200, 400 * 400, 800 * 800, 1600 * 1600, 3200 * 3200, 6400 * 6400, 100000 * 100000 };
 
 VoxelTerrain::VoxelTerrain()
 {
@@ -461,8 +461,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::Setup:
     {    
-        
-        
         if (voxelBlock->_voxelBlockInfo == nullptr)
         {
             voxelBlock->_voxelData = new iVoxelData();
@@ -492,7 +490,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::GeneratingVoxel:
     {
-        
         iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);       
         if (task == nullptr)
         {
@@ -588,7 +585,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     break;
 
     case Stage::GeneratingMesh:
-        updateMesh(voxelBlock, observerPosition);
+        updateMesh(voxelBlock);
         break;
 
     case Stage::Ready:
@@ -853,7 +850,7 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
     return result;
 }
 
-void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPosition)
+void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
 {
     if (voxelBlock->_transformNodeIDQueued == iNode::INVALID_NODE_ID)
     {
@@ -899,7 +896,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock, iaVector3I observerPositio
             modelNode->setModel(tileName, inputParam);
 
             transform->insertNode(modelNode);
-            _rootNode->insertNode(transform);
+            _rootNode->insertNodeAsync(transform);
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();

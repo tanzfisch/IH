@@ -464,7 +464,12 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::W:
+            case iKeyCode::Z:
                 player->startForward();
+                break;
+
+            case iKeyCode::H:
+                player->stopForward();
                 break;
 
             case iKeyCode::S:
@@ -618,11 +623,14 @@ void IslandHopper::onMouseMoved(int32 x1, int32 y1, int32 x2, int32 y2, iWindow*
 {
     if (_activeControls)
     {
-        _mouseDelta.set(x2 - x1, y2 - y1);
-
-        if (!iKeyboard::getInstance().getKey(iKeyCode::Space))
+        if (iMouse::getInstance().getRightButton())
         {
+            _mouseDelta.set(x2 - x1, y2 - y1);
             iMouse::getInstance().setCenter(true);
+        }
+        else
+        {
+            _mouseDelta.set(0, 0);
         }
     }
 }
@@ -634,7 +642,7 @@ void IslandHopper::onMouseDown(iKeyCode key)
         Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
         if (player != nullptr)
         {
-            if (key == iKeyCode::MouseRight)
+            if (key == iKeyCode::MouseMiddle)
             {
                 iaVector3f updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
                 player->shootSecondaryWeapon(_view, updown);
