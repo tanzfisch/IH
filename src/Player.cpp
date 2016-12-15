@@ -441,11 +441,11 @@ void Player::handle()
 
     if (_rollLeft)
     {
-        _torque._z = 50.0;
+        _torque._z = 10.0;
     }
     else if (_rollRight)
     {
-        _torque._z = -50.0;
+        _torque._z = -10.0;
     }
     else
     {

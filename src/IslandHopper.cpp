@@ -192,15 +192,9 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixf matrix;
-    //matrix.translate(10000, 9400, 10000);
-    matrix.translate(9986, 1000, 8977);
+    matrix.translate(9986, 400, 8977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
-
-    /*iaMatrixf enemyMatrix;
-    enemyMatrix._pos.set(10000, 9400, 10000 - 200);
-    BossEnemy* boss = new BossEnemy(_scene, enemyMatrix, _playerID);
-    _bossID = boss->getID();*/
 }
 
 void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)

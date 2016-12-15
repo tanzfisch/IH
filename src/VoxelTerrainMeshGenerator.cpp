@@ -59,7 +59,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 0
+#if 1
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
@@ -144,7 +144,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 
         result->insertNode(meshNode);
 
-		/*if (tileInformation->_lod == 0)
+		if (tileInformation->_lod == 0)
 		{
 			iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
 			iaMatrixf offset;
@@ -153,7 +153,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 			physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
 
 			result->insertNode(physicsNode);
-		}*/
+		}
     }
 
     return result;
