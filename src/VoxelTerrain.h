@@ -115,7 +115,7 @@ private:
 
     /*! voxel block discovery distance
     */
-    static const int64 _voxelBlockDiscoveryDistance = 10;
+    static const int64 _voxelBlockDiscoveryDistance = 20;
 
     /*! the voxel data
     */
