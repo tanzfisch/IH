@@ -60,6 +60,46 @@ void VoxelTerrain::setScene(iScene* scene)
     }
 }
 
+void VoxelTerrain::setActiveAsync(iNode* node, bool active)
+{
+    iNodeFactory::iAction action;
+    action._action = active ? iNodeFactory::iActionType::Activate : iNodeFactory::iActionType::Deactivate;
+    action._nodeA = node->getID();
+
+    _actionQueue.push_back(action);
+}
+
+void VoxelTerrain::insertNodeAsync(iNode* src, iNode* dst)
+{
+    iNodeFactory::iAction action;
+    action._action = iNodeFactory::iActionType::Insert;
+    action._nodeA = src->getID();
+    action._nodeB = dst->getID();
+
+    _actionQueue.push_back(action);
+}
+
+void VoxelTerrain::removeNodeAsync(iNode* src, iNode* dst)
+{
+    iNodeFactory::iAction action;
+    action._action = iNodeFactory::iActionType::Remove;
+    action._nodeA = src->getID();
+    action._nodeB = dst->getID();
+
+    _actionQueue.push_back(action);
+}
+
+void VoxelTerrain::destroyNodeAsync(uint32 nodeID)
+{
+    con_assert(nodeID != iNode::INVALID_NODE_ID, "invalid node id");
+
+    iNodeFactory::iAction action;
+    action._action = iNodeFactory::iActionType::Destroy;
+    action._nodeA = nodeID;
+
+    _actionQueue.push_back(action);
+}
+
 void VoxelTerrain::init(iScene* scene)
 {
     _rootNode = iNodeFactory::getInstance().createNode(iNodeType::iNode);
@@ -170,11 +210,6 @@ void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelati
     }
 }*/
 
-/*void VoxelTerrain::onHandle()
-{
-    handleVoxelBlocks();
-}*/
-
 void VoxelTerrain::handleVoxelBlocks()
 {
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
@@ -204,6 +239,10 @@ void VoxelTerrain::handleVoxelBlocks()
         updateBlocks(observerPosition);
         iStatistics::getInstance().endSection(_updateBlocksSection);
     }
+
+    // apply all actions at once so they will be synced with next frame
+    iNodeFactory::getInstance().applyActionsAsync(_actionQueue);
+    _actionQueue.clear();
 }
 
 void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
@@ -631,7 +670,7 @@ void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
         if (modelNode != nullptr &&
             modelNode->isLoaded())
         {
-            iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+            destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
             voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
             voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
             voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
@@ -703,7 +742,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_children[i]->_transformNodeIDCurrent));
                         if (transformNode != nullptr)
                         {
-                            transformNode->setActiveAsync(false);
+                            setActiveAsync(transformNode, false);
                         }
                     }
                 }
@@ -734,7 +773,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
             iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
             if (transformNode != nullptr)
             {
-                transformNode->setActiveAsync(meshVisible);
+                setActiveAsync(transformNode, meshVisible);
             }
         }
     }
@@ -879,7 +918,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
             modelNode->setModel(tileName, inputParam);
 
             transform->insertNode(modelNode);
-            _rootNode->insertNodeAsync(transform);
+            insertNodeAsync(_rootNode, transform);
 
             voxelBlock->_transformNodeIDQueued = transform->getID();
             voxelBlock->_modelNodeIDQueued = modelNode->getID();
@@ -896,7 +935,7 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
         {
             if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
             {
-                iNodeFactory::getInstance().destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+                destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
             }
 
             voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;

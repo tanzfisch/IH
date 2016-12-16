@@ -20,7 +20,7 @@ using namespace Igor;
 VoxelTerrainMeshGenerator::VoxelTerrainMeshGenerator()
 {
     _identifier = "vtg";
-    _name = "Voxel Terrain Generator";
+    _name = "Voxel Terrain Mesh Generator";
 }
 
 iModelDataIO* VoxelTerrainMeshGenerator::createInstance()

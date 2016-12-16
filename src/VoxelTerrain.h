@@ -2,6 +2,7 @@
 #define __VOXELTERRAINGENERATOR__
 
 #include <iNode.h>
+#include <iNodeFactory.h>
 using namespace Igor;
 
 #include <iaEvent.h>
@@ -24,7 +25,7 @@ namespace Igor
 
 iaEVENT(VoxelDataGeneratedEvent, VoxelDataGeneratedDelegate, void, (const iaVector3I& min, const iaVector3I& max), (min, max));
 
-/*! 
+/*!
     \todo should not be a singleton
 */
 class VoxelTerrain
@@ -63,7 +64,7 @@ public:
     /*! deinit
     */
     ~VoxelTerrain();
-    
+
     /*! sets the scene and initializes the terrain
 
     \param scene the scene to put the terrain in
@@ -81,6 +82,14 @@ public:
     uint8 getVoxelDensity(iaVector3I pos);*/
 
 private:
+
+    /*! queuef  actions
+    */
+    vector<iNodeFactory::iAction> _actionQueue;
+
+    /*! mutex to protect action queue
+    */
+    mutex _mutexActionQueue;
 
     /*! performance section
     */
@@ -112,20 +121,20 @@ private:
 
     /*! keep observer position since last discovery
     */
-	iaVector3I _lastDiscoveryPosition;
+    iaVector3I _lastDiscoveryPosition;
 
     /*! dirty flag if it is time for a rediscovery
     */
-	bool _dirtyDiscovery = true;
+    bool _dirtyDiscovery = true;
 
-	/*! root node of terrain
-	*/
-	iNode* _rootNode = nullptr;
+    /*! root node of terrain
+    */
+    iNode* _rootNode = nullptr;
 
     /*! terrain material id
     */
     uint32 _terrainMaterialID = 0;
-    
+
     /*! lod trigger node id
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
@@ -164,11 +173,16 @@ private:
     */
     void handleVoxelBlocks();
 
-	void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
+    void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
 
     bool updateVisibility(VoxelBlock* voxelBlock);
 
-	void updateMesh(VoxelBlock* voxelBlock);
+    void updateMesh(VoxelBlock* voxelBlock);
+
+    void setActiveAsync(iNode* node, bool active);
+    void insertNodeAsync(iNode* src, iNode* dst);
+    void removeNodeAsync(iNode* src, iNode* dst);
+    void destroyNodeAsync(uint32 nodeID);
 
     uint32 calcLODTransition(VoxelBlock* voxelBlock);
 

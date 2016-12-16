@@ -33,7 +33,12 @@ class VoxelBlock
 
 public:
 
+    /*! block quibic size
+    */
     static const int32 _voxelBlockSize = 32;
+
+    /*! block overlap
+    */
     static const int32 _voxelBlockOverlap = 2;
 
 	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
@@ -75,6 +80,10 @@ private:
     */
 	uint32 _mutationCounter = 0;
 
+    /*! position of block relative to parent
+
+    \todo check if we can do this differently
+    */
     iaVector3I _parentAdress;
 	
     /*! center position of block
@@ -87,6 +96,8 @@ private:
     */
 	iaVector3I _position;
 
+    /*! blocks position as index in corresponding LOD
+    */
     iaVector3I _positionInLOD;
 
     /*! level of detail of this block
@@ -119,9 +130,16 @@ private:
     */
 	VoxelBlockInfo* _voxelBlockInfo = nullptr;
 
+    /*! pointer to parenting block
+    */
     VoxelBlock* _parent = nullptr;
+
+    /*! pointers to children
+    */
 	VoxelBlock* _children[8];
 
+    /*! pointers to neighbour in same LOD
+    */
     VoxelBlock* _neighbors[6];
 
 };

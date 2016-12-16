@@ -7,9 +7,6 @@
 #include <iNodeMesh.h>
 using namespace Igor;
 
-#include "TaskGenerateVoxels.h"
-#include "VoxelTerrainMeshGenerator.h"
-
 VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
 {
     con_assert(lod >= 0 && lod <= 7, "lod out of range");
