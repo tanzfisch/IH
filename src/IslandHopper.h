@@ -67,7 +67,6 @@ private:
     iNodeTransform* _lightRotate = nullptr;
     iNodeLight* _lightNode = nullptr;
 
-
     VoxelTerrain* _voxelTerrain = nullptr;
     
     uint32 _materialWithTextureAndBlending = 0;
@@ -76,7 +75,9 @@ private:
 
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
-    
+
+    void generateVoxelData(VoxelBlockInfo* voxelBlockInfo);
+
     void onKeyPressed(iKeyCode key);
     void onKeyReleased(iKeyCode key);
 

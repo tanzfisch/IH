@@ -6,6 +6,7 @@
 using namespace Igor;
 
 #include <iaVector3.h>
+#include <iaDelegate.h>
 using namespace IgorAux;
 
 #include <vector>
@@ -47,6 +48,16 @@ struct VoxelBlockInfo
     bool _transition = false;
 };
 
+/*! callback to generate voxel data
+
+\param voxelBlockInfo contains all information to generate the voxels
+*/
+iaDELEGATE(GenerateVoxelsDelegate, void, (VoxelBlockInfo* voxelBlockInfo), (voxelBlockInfo));
+
+/*! task to generate voxels.
+
+the actual voxel generation happens in the callback function to be implemented by application
+*/
 class TaskGenerateVoxels : public iTask
 {
 
@@ -54,9 +65,11 @@ public:
 
     /*! initializes member variables
 
-    \param window window connected to render context
+    \param voxelBlockInfo the voxel block to generate the data for
+    \param priority the priority to run this task with
+    \param generateVoxelsDelegate the delegate to do the actual work
     */
-    TaskGenerateVoxels(VoxelBlockInfo* voxelBlock, uint32 priority);
+    TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 priority, GenerateVoxelsDelegate generateVoxelsDelegate);
 
     /*! does nothing
     */
@@ -69,6 +82,10 @@ protected:
     void run();
 
 private:
+
+    /*! delegate that does the actual work
+    */
+    GenerateVoxelsDelegate _generateVoxelsDelegate;
 
     /*! the data to work with
     */

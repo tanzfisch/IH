@@ -59,7 +59,7 @@ public:
 
     /*! init
     */
-    VoxelTerrain();
+    VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate);
 
     /*! deinit
     */
@@ -82,6 +82,8 @@ public:
     uint8 getVoxelDensity(iaVector3I pos);*/
 
 private:
+
+    GenerateVoxelsDelegate _generateVoxelsDelegate;
 
     /*! queuef  actions
     */
@@ -167,7 +169,7 @@ private:
 
     \param voxelBlock the voxel block to clear
     */
-    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);
+    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);    
 
     /*! main handle callback
     */

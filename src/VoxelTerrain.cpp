@@ -18,6 +18,7 @@
 #include <iMesh.h>
 #include <iStatistics.h>
 #include <iContouringCubes.h>
+#include <iPerlinNoise.h>
 using namespace Igor;
 
 #include <iaConsole.h>
@@ -30,8 +31,10 @@ using namespace IgorAux;
 // #define FIX_HEIGHT
 // #define WIREFRAME
 
-VoxelTerrain::VoxelTerrain()
+VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
 {
+    _generateVoxelsDelegate = generateVoxelsDelegate;
+
     unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn> voxelBlocks;
 
     for (int i = 0; i < _lowestLOD + 1; ++i)
@@ -512,7 +515,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             // lower lods need higher priority to build
             uint32  priority = _lowestLOD - voxelBlock->_lod + 1;
 
-            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, priority);
+            TaskGenerateVoxels* task = new TaskGenerateVoxels(voxelBlock->_voxelBlockInfo, priority, _generateVoxelsDelegate);
             voxelBlock->_voxelGenerationTaskID = iTaskManager::getInstance().addTask(task);
         }
 
@@ -664,46 +667,21 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
 void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
 {
+    // nothing in queue to generate
     if (voxelBlock->_modelNodeIDQueued == iNode::INVALID_NODE_ID)
     {
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
-        if (modelNode != nullptr &&
-            modelNode->isLoaded())
-        {
-            destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
-            voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
-            voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
-            voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
-            voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
-            voxelBlock->_mutationCounter = 0;
-            voxelBlock->_state = Stage::Initial;
-            voxelBlock->_inVisibleRange = false;
-            voxelBlock->_dirtyNeighbors = true;
+        destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+        voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
+        voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
+        voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
+        voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
+        voxelBlock->_mutationCounter = 0;
+        voxelBlock->_state = Stage::Initial;
+        voxelBlock->_inVisibleRange = false;
+        voxelBlock->_dirtyNeighbors = true;
 
-            //detachNeighbours(voxelBlock); // no need to detach if not deleted
-
-            /*! can't delete that yet. access ist not thread safe
-            */
-            /*if (voxelBlock->_voxelData != nullptr)
-            {
-                delete voxelBlock->_voxelData;
-                voxelBlock->_voxelData = nullptr;
-            }
-
-            if (voxelBlock->_voxelBlockInfo != nullptr)
-            {
-                delete voxelBlock->_voxelBlockInfo;
-                voxelBlock->_voxelBlockInfo = nullptr;
-            }*/
-        }
-    }
-
-    if (voxelBlock->_children[0] != nullptr)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            cleanUpVoxelBlock(voxelBlock->_children[i]);
-        }
+        // TODO cleanup ... not sure how yet :-(
+        // todo we should only delete what is outside the discovery range
     }
 }
 
