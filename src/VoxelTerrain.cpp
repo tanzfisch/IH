@@ -754,6 +754,10 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                 setActiveAsync(transformNode, meshVisible);
             }
         }
+        else
+        {
+            meshVisible = false;
+        }
     }
 
     return (meshVisible || childrenVisible);
