@@ -109,9 +109,6 @@ void VoxelTerrain::init(iScene* scene)
     scene->getRoot()->insertNode(_rootNode);
 
     iModelResourceFactory::getInstance().registerModelDataIO("vtg", &VoxelTerrainMeshGenerator::createInstance);
-
-//    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
-
     iTaskManager::getInstance().addTask(new TaskVoxelTerrain(this));
 
 
@@ -134,8 +131,6 @@ void VoxelTerrain::deinit()
 
     iModelResourceFactory::getInstance().unregisterModelDataIO("vtg");
 
-    // iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &VoxelTerrain::onHandle));
-
     // TODO cleanup
 }
 
@@ -143,75 +138,6 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 {
     _lodTrigger = lodTriggerID;
 }
-
-/*uint8 VoxelTerrain::getVoxelDensity(iaVector3I pos)
-{
-    uint8 result = 0;
-
-    return result;
-}*/
-
-void VoxelTerrain::setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density)
-{
-}
-
-/*void VoxelTerrain::setVoxelDensity(iaVector3I pos, uint8 density)
-{
-}*/
-
-/*void VoxelTerrain::castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside)
-{
-    iaVector3I u(from);
-    iaVector3I delta(to);
-    delta -= from;
-    iaVector3I step;
-
-    (delta._x > 0) ? step._x = 1 : step._x = -1;
-    (delta._y > 0) ? step._y = 1 : step._y = -1;
-    (delta._z > 0) ? step._z = 1 : step._z = -1;
-
-    delta._x = abs(delta._x);
-    delta._y = abs(delta._y);
-    delta._z = abs(delta._z);
-
-    int64 dist = (delta._x > delta._y) ? delta._x : delta._y;
-    dist = (dist > delta._z) ? dist : delta._z;
-
-    iaVector3I err(delta._x, delta._y, delta._z);
-
-    outside = u;
-
-    for (int i = 0; i < dist; i++)
-    {
-        if (getVoxelDensity(iaVector3I(u._x, u._y, u._z)) != 0)
-        {
-            inside = u;
-            return;
-        }
-
-        outside = u;
-
-        err += delta;
-
-        if (err._x > dist)
-        {
-            err._x -= dist;
-            u._x += step._x;
-        }
-
-        if (err._y > dist)
-        {
-            err._y -= dist;
-            u._y += step._y;
-        }
-
-        if (err._z > dist)
-        {
-            err._z -= dist;
-            u._z += step._z;
-        }
-    }
-}*/
 
 void VoxelTerrain::handleVoxelBlocks()
 {
@@ -326,40 +252,40 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
 
 void VoxelTerrain::detachNeighbours(VoxelBlock* voxelBlock)
 {
-    if (voxelBlock->_neighbors[0] != nullptr)
+    if (voxelBlock->_neighbours[0] != nullptr)
     {
-        voxelBlock->_neighbors[0]->_neighbors[1] = nullptr;
-        voxelBlock->_neighbors[0] = nullptr;
+        voxelBlock->_neighbours[0]->_neighbours[1] = nullptr;
+        voxelBlock->_neighbours[0] = nullptr;
     }
 
-    if (voxelBlock->_neighbors[1] != nullptr)
+    if (voxelBlock->_neighbours[1] != nullptr)
     {
-        voxelBlock->_neighbors[1]->_neighbors[0] = nullptr;
-        voxelBlock->_neighbors[1] = nullptr;
+        voxelBlock->_neighbours[1]->_neighbours[0] = nullptr;
+        voxelBlock->_neighbours[1] = nullptr;
     }
 
-    if (voxelBlock->_neighbors[2] != nullptr)
+    if (voxelBlock->_neighbours[2] != nullptr)
     {
-        voxelBlock->_neighbors[2]->_neighbors[3] = nullptr;
-        voxelBlock->_neighbors[2] = nullptr;
+        voxelBlock->_neighbours[2]->_neighbours[3] = nullptr;
+        voxelBlock->_neighbours[2] = nullptr;
     }
 
-    if (voxelBlock->_neighbors[3] != nullptr)
+    if (voxelBlock->_neighbours[3] != nullptr)
     {
-        voxelBlock->_neighbors[3]->_neighbors[2] = nullptr;
-        voxelBlock->_neighbors[3] = nullptr;
+        voxelBlock->_neighbours[3]->_neighbours[2] = nullptr;
+        voxelBlock->_neighbours[3] = nullptr;
     }
 
-    if (voxelBlock->_neighbors[4] != nullptr)
+    if (voxelBlock->_neighbours[4] != nullptr)
     {
-        voxelBlock->_neighbors[4]->_neighbors[5] = nullptr;
-        voxelBlock->_neighbors[4] = nullptr;
+        voxelBlock->_neighbours[4]->_neighbours[5] = nullptr;
+        voxelBlock->_neighbours[4] = nullptr;
     }
 
-    if (voxelBlock->_neighbors[5] != nullptr)
+    if (voxelBlock->_neighbours[5] != nullptr)
     {
-        voxelBlock->_neighbors[5]->_neighbors[4] = nullptr;
-        voxelBlock->_neighbors[5] = nullptr;
+        voxelBlock->_neighbours[5]->_neighbours[4] = nullptr;
+        voxelBlock->_neighbours[5] = nullptr;
     }
 }
 
@@ -369,75 +295,75 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
 
     iaVector3I neighbourPos;
 
-    if (voxelBlock->_neighbors[0] == nullptr)
+    if (voxelBlock->_neighbours[0] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._x += voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[0] = (*neighbour).second;
-            (*neighbour).second->_neighbors[1] = voxelBlock;
+            voxelBlock->_neighbours[0] = (*neighbour).second;
+            (*neighbour).second->_neighbours[1] = voxelBlock;
         }
     }
 
-    if (voxelBlock->_neighbors[1] == nullptr)
+    if (voxelBlock->_neighbours[1] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._x -= voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[1] = (*neighbour).second;
-            (*neighbour).second->_neighbors[0] = voxelBlock;
+            voxelBlock->_neighbours[1] = (*neighbour).second;
+            (*neighbour).second->_neighbours[0] = voxelBlock;
         }
     }
 
-    if (voxelBlock->_neighbors[2] == nullptr)
+    if (voxelBlock->_neighbours[2] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._y += voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[2] = (*neighbour).second;
-            (*neighbour).second->_neighbors[3] = voxelBlock;
+            voxelBlock->_neighbours[2] = (*neighbour).second;
+            (*neighbour).second->_neighbours[3] = voxelBlock;
         }
     }
 
-    if (voxelBlock->_neighbors[3] == nullptr)
+    if (voxelBlock->_neighbours[3] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._y -= voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[3] = (*neighbour).second;
-            (*neighbour).second->_neighbors[2] = voxelBlock;
+            voxelBlock->_neighbours[3] = (*neighbour).second;
+            (*neighbour).second->_neighbours[2] = voxelBlock;
         }
     }
 
-    if (voxelBlock->_neighbors[4] == nullptr)
+    if (voxelBlock->_neighbours[4] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._z += voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[4] = (*neighbour).second;
-            (*neighbour).second->_neighbors[5] = voxelBlock;
+            voxelBlock->_neighbours[4] = (*neighbour).second;
+            (*neighbour).second->_neighbours[5] = voxelBlock;
         }
     }
 
-    if (voxelBlock->_neighbors[5] == nullptr)
+    if (voxelBlock->_neighbours[5] == nullptr)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._z -= voxelBlock->_size;
         auto neighbour = voxelBlocks.find(neighbourPos);
         if (neighbour != voxelBlocks.end())
         {
-            voxelBlock->_neighbors[5] = (*neighbour).second;
-            (*neighbour).second->_neighbors[4] = voxelBlock;
+            voxelBlock->_neighbours[5] = (*neighbour).second;
+            (*neighbour).second->_neighbours[4] = voxelBlock;
         }
     }
 }
@@ -477,13 +403,13 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
         for (int i = 0; i < 8; ++i)
         {
-            voxelBlock->_children[i]->setInVisibilityRange(childrenInVisibleRange);
+            voxelBlock->_children[i]->setInRange(childrenInVisibleRange);
         }
     }
 
     if (voxelBlock->_lod == _lowestLOD)
     {
-        voxelBlock->setInVisibilityRange(inVisibleRange);
+        voxelBlock->setInRange(inVisibleRange);
     }
 
     switch (voxelBlock->_state)
@@ -567,41 +493,41 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                         // |/    |/
                         // 3-----2
 
-                        voxelBlock->_children[0]->_neighbors[0] = voxelBlock->_children[1];
-                        voxelBlock->_children[1]->_neighbors[1] = voxelBlock->_children[0];
+                        voxelBlock->_children[0]->_neighbours[0] = voxelBlock->_children[1];
+                        voxelBlock->_children[1]->_neighbours[1] = voxelBlock->_children[0];
 
-                        voxelBlock->_children[3]->_neighbors[0] = voxelBlock->_children[2];
-                        voxelBlock->_children[2]->_neighbors[1] = voxelBlock->_children[3];
+                        voxelBlock->_children[3]->_neighbours[0] = voxelBlock->_children[2];
+                        voxelBlock->_children[2]->_neighbours[1] = voxelBlock->_children[3];
 
-                        voxelBlock->_children[4]->_neighbors[0] = voxelBlock->_children[4];
-                        voxelBlock->_children[5]->_neighbors[1] = voxelBlock->_children[5];
+                        voxelBlock->_children[4]->_neighbours[0] = voxelBlock->_children[4];
+                        voxelBlock->_children[5]->_neighbours[1] = voxelBlock->_children[5];
 
-                        voxelBlock->_children[7]->_neighbors[0] = voxelBlock->_children[6];
-                        voxelBlock->_children[6]->_neighbors[1] = voxelBlock->_children[7];
+                        voxelBlock->_children[7]->_neighbours[0] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbours[1] = voxelBlock->_children[7];
 
-                        voxelBlock->_children[0]->_neighbors[2] = voxelBlock->_children[4];
-                        voxelBlock->_children[4]->_neighbors[3] = voxelBlock->_children[0];
+                        voxelBlock->_children[0]->_neighbours[2] = voxelBlock->_children[4];
+                        voxelBlock->_children[4]->_neighbours[3] = voxelBlock->_children[0];
 
-                        voxelBlock->_children[1]->_neighbors[2] = voxelBlock->_children[5];
-                        voxelBlock->_children[5]->_neighbors[3] = voxelBlock->_children[1];
+                        voxelBlock->_children[1]->_neighbours[2] = voxelBlock->_children[5];
+                        voxelBlock->_children[5]->_neighbours[3] = voxelBlock->_children[1];
 
-                        voxelBlock->_children[2]->_neighbors[2] = voxelBlock->_children[6];
-                        voxelBlock->_children[6]->_neighbors[3] = voxelBlock->_children[2];
+                        voxelBlock->_children[2]->_neighbours[2] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbours[3] = voxelBlock->_children[2];
 
-                        voxelBlock->_children[3]->_neighbors[2] = voxelBlock->_children[7];
-                        voxelBlock->_children[7]->_neighbors[3] = voxelBlock->_children[3];
+                        voxelBlock->_children[3]->_neighbours[2] = voxelBlock->_children[7];
+                        voxelBlock->_children[7]->_neighbours[3] = voxelBlock->_children[3];
 
-                        voxelBlock->_children[0]->_neighbors[4] = voxelBlock->_children[3];
-                        voxelBlock->_children[3]->_neighbors[5] = voxelBlock->_children[0];
+                        voxelBlock->_children[0]->_neighbours[4] = voxelBlock->_children[3];
+                        voxelBlock->_children[3]->_neighbours[5] = voxelBlock->_children[0];
 
-                        voxelBlock->_children[1]->_neighbors[4] = voxelBlock->_children[2];
-                        voxelBlock->_children[2]->_neighbors[5] = voxelBlock->_children[1];
+                        voxelBlock->_children[1]->_neighbours[4] = voxelBlock->_children[2];
+                        voxelBlock->_children[2]->_neighbours[5] = voxelBlock->_children[1];
 
-                        voxelBlock->_children[4]->_neighbors[4] = voxelBlock->_children[7];
-                        voxelBlock->_children[7]->_neighbors[5] = voxelBlock->_children[4];
+                        voxelBlock->_children[4]->_neighbours[4] = voxelBlock->_children[7];
+                        voxelBlock->_children[7]->_neighbours[5] = voxelBlock->_children[4];
 
-                        voxelBlock->_children[5]->_neighbors[4] = voxelBlock->_children[6];
-                        voxelBlock->_children[6]->_neighbors[5] = voxelBlock->_children[5];
+                        voxelBlock->_children[5]->_neighbours[4] = voxelBlock->_children[6];
+                        voxelBlock->_children[6]->_neighbours[5] = voxelBlock->_children[5];
 
                         for (int i = 0; i < 8; ++i)
                         {
@@ -625,9 +551,9 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         {
             cleanUpVoxelBlock(voxelBlock);
         }
-        else if (voxelBlock->getInVisibilityRange())
+        else if (voxelBlock->getInRange())
         {
-            if (voxelBlock->_dirtyNeighbors)
+            if (voxelBlock->_dirtyNeighbours)
             {
                 uint32 neighborsLOD = calcLODTransition(voxelBlock);
                 if (voxelBlock->_neighboursLOD != neighborsLOD)
@@ -636,7 +562,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                     voxelBlock->_dirty = true;
                 }
 
-                voxelBlock->_dirtyNeighbors = false;
+                voxelBlock->_dirtyNeighbours = false;
             }
 
             if (voxelBlock->_dirty)
@@ -677,8 +603,8 @@ void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
         voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
         voxelBlock->_mutationCounter = 0;
         voxelBlock->_state = Stage::Initial;
-        voxelBlock->_inVisibleRange = false;
-        voxelBlock->_dirtyNeighbors = true;
+        voxelBlock->_inRange = false;
+        voxelBlock->_dirtyNeighbours = true;
 
         // TODO cleanup ... not sure how yet :-(
         // todo we should only delete what is outside the discovery range
@@ -693,7 +619,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
     }
 
     bool childrenVisible = false;
-    bool blockVisible = voxelBlock->getInVisibilityRange();
+    bool blockVisible = voxelBlock->getInRange();
     bool meshVisible = blockVisible;
 
     if (voxelBlock->_children[0] != nullptr)
@@ -775,9 +701,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         return result;
     }
 
-    if (voxelBlock->_neighbors[0] != nullptr)
+    if (voxelBlock->_neighbours[0] != nullptr)
     {
-        if (!voxelBlock->_neighbors[0]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[0]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_XPOSITIVE;
         }
@@ -787,9 +713,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         result |= HIGHER_NEIGHBOR_LOD_XPOSITIVE;
     }
 
-    if (voxelBlock->_neighbors[1] != nullptr)
+    if (voxelBlock->_neighbours[1] != nullptr)
     {
-        if (!voxelBlock->_neighbors[1]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[1]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_XNEGATIVE;
         }
@@ -799,9 +725,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         result |= HIGHER_NEIGHBOR_LOD_XNEGATIVE;
     }
 
-    if (voxelBlock->_neighbors[2] != nullptr)
+    if (voxelBlock->_neighbours[2] != nullptr)
     {
-        if (!voxelBlock->_neighbors[2]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[2]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_YPOSITIVE;
         }
@@ -811,9 +737,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         result |= HIGHER_NEIGHBOR_LOD_YPOSITIVE;
     }
 
-    if (voxelBlock->_neighbors[3] != nullptr)
+    if (voxelBlock->_neighbours[3] != nullptr)
     {
-        if (!voxelBlock->_neighbors[3]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[3]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_YNEGATIVE;
         }
@@ -823,9 +749,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         result |= HIGHER_NEIGHBOR_LOD_YNEGATIVE;
     }
 
-    if (voxelBlock->_neighbors[4] != nullptr)
+    if (voxelBlock->_neighbours[4] != nullptr)
     {
-        if (!voxelBlock->_neighbors[4]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[4]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_ZPOSITIVE;
         }
@@ -835,9 +761,9 @@ uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
         result |= HIGHER_NEIGHBOR_LOD_ZPOSITIVE;
     }
 
-    if (voxelBlock->_neighbors[5] != nullptr)
+    if (voxelBlock->_neighbours[5] != nullptr)
     {
-        if (!voxelBlock->_neighbors[5]->getInVisibilityRange())
+        if (!voxelBlock->_neighbours[5]->getInRange())
         {
             result |= HIGHER_NEIGHBOR_LOD_ZNEGATIVE;
         }

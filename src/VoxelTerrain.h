@@ -77,12 +77,10 @@ public:
     */
     void setLODTrigger(uint32 lodTriggerID);
 
-    /*void castRay(const iaVector3I& from, const iaVector3I& to, iaVector3I& outside, iaVector3I& inside);
-    void setVoxelDensity(iaVector3I pos, uint8 density);
-    uint8 getVoxelDensity(iaVector3I pos);*/
-
 private:
 
+    /*! delegate registered by application to generate voxel data
+    */
     GenerateVoxelsDelegate _generateVoxelsDelegate;
 
     /*! queuef  actions
