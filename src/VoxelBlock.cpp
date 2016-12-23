@@ -27,7 +27,7 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
 
     for (int i = 0; i < 6; ++i)
     {
-        _neighbors[i] = nullptr;
+        _neighbours[i] = nullptr;
     }
 }
 
@@ -44,38 +44,38 @@ VoxelBlock::~VoxelBlock()
     }
 }
 
-void VoxelBlock::setInVisibilityRange(bool visibility)
+void VoxelBlock::setInRange(bool visibility)
 {
-    if (_inVisibleRange != visibility)
+    if (_inRange != visibility)
     {
-        _inVisibleRange = visibility;
+        _inRange = visibility;
 
-        setNeighborsDirty();
+        setNeighboursDirty();
     }
 }
 
-void VoxelBlock::setNeighborsDirty()
+void VoxelBlock::setNeighboursDirty()
 {
-    _dirtyNeighbors = true;
+    _dirtyNeighbours = true;
 
     for (int i = 0; i < 6; ++i)
     {
-        if (_neighbors[i] != nullptr)
+        if (_neighbours[i] != nullptr)
         {
-            _neighbors[i]->_dirtyNeighbors = true;
+            _neighbours[i]->_dirtyNeighbours = true;
         }
     }
 }
 
-void VoxelBlock::setNeighbor(uint32 neighbourIndex, VoxelBlock* neighbour)
+void VoxelBlock::setNeighbour(uint32 neighbourIndex, VoxelBlock* neighbour)
 {
     con_assert(neighbourIndex > 0 && neighbourIndex < 6, "index out of range");
-    _neighbors[neighbourIndex] = neighbour;
+    _neighbours[neighbourIndex] = neighbour;
 }
 
-bool VoxelBlock::getInVisibilityRange() const
+bool VoxelBlock::getInRange() const
 {
-    return _inVisibleRange;
+    return _inRange;
 }
 
 iVoxelData* VoxelBlock::getVoxelData() const

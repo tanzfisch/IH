@@ -26,6 +26,8 @@ enum class Stage
     Empty
 };
 
+/*! voxel block (or tile) or specific LOD
+*/
 class VoxelBlock
 {
 
@@ -41,18 +43,46 @@ public:
     */
     static const int32 _voxelBlockOverlap = 2;
 
+    /*! initialize members
+
+    \param lod level of detail
+    \param position world position of this voxel block
+    \param parentAdress position relative to parent (todo I don't like that)
+    */
 	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
+
+    /*! free mem
+    */
 	~VoxelBlock();
 
+    /*! \returns pointer to voxel data
+    */
     iVoxelData* getVoxelData() const;
+
+    /*! \returns pointer to parent voxel block (nullptr if there is no parent)
+    */
     VoxelBlock* getParent() const;
 
-    void setInVisibilityRange(bool visibility);
-    bool getInVisibilityRange() const;
+    /*! sets if the voxel block is in range regarding it's LOD
 
-    void setNeighborsDirty();
+    \param inRange if true then the voxel block is in range and will potentially rendered
+    */
+    void setInRange(bool inRange);
 
-    void setNeighbor(uint32 neighborIndex, VoxelBlock* neighbor);
+    /*! \returns true if voxel block is in range and can potentially be rendered
+    */
+    bool getInRange() const;
+
+    /*! set all neighbours dirty to regenerate their tiles
+    */
+    void setNeighboursDirty();
+
+    /*! sets neighbours with a specified neighbour index in same LOD
+
+    \param neighborIndex neighbour index 0-5 (up to 6 neighbours)
+    \param neighbor the neighbour to set
+    */
+    void setNeighbour(uint32 neighbourIndex, VoxelBlock* neighbour);
 
 private:
 
@@ -70,10 +100,20 @@ private:
     */
 	uint64 _voxelGenerationTaskID = iTask::INVALID_TASK_ID;
 	
+    /*! id to transform node to control if a tile is in the scene and therefore visible
+    */
     uint32 _transformNodeIDCurrent = iNode::INVALID_NODE_ID;
+
+    /*! id to generated model currently in use
+    */
     uint32 _modelNodeIDCurrent = iNode::INVALID_NODE_ID;
 
+    /*! tempoary transform node id to control where we have to regenerate a new tile or not
+    */
 	uint32 _transformNodeIDQueued = iNode::INVALID_NODE_ID;
+
+    /*! temporary id of node so we can tell if it was already loaded
+    */
 	uint32 _modelNodeIDQueued = iNode::INVALID_NODE_ID;
 
     /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models
@@ -112,11 +152,11 @@ private:
     
     but can be actually not rendered because e.g. the mesh is not ready yet
     */
-    bool _inVisibleRange = false;
+    bool _inRange = false;
 
     /*! if true neighbours changed and we might have to regenerate the mesh
     */
-    bool _dirtyNeighbors = true;
+    bool _dirtyNeighbours = true;
 
     /*! current state of the block
     */
@@ -140,7 +180,7 @@ private:
 
     /*! pointers to neighbour in same LOD
     */
-    VoxelBlock* _neighbors[6];
+    VoxelBlock* _neighbours[6];
 
 };
 
