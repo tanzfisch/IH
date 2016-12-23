@@ -141,7 +141,7 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 
 void VoxelTerrain::handleVoxelBlocks()
 {
-    deleteBlocks();
+    //deleteBlocks();
 
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
@@ -192,8 +192,9 @@ void VoxelTerrain::deleteBlocks()
     auto iter = _voxelBlocksToDelete.begin();
     while (iter != _voxelBlocksToDelete.end())
     {
-        if (deleteBlock((*iter)))
+        if (canBeDeleted((*iter)))
         {
+            deleteBlock((*iter));
             iter = _voxelBlocksToDelete.erase(iter);
         }
         else
@@ -205,18 +206,46 @@ void VoxelTerrain::deleteBlocks()
 
 bool VoxelTerrain::canBeDeleted(VoxelBlock* voxelBlock)
 {
-    return false;
-}
-
-bool VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
-{
-    if (canBeDeleted(voxelBlock))
+    bool result = true;
+    if (voxelBlock->_children[0] != nullptr)
     {
-        // TODO delete
-        return true;
+        for (int i = 0; i < 8; ++i)
+        {
+            if (!canBeDeleted(voxelBlock->_children[i]))
+            {
+                result = false;
+            }
+        }
     }
 
-    return false;
+    if (result)
+    {
+        if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
+            voxelBlock->_state == Stage::GeneratingMesh ||
+            voxelBlock->_state == Stage::GeneratingVoxel ||
+            voxelBlock->_state == Stage::Setup)
+        {
+            result = false;
+        }
+    }
+
+    return result;
+}
+
+void VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
+{
+    if (voxelBlock->_children[0] != nullptr)
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            deleteBlock(voxelBlock->_children[i]);
+        }
+    }
+
+    detachNeighbours(voxelBlock);
+  //  destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+
+//    delete voxelBlock;
 }
 
 void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
@@ -279,19 +308,19 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
                     {
                         voxelBlocks[voxelBlockPosition] = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
                     }
-                    else
+                    /*else
                     {
                         auto blockIter = voxelBlocksToDelete.find(voxelBlockPosition);
                         if (blockIter != voxelBlocksToDelete.end())
                         {
                             voxelBlocksToDelete.erase(blockIter);
                         }
-                    }
+                    }*/
                 }
             }
         }
 
-        for(auto iter : voxelBlocksToDelete)
+        /*for(auto iter : voxelBlocksToDelete)
         {
             con_endl("delete voxel block " << iter.second->_position);
 
@@ -302,7 +331,7 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
             }
 
             _voxelBlocksToDelete.push_back(iter.second);
-        }
+        }*/
     }
 }
 

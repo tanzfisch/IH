@@ -33,15 +33,6 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
 
 VoxelBlock::~VoxelBlock()
 {
-    if (_children[0] != nullptr)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            delete _children[i];
-            _children[i] = nullptr;
-        }
-    }
-
     if (_voxelData != nullptr)
     {
         delete _voxelData;

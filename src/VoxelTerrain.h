@@ -144,7 +144,7 @@ private:
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
 
     void deleteBlocks();
-    bool deleteBlock(VoxelBlock* voxelBlock);
+    void deleteBlock(VoxelBlock* voxelBlock);
     bool canBeDeleted(VoxelBlock* voxelBlock);
 
     /*! discovers if there are unknown blocks of lowest LOD near by
