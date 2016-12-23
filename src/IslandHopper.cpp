@@ -540,7 +540,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                             pos._y > height - 50 &&
                             pos._y < height + 10)
                         {
-                            float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.006, pos._y * 0.006, pos._z * 0.006), 4, 0.5);
+                            float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.006, pos._y * 0.006, pos._z * 0.006), 5, 0.5);
 
                             float64 diff = (pos._y - (height - 50)) / 50.0;
                             onoff += (1.0 - diff) * 0.1;

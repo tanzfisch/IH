@@ -113,11 +113,15 @@ private:
 
     /*! voxel block discovery distance
     */
-    static const int64 _voxelBlockDiscoveryDistance = 20;
+    static const int64 _voxelBlockDiscoveryDistance = 2;
 
     /*! the voxel data
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
+
+    /*! map of voxel blocks that have to be deleted
+    */
+    vector<VoxelBlock*> _voxelBlocksToDelete;
 
     /*! keep observer position since last discovery
     */
@@ -138,6 +142,10 @@ private:
     /*! lod trigger node id
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
+
+    void deleteBlocks();
+    bool deleteBlock(VoxelBlock* voxelBlock);
+    bool canBeDeleted(VoxelBlock* voxelBlock);
 
     /*! discovers if there are unknown blocks of lowest LOD near by
 

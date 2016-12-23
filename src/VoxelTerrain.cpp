@@ -141,6 +141,8 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 
 void VoxelTerrain::handleVoxelBlocks()
 {
+    deleteBlocks();
+
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
     {
@@ -183,6 +185,38 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
         update(block.second, observerPosition);
         updateVisibility(block.second);
     }
+}
+
+void VoxelTerrain::deleteBlocks()
+{
+    auto iter = _voxelBlocksToDelete.begin();
+    while (iter != _voxelBlocksToDelete.end())
+    {
+        if (deleteBlock((*iter)))
+        {
+            iter = _voxelBlocksToDelete.erase(iter);
+        }
+        else
+        {
+            iter++;
+        }
+    }
+}
+
+bool VoxelTerrain::canBeDeleted(VoxelBlock* voxelBlock)
+{
+    return false;
+}
+
+bool VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
+{
+    if (canBeDeleted(voxelBlock))
+    {
+        // TODO delete
+        return true;
+    }
+
+    return false;
 }
 
 void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
@@ -228,6 +262,7 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
             start._z = 0;
         }
 
+        auto voxelBlocksToDelete = _voxelBlocks[_lowestLOD];
         auto& voxelBlocks = _voxelBlocks[_lowestLOD];
         iaVector3I voxelBlockPosition;
 
@@ -244,8 +279,29 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
                     {
                         voxelBlocks[voxelBlockPosition] = new VoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
                     }
+                    else
+                    {
+                        auto blockIter = voxelBlocksToDelete.find(voxelBlockPosition);
+                        if (blockIter != voxelBlocksToDelete.end())
+                        {
+                            voxelBlocksToDelete.erase(blockIter);
+                        }
+                    }
                 }
             }
+        }
+
+        for(auto iter : voxelBlocksToDelete)
+        {
+            con_endl("delete voxel block " << iter.second->_position);
+
+            auto blockIter = voxelBlocks.find(iter.second->_position);
+            if (blockIter != voxelBlocks.end())
+            {
+                voxelBlocks.erase(blockIter);
+            }
+
+            _voxelBlocksToDelete.push_back(iter.second);
         }
     }
 }
