@@ -7,8 +7,9 @@
 #include <iNodeMesh.h>
 using namespace Igor;
 
-VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
+VoxelBlock::VoxelBlock(uint64 id, uint32 lod, iaVector3I position, iaVector3I parentAdress)
 {
+    _id = id;
     con_assert(lod >= 0 && lod <= 7, "lod out of range");
     _position = position;
     _lod = lod;
@@ -27,7 +28,7 @@ VoxelBlock::VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
 
     for (int i = 0; i < 6; ++i)
     {
-        _neighbours[i] = nullptr;
+        _neighbours[i] = 0;
     }
 }
 
@@ -42,40 +43,6 @@ VoxelBlock::~VoxelBlock()
     {
         delete _voxelBlockInfo;
     }
-}
-
-void VoxelBlock::setInRange(bool visibility)
-{
-    if (_inRange != visibility)
-    {
-        _inRange = visibility;
-
-        setNeighboursDirty();
-    }
-}
-
-void VoxelBlock::setNeighboursDirty()
-{
-    _dirtyNeighbours = true;
-
-    for (int i = 0; i < 6; ++i)
-    {
-        if (_neighbours[i] != nullptr)
-        {
-            _neighbours[i]->_dirtyNeighbours = true;
-        }
-    }
-}
-
-void VoxelBlock::setNeighbour(uint32 neighbourIndex, VoxelBlock* neighbour)
-{
-    con_assert(neighbourIndex > 0 && neighbourIndex < 6, "index out of range");
-    _neighbours[neighbourIndex] = neighbour;
-}
-
-bool VoxelBlock::getInRange() const
-{
-    return _inRange;
 }
 
 iVoxelData* VoxelBlock::getVoxelData() const

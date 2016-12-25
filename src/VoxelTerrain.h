@@ -119,6 +119,9 @@ private:
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
+    map<uint64, VoxelBlock*> _voxelBlocksMap;
+    uint64 _nextVoxelBlockID = 1;
+
     /*! map of voxel blocks that have to be deleted
     */
     vector<VoxelBlock*> _voxelBlocksToDelete;
@@ -142,6 +145,12 @@ private:
     /*! lod trigger node id
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
+
+    void setNeighboursDirty(VoxelBlock* voxelBlock);
+    void setNeighbour(VoxelBlock* voxelBlock, uint32 neighbourIndex, VoxelBlock* neighbour);
+    void setInRange(VoxelBlock* voxelBlock, bool visibility);
+
+    VoxelBlock* createVoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
 
     void deleteBlocks();
     void deleteBlock(VoxelBlock* voxelBlock);
@@ -175,7 +184,7 @@ private:
 
     \param voxelBlock the voxel block to clear
     */
-    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);    
+    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);
 
     /*! main handle callback
     */

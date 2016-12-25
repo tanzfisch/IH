@@ -49,7 +49,7 @@ public:
     \param position world position of this voxel block
     \param parentAdress position relative to parent (todo I don't like that)
     */
-	VoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
+	VoxelBlock(uint64 id, uint32 lod, iaVector3I position, iaVector3I parentAdress);
 
     /*! free mem
     */
@@ -63,28 +63,9 @@ public:
     */
     VoxelBlock* getParent() const;
 
-    /*! sets if the voxel block is in range regarding it's LOD
-
-    \param inRange if true then the voxel block is in range and will potentially rendered
-    */
-    void setInRange(bool inRange);
-
-    /*! \returns true if voxel block is in range and can potentially be rendered
-    */
-    bool getInRange() const;
-
-    /*! set all neighbours dirty to regenerate their tiles
-    */
-    void setNeighboursDirty();
-
-    /*! sets neighbours with a specified neighbour index in same LOD
-
-    \param neighborIndex neighbour index 0-5 (up to 6 neighbours)
-    \param neighbor the neighbour to set
-    */
-    void setNeighbour(uint32 neighbourIndex, VoxelBlock* neighbour);
-
 private:
+
+    uint64 _id = 0;
 
     /*! bit mask with current neighbors LOD settings
     */
@@ -180,7 +161,7 @@ private:
 
     /*! pointers to neighbour in same LOD
     */
-    VoxelBlock* _neighbours[6];
+    uint64 _neighbours[6];
 
 };
 
