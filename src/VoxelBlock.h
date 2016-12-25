@@ -157,7 +157,7 @@ private:
 
     /*! pointers to children
     */
-	VoxelBlock* _children[8];
+	uint64 _children[8];
 
     /*! pointers to neighbour in same LOD
     */

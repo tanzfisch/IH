@@ -23,7 +23,7 @@ VoxelBlock::VoxelBlock(uint64 id, uint32 lod, iaVector3I position, iaVector3I pa
 
     for (int i = 0; i < 8; ++i)
     {
-        _children[i] = nullptr;
+        _children[i] = 0;
     }
 
     for (int i = 0; i < 6; ++i)
