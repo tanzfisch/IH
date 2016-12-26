@@ -42,8 +42,12 @@ VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
         _voxelBlocks.push_back(voxelBlocks);
     }
 
+    _totalSection = iStatistics::getInstance().registerSection("VT:all", 3);
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
     _updateBlocksSection = iStatistics::getInstance().registerSection("VT:blocks", 3);
+    _deleteBlocksSection = iStatistics::getInstance().registerSection("VT:delete", 3);
+    _applyActionsSection = iStatistics::getInstance().registerSection("VT:applyActions", 3);
+    _updateVisBlocksSection = iStatistics::getInstance().registerSection("VT:vis", 3);
 }
 
 VoxelTerrain::~VoxelTerrain()
@@ -63,7 +67,7 @@ void VoxelTerrain::setScene(iScene* scene)
     }
 }
 
-void VoxelTerrain::setActiveAsync(iNode* node, bool active)
+void VoxelTerrain::setNodeActiveAsync(iNode* node, bool active)
 {
     iNodeFactory::iAction action;
     action._action = active ? iNodeFactory::iActionType::Activate : iNodeFactory::iActionType::Deactivate;
@@ -111,7 +115,6 @@ void VoxelTerrain::init(iScene* scene)
     iModelResourceFactory::getInstance().registerModelDataIO("vtg", &VoxelTerrainMeshGenerator::createInstance);
     iTaskManager::getInstance().addTask(new TaskVoxelTerrain(this));
 
-
     // set up terrain material
     _terrainMaterialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain.vert", iShaderObjectType::Vertex);
@@ -141,7 +144,11 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 
 void VoxelTerrain::handleVoxelBlocks()
 {
+    iStatistics::getInstance().beginSection(_totalSection);
+
+    iStatistics::getInstance().beginSection(_deleteBlocksSection);
     //deleteBlocks();
+    iStatistics::getInstance().endSection(_deleteBlocksSection);
 
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
@@ -166,14 +173,16 @@ void VoxelTerrain::handleVoxelBlocks()
         discoverBlocks(observerPosition);
         iStatistics::getInstance().endSection(_discoverBlocksSection);
  
-        iStatistics::getInstance().beginSection(_updateBlocksSection);
         updateBlocks(observerPosition);
-        iStatistics::getInstance().endSection(_updateBlocksSection);
     }
 
+    iStatistics::getInstance().beginSection(_applyActionsSection);
     // apply all actions at once so they will be synced with next frame
     iNodeFactory::getInstance().applyActionsAsync(_actionQueue);
     _actionQueue.clear();
+    iStatistics::getInstance().endSection(_applyActionsSection);
+
+    iStatistics::getInstance().endSection(_totalSection);
 }
 
 void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
@@ -182,8 +191,14 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
     
     for (auto block : voxelBlocks)
     {
+        iStatistics::getInstance().beginSection(_updateBlocksSection);
         update(block.second, observerPosition);
+        iStatistics::getInstance().endSection(_updateBlocksSection);
+
+        
+        iStatistics::getInstance().beginSection(_updateVisBlocksSection);
         updateVisibility(block.second);
+        iStatistics::getInstance().endSection(_updateVisBlocksSection);
     }
 }
 
@@ -842,7 +857,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(child->_transformNodeIDCurrent));
                         if (transformNode != nullptr)
                         {
-                            setActiveAsync(transformNode, false);
+                            setNodeActiveAsync(transformNode, false);
                         }
                     }
                 }
@@ -873,7 +888,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
             iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(voxelBlock->_transformNodeIDCurrent));
             if (transformNode != nullptr)
             {
-                setActiveAsync(transformNode, meshVisible);
+                setNodeActiveAsync(transformNode, meshVisible);
             }
         }
         else

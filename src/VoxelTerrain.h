@@ -91,13 +91,29 @@ private:
     */
     mutex _mutexActionQueue;
 
-    /*! performance section
+    /*! performance section discover blocks
     */
     uint32 _discoverBlocksSection = 0;
 
-    /*! performance section
+    /*! performance section delete blocks
+    */
+    uint32 _deleteBlocksSection = 0;
+
+    /*! performance section apply actions
+    */
+    uint32 _applyActionsSection = 0;
+
+    /*! performance section update blocks
     */
     uint32 _updateBlocksSection = 0;
+
+    /*! performance section update visibility blocks
+    */
+    uint32 _updateVisBlocksSection = 0;
+
+    /*! performance section total handle
+    */
+    uint32 _totalSection = 0;
 
     /*! amount of configured LOD
     */
@@ -204,16 +220,12 @@ private:
 
     void updateMesh(VoxelBlock* voxelBlock);
 
-    void setActiveAsync(iNode* node, bool active);
+    void setNodeActiveAsync(iNode* node, bool active);
     void insertNodeAsync(iNode* src, iNode* dst);
     void removeNodeAsync(iNode* src, iNode* dst);
     void destroyNodeAsync(uint32 nodeID);
 
     uint32 calcLODTransition(VoxelBlock* voxelBlock);
-
-    /*! \deprecated
-    */
-    void setVoxelDensity(iaVector3I voxelBlock, iaVector3I voxelRelativePos, uint8 density);
 
     /*! init
     */
