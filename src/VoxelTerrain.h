@@ -171,8 +171,7 @@ private:
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
 
     void setNeighboursDirty(VoxelBlock* voxelBlock);
-    void setNeighbour(VoxelBlock* voxelBlock, uint32 neighbourIndex, VoxelBlock* neighbour);
-    void setInRange(VoxelBlock* voxelBlock, bool visibility);
+    void setInRange(VoxelBlock* voxelBlock, bool inRange);
 
     VoxelBlock* createVoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
 
@@ -203,12 +202,6 @@ private:
     \param voxelBlock the block to detach
     */
     void detachNeighbours(VoxelBlock* voxelBlock);
-
-    /*! clean up and release memory from a block
-
-    \param voxelBlock the voxel block to clear
-    */
-    void cleanUpVoxelBlock(VoxelBlock* voxelBlock);
 
     /*! main handle callback
     */

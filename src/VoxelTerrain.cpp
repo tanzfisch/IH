@@ -27,6 +27,7 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 #include "TaskVoxelTerrain.h"
 
+//#define DISABLE_SECTIONS
 // #define FIX_POSITION
 // #define FIX_HEIGHT
 // #define WIREFRAME
@@ -144,11 +145,17 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 
 void VoxelTerrain::handleVoxelBlocks()
 {
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().beginSection(_totalSection);
+#endif
 
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().beginSection(_deleteBlocksSection);
-    //deleteBlocks();
+#endif
+    deleteBlocks();
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().endSection(_deleteBlocksSection);
+#endif
 
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
@@ -169,98 +176,115 @@ void VoxelTerrain::handleVoxelBlocks()
 
         iaVector3I observerPosition(pos._x, pos._y, pos._z);
 
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().beginSection(_discoverBlocksSection);
+#endif
         discoverBlocks(observerPosition);
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().endSection(_discoverBlocksSection);
- 
+#endif
+
         updateBlocks(observerPosition);
     }
 
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().beginSection(_applyActionsSection);
+#endif
     // apply all actions at once so they will be synced with next frame
     iNodeFactory::getInstance().applyActionsAsync(_actionQueue);
     _actionQueue.clear();
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().endSection(_applyActionsSection);
+#endif
 
+#ifndef DISABLE_SECTIONS
     iStatistics::getInstance().endSection(_totalSection);
+#endif
 }
 
 void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 {
     auto& voxelBlocks = _voxelBlocks[_lowestLOD];
-    
+
     for (auto block : voxelBlocks)
     {
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().beginSection(_updateBlocksSection);
+#endif
         update(block.second, observerPosition);
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().endSection(_updateBlocksSection);
+#endif
 
-        
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().beginSection(_updateVisBlocksSection);
+#endif
         updateVisibility(block.second);
+#ifndef DISABLE_SECTIONS
         iStatistics::getInstance().endSection(_updateVisBlocksSection);
+#endif
     }
 }
 
 void VoxelTerrain::deleteBlocks()
 {
-    auto iter = _voxelBlocksToDelete.begin();
-    while (iter != _voxelBlocksToDelete.end())
-    {
-        if (canBeDeleted((*iter)))
-        {
-            deleteBlock((*iter));
-            iter = _voxelBlocksToDelete.erase(iter);
-        }
-        else
-        {
-            iter++;
-        }
-    }
+    /* auto iter = _voxelBlocksToDelete.begin();
+     while (iter != _voxelBlocksToDelete.end())
+     {
+         if (canBeDeleted((*iter)))
+         {
+             deleteBlock((*iter));
+             iter = _voxelBlocksToDelete.erase(iter);
+         }
+         else
+         {
+             iter++;
+         }
+     }*/
 }
 
 bool VoxelTerrain::canBeDeleted(VoxelBlock* voxelBlock)
 {
     bool result = true;
- /*   if (voxelBlock->_children[0] != nullptr)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            if (!canBeDeleted(voxelBlock->_children[i]))
-            {
-                result = false;
-            }
-        }
-    }
+    /*   if (voxelBlock->_children[0] != nullptr)
+       {
+           for (int i = 0; i < 8; ++i)
+           {
+               if (!canBeDeleted(voxelBlock->_children[i]))
+               {
+                   result = false;
+               }
+           }
+       }
 
-    if (result)
-    {
-        if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
-            voxelBlock->_state == Stage::GeneratingMesh ||
-            voxelBlock->_state == Stage::GeneratingVoxel ||
-            voxelBlock->_state == Stage::Setup)
-        {
-            result = false;
-        }
-    }*/
+       if (result)
+       {
+           if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
+               voxelBlock->_state == Stage::GeneratingMesh ||
+               voxelBlock->_state == Stage::GeneratingVoxel ||
+               voxelBlock->_state == Stage::Setup)
+           {
+               result = false;
+           }
+       }*/
 
     return result;
 }
 
 void VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
 {
-  /*  if (voxelBlock->_children[0] != nullptr)
-    {
-        for (int i = 0; i < 8; ++i)
-        {
-            deleteBlock(voxelBlock->_children[i]);
-        }
-    }*/
+    /*  if (voxelBlock->_children[0] != nullptr)
+      {
+          for (int i = 0; i < 8; ++i)
+          {
+              deleteBlock(voxelBlock->_children[i]);
+          }
+      }*/
 
-   // detachNeighbours(voxelBlock);
-  //  destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+      // detachNeighbours(voxelBlock);
+     //  destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
 
-//    delete voxelBlock;
+   //    delete voxelBlock;
 }
 
 void VoxelTerrain::setNeighboursDirty(VoxelBlock* voxelBlock)
@@ -274,13 +298,11 @@ void VoxelTerrain::setNeighboursDirty(VoxelBlock* voxelBlock)
         {
             (*neighbour).second->_dirtyNeighbours = true;
         }
+        else
+        {
+            voxelBlock->_neighbours[i] = VoxelBlock::INVALID_VOXELBLOCKID;
+        }
     }
-}
-
-void VoxelTerrain::setNeighbour(VoxelBlock* voxelBlock, uint32 neighbourIndex, VoxelBlock* neighbour)
-{
-    con_assert(neighbourIndex > 0 && neighbourIndex < 6, "index out of range");
-    voxelBlock->_neighbours[neighbourIndex] = neighbour->_id;
 }
 
 VoxelBlock* VoxelTerrain::createVoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
@@ -292,7 +314,7 @@ VoxelBlock* VoxelTerrain::createVoxelBlock(uint32 lod, iaVector3I position, iaVe
     _voxelBlocks[lod][position] = result;
 
     result->_id = _nextVoxelBlockID++;
-    
+
     result->_position = position;
     result->_lod = lod;
     result->_size = _voxelBlockSize * pow(2, lod);
@@ -402,91 +424,66 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
     }
 }
 
-void VoxelTerrain::setInRange(VoxelBlock* voxelBlock, bool visibility)
+void VoxelTerrain::setInRange(VoxelBlock* voxelBlock, bool inRange)
 {
-    if (voxelBlock->_inRange != visibility)
+    if (voxelBlock->_inRange != inRange)
     {
-        voxelBlock->_inRange = visibility;
+        voxelBlock->_inRange = inRange;
         setNeighboursDirty(voxelBlock);
     }
 }
 
 void VoxelTerrain::detachNeighbours(VoxelBlock* voxelBlock)
 {
-    if (voxelBlock->_neighbours[0] != 0)
+    VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[0]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[0]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[1] = 0;
-        }
-
-        voxelBlock->_neighbours[0] = 0;
+        neighbour->_neighbours[1] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[0] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    if (voxelBlock->_neighbours[1] != 0)
+    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[1]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[1]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[0] = 0;
-        }
-
-        voxelBlock->_neighbours[1] = 0;
+        neighbour->_neighbours[0] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[1] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    if (voxelBlock->_neighbours[2] != 0)
+    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[2]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[2]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[3] = 0;
-        }
-
-        voxelBlock->_neighbours[2] = 0;
+        neighbour->_neighbours[3] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[2] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    if (voxelBlock->_neighbours[3] != 0)
+    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[3]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[3]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[2] = 0;
-        }
-
-        voxelBlock->_neighbours[3] = 0;
+        neighbour->_neighbours[2] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[3] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    if (voxelBlock->_neighbours[4] != 0)
+    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[4]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[4]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[5] = 0;
-        }
-
-        voxelBlock->_neighbours[4] = 0;
+        neighbour->_neighbours[5] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[4] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    if (voxelBlock->_neighbours[5] != 0)
+    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[5]];
+    if (neighbour != nullptr)
     {
-        VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[5]];
-        if (neighbour != nullptr)
-        {
-            neighbour->_neighbours[4] = 0;
-        }
-
-        voxelBlock->_neighbours[5] = 0;
+        neighbour->_neighbours[4] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
+    voxelBlock->_neighbours[5] = VoxelBlock::INVALID_VOXELBLOCKID;
 }
 
 void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
 {
     auto voxelBlocks = _voxelBlocks[voxelBlock->_lod];
-
     iaVector3I neighbourPos;
 
-    if (voxelBlock->_neighbours[0] == 0)
+    if (voxelBlock->_neighbours[0] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._x += voxelBlock->_size;
@@ -498,7 +495,7 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
         }
     }
 
-    if (voxelBlock->_neighbours[1] == 0)
+    if (voxelBlock->_neighbours[1] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._x -= voxelBlock->_size;
@@ -510,7 +507,7 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
         }
     }
 
-    if (voxelBlock->_neighbours[2] == 0)
+    if (voxelBlock->_neighbours[2] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._y += voxelBlock->_size;
@@ -522,7 +519,7 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
         }
     }
 
-    if (voxelBlock->_neighbours[3] == 0)
+    if (voxelBlock->_neighbours[3] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._y -= voxelBlock->_size;
@@ -534,7 +531,7 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
         }
     }
 
-    if (voxelBlock->_neighbours[4] == 0)
+    if (voxelBlock->_neighbours[4] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._z += voxelBlock->_size;
@@ -546,7 +543,7 @@ void VoxelTerrain::attachNeighbours(VoxelBlock* voxelBlock)
         }
     }
 
-    if (voxelBlock->_neighbours[5] == 0)
+    if (voxelBlock->_neighbours[5] == VoxelBlock::INVALID_VOXELBLOCKID)
     {
         neighbourPos = voxelBlock->_position;
         neighbourPos._z -= voxelBlock->_size;
@@ -565,7 +562,8 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     {
         return;
     }
-    
+
+    // distance in tiles of current lod in all three dimensions
     iaVector3I distance = observerPosition;
     distance /= voxelBlock->_size;
     distance -= voxelBlock->_positionInLOD;
@@ -573,35 +571,35 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     distance._y = abs(distance._y);
     distance._z = abs(distance._z);
 
-    bool inVisibleRange = false;
+    bool inRange = false;
 
     if (voxelBlock->_lod == _lowestLOD)
     {
         if (distance._x <= _voxelBlockDiscoveryDistance && distance._y <= _voxelBlockDiscoveryDistance && distance._z <= _voxelBlockDiscoveryDistance)
         {
-            inVisibleRange = true;
-        }        
+            inRange = true;
+        }
     }
 
     if (voxelBlock->_children[0] != 0)
     {
-        bool childrenInVisibleRange = false;
+        bool childrenInRange = false;
 
-        if(distance._x <= 1 && distance._y <= 1 && distance._z <= 1)
+        if (distance._x <= 1 && distance._y <= 1 && distance._z <= 1)
         {
-            childrenInVisibleRange = true;
+            childrenInRange = true;
         }
 
         for (int i = 0; i < 8; ++i)
         {
             VoxelBlock* child = _voxelBlocksMap[voxelBlock->_children[i]];
-            setInRange(child, childrenInVisibleRange);
+            setInRange(child, childrenInRange);
         }
     }
 
     if (voxelBlock->_lod == _lowestLOD)
     {
-        setInRange(voxelBlock, inVisibleRange);
+        setInRange(voxelBlock, inRange);
     }
 
     switch (voxelBlock->_state)
@@ -614,7 +612,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         break;
 
     case Stage::Setup:
-    {    
+    {
         if (voxelBlock->_voxelBlockInfo == nullptr)
         {
             voxelBlock->_voxelData = new iVoxelData();
@@ -626,7 +624,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                 _voxelBlockSize + _voxelBlockOverlap,
                 _voxelBlockSize + _voxelBlockOverlap);
             voxelBlock->_voxelBlockInfo->_position = voxelBlock->_position;
-            voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData; // TODO make a copy here
+            voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData;
             voxelBlock->_voxelBlockInfo->_lodOffset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
             voxelBlock->_voxelBlockInfo->_lod = voxelBlock->_lod;
 
@@ -638,13 +636,13 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         }
 
         voxelBlock->_state = Stage::GeneratingVoxel;
-        
+
     }
     break;
 
     case Stage::GeneratingVoxel:
     {
-        iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);       
+        iTask* task = iTaskManager::getInstance().getTask(voxelBlock->_voxelGenerationTaskID);
         if (task == nullptr)
         {
             voxelBlock->_voxelGenerationTaskID = iTask::INVALID_TASK_ID;
@@ -707,13 +705,13 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
                         _voxelBlocksMap[voxelBlock->_children[3]]->_neighbours[0] = voxelBlock->_children[2];
                         _voxelBlocksMap[voxelBlock->_children[2]]->_neighbours[1] = voxelBlock->_children[3];
-                        
+
                         _voxelBlocksMap[voxelBlock->_children[4]]->_neighbours[0] = voxelBlock->_children[4];
                         _voxelBlocksMap[voxelBlock->_children[5]]->_neighbours[1] = voxelBlock->_children[5];
 
                         _voxelBlocksMap[voxelBlock->_children[7]]->_neighbours[0] = voxelBlock->_children[6];
                         _voxelBlocksMap[voxelBlock->_children[6]]->_neighbours[1] = voxelBlock->_children[7];
-                        
+
                         _voxelBlocksMap[voxelBlock->_children[0]]->_neighbours[2] = voxelBlock->_children[4];
                         _voxelBlocksMap[voxelBlock->_children[4]]->_neighbours[3] = voxelBlock->_children[0];
 
@@ -745,7 +743,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                     }
                 }
                 voxelBlock->_state = Stage::GeneratingMesh;
-            }            
+            }
         }
     }
     break;
@@ -756,11 +754,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
     case Stage::Ready:
     {
-        if (distance._x > 8 && distance._y > 8 && distance._z > 8)
-        {
-            cleanUpVoxelBlock(voxelBlock);
-        }
-        else if (voxelBlock->_inRange)
+        if (voxelBlock->_inRange)
         {
             if (voxelBlock->_dirtyNeighbours)
             {
@@ -791,33 +785,13 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     break;
     }
 
-    if (voxelBlock->_children[0] != 0)
+    if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
     {
         for (int i = 0; i < 8; ++i)
         {
             VoxelBlock* child = _voxelBlocksMap[voxelBlock->_children[i]];
             update(child, observerPosition);
         }
-    }
-}
-
-void VoxelTerrain::cleanUpVoxelBlock(VoxelBlock* voxelBlock)
-{
-    // nothing in queue to generate
-    if (voxelBlock->_modelNodeIDQueued == iNode::INVALID_NODE_ID)
-    {
-        destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
-        voxelBlock->_transformNodeIDCurrent = iNode::INVALID_NODE_ID;
-        voxelBlock->_modelNodeIDCurrent = iNode::INVALID_NODE_ID;
-        voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
-        voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
-        voxelBlock->_mutationCounter = 0;
-        voxelBlock->_state = Stage::Initial;
-        voxelBlock->_inRange = false;
-        voxelBlock->_dirtyNeighbours = true;
-
-        // TODO cleanup ... not sure how yet :-(
-        // todo we should only delete what is outside the discovery range
     }
 }
 
