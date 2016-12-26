@@ -270,17 +270,40 @@ void VoxelTerrain::setNeighbour(VoxelBlock* voxelBlock, uint32 neighbourIndex, V
 
 VoxelBlock* VoxelTerrain::createVoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress)
 {
-    VoxelBlock* result = new VoxelBlock(_nextVoxelBlockID, lod, position, parentAdress);
+    con_assert(lod >= 0 && lod <= _lowestLOD, "lod out of range");
+
+    VoxelBlock* result = new VoxelBlock();
     _voxelBlocksMap[_nextVoxelBlockID] = result;
-    _nextVoxelBlockID++;
     _voxelBlocks[lod][position] = result;
+
+    result->_id = _nextVoxelBlockID++;
+    
+    result->_position = position;
+    result->_lod = lod;
+    result->_size = _voxelBlockSize * pow(2, lod);
+    result->_positionInLOD = position;
+    result->_positionInLOD /= result->_size;
+    result->_parentAdress = parentAdress;
+
+    float64 halfSize = static_cast<float64>(result->_size >> 1);
+    result->_blockCenterPos.set(position._x + halfSize, position._y + halfSize, position._z + halfSize);
+
+    for (int i = 0; i < 8; ++i)
+    {
+        result->_children[i] = VoxelBlock::INVALID_VOXELBLOCKID;
+    }
+
+    for (int i = 0; i < 6; ++i)
+    {
+        result->_neighbours[i] = VoxelBlock::INVALID_VOXELBLOCKID;
+    }
     return result;
 }
 
 void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
 {
     float64 lodFactor = pow(2, _lowestLOD);
-    float64 actualBlockSize = VoxelBlock::_voxelBlockSize * lodFactor;
+    float64 actualBlockSize = _voxelBlockSize * lodFactor;
 
     if (_dirtyDiscovery || observerPosition.distance2(_lastDiscoveryPosition) > actualBlockSize * actualBlockSize)
     {
@@ -584,9 +607,9 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             voxelBlock->_voxelData->setClearValue(0);
 
             voxelBlock->_voxelBlockInfo = new VoxelBlockInfo();
-            voxelBlock->_voxelBlockInfo->_size.set(VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap,
-                VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap,
-                VoxelBlock::_voxelBlockSize + VoxelBlock::_voxelBlockOverlap);
+            voxelBlock->_voxelBlockInfo->_size.set(_voxelBlockSize + _voxelBlockOverlap,
+                _voxelBlockSize + _voxelBlockOverlap,
+                _voxelBlockSize + _voxelBlockOverlap);
             voxelBlock->_voxelBlockInfo->_position = voxelBlock->_position;
             voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData; // TODO make a copy here
             voxelBlock->_voxelBlockInfo->_lodOffset = iContouringCubes::calcLODOffset(voxelBlock->_lod);
@@ -627,35 +650,35 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
                         VoxelBlock* child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position, iaVector3I(0, 0, 0));
                         voxelBlock->_children[0] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, 0, 0), iaVector3I(1, 0, 0));
                         voxelBlock->_children[1] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, 0, halfSize), iaVector3I(1, 0, 1));
                         voxelBlock->_children[2] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(0, 0, halfSize), iaVector3I(0, 0, 1));
                         voxelBlock->_children[3] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(0, halfSize, 0), iaVector3I(0, 1, 0));
                         voxelBlock->_children[4] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, halfSize, 0), iaVector3I(1, 1, 0));
                         voxelBlock->_children[5] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(halfSize, halfSize, halfSize), iaVector3I(1, 1, 1));
                         voxelBlock->_children[6] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         child = createVoxelBlock(voxelBlock->_lod - 1, voxelBlock->_position + iaVector3I(0, halfSize, halfSize), iaVector3I(0, 1, 1));
                         voxelBlock->_children[7] = child->_id;
-                        child->_parent = voxelBlock;
+                        child->_parent = voxelBlock->_id;
 
                         //   4-----5
                         //  /|    /|
@@ -969,10 +992,11 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
             tileInformation._materialID = _terrainMaterialID;
             tileInformation._voxelData = voxelBlock->_voxelData;
 
-            if (voxelBlock->_parent != nullptr)
+            if (voxelBlock->_parent != VoxelBlock::INVALID_VOXELBLOCKID)
             {
                 tileInformation._voxelOffsetToNextLOD.set(voxelBlock->_parentAdress._x * 16, voxelBlock->_parentAdress._y * 16, voxelBlock->_parentAdress._z * 16);
-                tileInformation._voxelDataNextLOD = voxelBlock->_parent->_voxelData;
+                VoxelBlock* parent = _voxelBlocksMap[voxelBlock->_parent];
+                tileInformation._voxelDataNextLOD = parent->_voxelData;
             }
 
             tileInformation._lod = voxelBlock->_lod;

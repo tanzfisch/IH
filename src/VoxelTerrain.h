@@ -115,6 +115,14 @@ private:
     */
     static const int64 _voxelBlockDiscoveryDistance = 2;
 
+    /*! block quibic size
+    */
+    static const int32 _voxelBlockSize = 32;
+
+    /*! block overlap
+    */
+    static const int32 _voxelBlockOverlap = 2;
+
     /*! the voxel data
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;

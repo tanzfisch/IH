@@ -57,9 +57,6 @@
     <ClCompile Include="..\src\VoxelTerrain.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\VoxelBlock.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Granade.cpp">
       <Filter>src\Entities</Filter>
     </ClCompile>
