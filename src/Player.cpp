@@ -31,7 +31,7 @@ using namespace IgorAux;
 #include "DigEffect.h"
 #include "MuzzleFlash.h"
 
-Player::Player(iScene* scene, const iaMatrixf& matrix)
+Player::Player(iScene* scene, const iaMatrixd& matrix)
     : Entity(Fraction::Blue, EntityType::Vehicle)
 {
     _scene = scene;
@@ -62,7 +62,7 @@ Player::Player(iScene* scene, const iaMatrixf& matrix)
     physicsNode->setMaterial(EntityManager::getInstance().getEntityMaterialID());
     physicsNode->setForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &Player::onApplyForceAndTorque));
     physicsNode->setUserData(&_id);
-    physicsNode->setAngularDamping(iaVector3f(100000, 100000, 100000));
+    physicsNode->setAngularDamping(iaVector3d(100000, 100000, 100000));
     physicsNode->setLinearDamping(500);
 
     iNodeTransform* transformRecoilLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
@@ -267,12 +267,12 @@ void Player::dig(uint64 toolSize, uint8 toolDensity)
     }*/
 }
 
-void Player::shootSecondaryWeapon(iView& view, const iaVector3f& screenCoordinates)
+void Player::shootSecondaryWeapon(iView& view, const iaVector3d& screenCoordinates)
 {
     iNodeTransform* transformationNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformationNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformationNode->getMatrix(matrix);
         matrix._pos = getSphere()._center;
 
@@ -280,7 +280,7 @@ void Player::shootSecondaryWeapon(iView& view, const iaVector3f& screenCoordinat
     }
 }
 
-void Player::shootPrimaryWeapon(iView& view, const iaVector3f& screenCoordinates)
+void Player::shootPrimaryWeapon(iView& view, const iaVector3d& screenCoordinates)
 {
     float64 currentTime = iTimer::getInstance().getTime();
     if (currentTime > _primaryWeaponTime + 100)
@@ -288,32 +288,32 @@ void Player::shootPrimaryWeapon(iView& view, const iaVector3f& screenCoordinates
         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
         if (transformNode != nullptr)
         {
-            iaMatrixf worldMatrix;
+            iaMatrixd worldMatrix;
             transformNode->calcWorldTransformation(worldMatrix);
 
-            iaVector3f pos = view.unProject(screenCoordinates, worldMatrix);
+            iaVector3d pos = view.unProject(screenCoordinates, worldMatrix);
 
-            iaVector3f topScreen = screenCoordinates;
+            iaVector3d topScreen = screenCoordinates;
             topScreen._y -= 1;
-            iaVector3f top = view.unProject(topScreen, worldMatrix);
+            iaVector3d top = view.unProject(topScreen, worldMatrix);
             top -= pos;
 
-            iaVector3f depthScreen = screenCoordinates;
+            iaVector3d depthScreen = screenCoordinates;
             depthScreen._z = -1;
-            iaVector3f depth = view.unProject(depthScreen, worldMatrix);
+            iaVector3d depth = view.unProject(depthScreen, worldMatrix);
             depth -= pos;
 
-            iaMatrixf matrix;
+            iaMatrixd matrix;
 
             matrix.grammSchmidt(depth, top);
             matrix._pos = pos;
 
             matrix = worldMatrix * matrix;
 
-            iaMatrixf offsetLeft = matrix;
+            iaMatrixd offsetLeft = matrix;
             offsetLeft.translate(-0.5, -0.4, -1.0);
 
-            iaMatrixf offsetRight = matrix;
+            iaMatrixd offsetRight = matrix;
             offsetRight.translate(0.5, -0.4, -1.0);
 
             new Bullet(_scene, _force * 0.001, offsetLeft, getFraction());
@@ -328,13 +328,13 @@ void Player::shootPrimaryWeapon(iView& view, const iaVector3f& screenCoordinates
             if (transformRecoilLeftGun != nullptr &&
                 transformRecoilRightGun != nullptr)
             {
-                iaMatrixf matrix;
+                iaMatrixd matrix;
                 transformRecoilLeftGun->getMatrix(matrix);
-                matrix._pos += iaVector3f(0, 0, 0.25);
+                matrix._pos += iaVector3d(0, 0, 0.25);
                 transformRecoilLeftGun->setMatrix(matrix);
 
                 transformRecoilRightGun->getMatrix(matrix);
-                matrix._pos += iaVector3f(0, 0, 0.25);
+                matrix._pos += iaVector3d(0, 0, 0.25);
                 transformRecoilRightGun->setMatrix(matrix);
             }
         }
@@ -348,14 +348,14 @@ uint32 Player::getLODTriggerID()
     return _lodTriggerID;
 }
 
-iaVector3f Player::updatePos()
+iaVector3d Player::updatePos()
 {
-    iaVector3f result;
+    iaVector3d result;
 
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->getMatrix(matrix);
         result = matrix._pos;
     }
@@ -382,15 +382,15 @@ void Player::handle()
     float32 speed = 2000;
 
     const float32 offsetIncrease = 0.1;
-    iaMatrixf matrix;
-    iaVector3f resultingForce;
+    iaMatrixd matrix;
+    iaVector3d resultingForce;
 
     iNodeTransform* transformationNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     transformationNode->getMatrix(matrix);
 
     if (_forward)
     {
-        iaVector3f foreward = matrix._depth;
+        iaVector3d foreward = matrix._depth;
         foreward.negate();
         foreward.normalize();
         foreward *= speed;
@@ -399,7 +399,7 @@ void Player::handle()
 
     if (_backward)
     {
-        iaVector3f backward = matrix._depth;
+        iaVector3d backward = matrix._depth;
         backward.normalize();
         backward *= speed;
         resultingForce += backward;
@@ -407,7 +407,7 @@ void Player::handle()
 
     if (_left)
     {
-        iaVector3f left = matrix._right;
+        iaVector3d left = matrix._right;
         left.negate();
         left.normalize();
         left *= speed;
@@ -416,7 +416,7 @@ void Player::handle()
 
     if (_right)
     {
-        iaVector3f right = matrix._right;
+        iaVector3d right = matrix._right;
         right.normalize();
         right *= speed;
         resultingForce += right;
@@ -424,7 +424,7 @@ void Player::handle()
 
     if (_up)
     {
-        iaVector3f up = matrix._top;
+        iaVector3d up = matrix._top;
         up.normalize();
         up *= speed;
         resultingForce += up;
@@ -432,7 +432,7 @@ void Player::handle()
 
     if (_down)
     {
-        iaVector3f down = matrix._top;
+        iaVector3d down = matrix._top;
         down.negate();
         down.normalize();
         down *= speed;
@@ -457,11 +457,11 @@ void Player::handle()
     iNodeTransform* transformCam = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformCamNodeID));
     if (transformCam != nullptr)
     {
-        iaMatrixf camMatrix;
-        iaMatrixf transformInvMatrix = matrix;
+        iaMatrixd camMatrix;
+        iaMatrixd transformInvMatrix = matrix;
         transformInvMatrix.invert();
         transformCam->getMatrix(camMatrix);
-        iaVector3f camForce = transformInvMatrix * resultingForce;
+        iaVector3d camForce = transformInvMatrix * resultingForce;
         camForce -= transformInvMatrix._pos;
         camForce *= 0.00004;
         camMatrix._pos += camForce;
@@ -475,7 +475,7 @@ void Player::handle()
     if (transformRecoilLeftGun != nullptr &&
         transformRecoilRightGun != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformRecoilLeftGun->getMatrix(matrix);
         matrix._pos *= 0.95;
         transformRecoilLeftGun->setMatrix(matrix);
@@ -489,7 +489,7 @@ void Player::handle()
 void Player::rotate(float32 heading, float32 pitch)
 {
     iNodeTransform* transformationNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
-    iaMatrixf matrix;
+    iaMatrixd matrix;
 
     transformationNode->getMatrix(matrix);
     matrix._pos.set(0, 0, 0);
@@ -601,7 +601,7 @@ void Player::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep, int thr
     body->setTorque(_torque);
 }
 
-void Player::setPosition(iaVector3f pos)
+void Player::setPosition(iaVector3d pos)
 {
     iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().getNode(_physicsNodeID));
     if (physicsNode != nullptr)
@@ -611,7 +611,7 @@ void Player::setPosition(iaVector3f pos)
         iPhysicsBody* body = iPhysics::getInstance().getBody(bodyID);
         if (body != nullptr)
         {
-            iaMatrixf matrix;
+            iaMatrixd matrix;
             matrix._pos = pos;
             body->setMatrix(matrix);
         }

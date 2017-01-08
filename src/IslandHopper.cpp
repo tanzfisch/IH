@@ -191,7 +191,7 @@ void IslandHopper::initScene()
 
 void IslandHopper::initPlayer()
 {
-    iaMatrixf matrix;
+    iaMatrixd matrix;
     matrix.translate(9986, 400, 8977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
@@ -682,19 +682,19 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::F5:
-                player->setPosition(iaVector3f(9986, 400, 8977));
+                player->setPosition(iaVector3d(9986, 400, 8977));
                 break;
 
             case iKeyCode::F6:
-                player->setPosition(iaVector3f(27934.5, 553.604, 17452.6));
+                player->setPosition(iaVector3d(27934.5, 553.604, 17452.6));
                 break;
 
             case iKeyCode::F7:
-                player->setPosition(iaVector3f(16912.3, 1000, 31719.6));
+                player->setPosition(iaVector3d(16912.3, 1000, 31719.6));
                 break;
 
             case iKeyCode::F8:
-                player->setPosition(iaVector3f(10841.6, 3000, 25283.8));
+                player->setPosition(iaVector3d(10841.6, 3000, 25283.8));
                 break;
             }
         }
@@ -825,13 +825,13 @@ void IslandHopper::onMouseDown(iKeyCode key)
         {
             if (key == iKeyCode::MouseMiddle)
             {
-                iaVector3f updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
+                iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
                 player->shootSecondaryWeapon(_view, updown);
             }
 
             if (key == iKeyCode::MouseLeft)
             {
-                iaVector3f updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
+                iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
                 player->shootPrimaryWeapon(_view, updown);
             }
         }
@@ -938,9 +938,9 @@ void IslandHopper::onRenderOrtho()
 {
     iStatistics::getInstance().drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
-    iaMatrixf matrix;
+    iaMatrixd matrix;
     iRenderer::getInstance().setViewMatrix(matrix);
-    matrix.translate(iaVector3f(0, 0, -30));
+    matrix.translate(0, 0, -30);
     iRenderer::getInstance().setModelMatrix(matrix);
     iMaterialResourceFactory::getInstance().setMaterial(_materialWithTextureAndBlending);
     iRenderer::getInstance().setFont(_font);
@@ -953,14 +953,6 @@ void IslandHopper::onRenderOrtho()
     }
     else
     {
-        /*  BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
-          if (boss == nullptr)
-          {
-              iRenderer::getInstance().setColor(iaColor4f(0, 1, 0, 1));
-              iRenderer::getInstance().setFontSize(40.0f);
-              iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "you win!", iHorrizontalAlign::Center, iVerticalAlign::Center);
-          }*/
-
         Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
         if (player != nullptr)
         {
@@ -994,9 +986,6 @@ void IslandHopper::onRenderOrtho()
             _activeControls = false;
         }
     }
-
-
-
 
     iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 }

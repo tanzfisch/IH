@@ -22,10 +22,10 @@ private:
     uint32 _particleSystemNodeID1 = iNode::INVALID_NODE_ID;
     uint32 _particleSystemNodeID2 = iNode::INVALID_NODE_ID;
 
-	iaVector3f _pos;
+	iaVector3d _pos;
 
     void handle();
-    iaVector3f updatePos();
+    iaVector3d updatePos();
     void hitBy(uint64 entityID);
 
 };

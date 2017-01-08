@@ -48,13 +48,13 @@ void Turret::hitBy(uint64 entityID)
 {
 }
 
-iaVector3f Turret::updatePos()
+iaVector3d Turret::updatePos()
 {
-    iaVector3f result;
+    iaVector3d result;
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_parentNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->calcWorldTransformation(matrix);
         result = matrix._pos;
     }

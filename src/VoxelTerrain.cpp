@@ -160,7 +160,7 @@ void VoxelTerrain::handleVoxelBlocks()
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().getNode(_lodTrigger));
     if (lodTrigger != nullptr)
     {
-        iaVector3f pos = lodTrigger->getWorldPosition();
+        iaVector3d pos = lodTrigger->getWorldPosition();
         if (pos.length2() < 1.0f)
         {
             return;

@@ -22,7 +22,7 @@ using namespace IgorAux;
 #include "BossDestroyed.h"
 #include "VoxelTerrain.h"
 
-BossEnemy::BossEnemy(iScene* scene, const iaMatrixf& matrix, uint64 playerID)
+BossEnemy::BossEnemy(iScene* scene, const iaMatrixd& matrix, uint64 playerID)
     : Entity(Fraction::Red, EntityType::Vehicle)
 {
     _playerID = playerID;
@@ -105,7 +105,7 @@ BossEnemy::~BossEnemy()
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->getMatrix(matrix);
         BossDestroyed* effect = new BossDestroyed(_scene, matrix);
     }
@@ -176,13 +176,13 @@ void BossEnemy::hitBy(uint64 entityID)
     }
 }
 
-iaVector3f BossEnemy::updatePos()
+iaVector3d BossEnemy::updatePos()
 {
-    iaVector3f result;
+    iaVector3d result;
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->getMatrix(matrix);
         result = matrix._pos;
     }

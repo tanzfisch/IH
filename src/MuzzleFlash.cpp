@@ -108,7 +108,7 @@ MuzzleFlash::MuzzleFlash(iScene* scene, uint32 emitterID)
         emitterNode->insertNode(particleSystem1);
         emitterNode->insertNode(particleSystem2);
 
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         emitterNode->calcWorldTransformation(matrix);
         _pos = matrix._pos;
     }
@@ -125,7 +125,7 @@ void MuzzleFlash::hitBy(uint64 entityID)
     // nothing to do
 }
 
-iaVector3f MuzzleFlash::updatePos()
+iaVector3d MuzzleFlash::updatePos()
 {
     return _pos;
 }

@@ -22,7 +22,7 @@ using namespace IgorAux;
 #include "EnemyDestroyed.h"
 #include "VoxelTerrain.h"
 
-Enemy::Enemy(iScene* scene, const iaMatrixf& matrix, uint64 playerID)
+Enemy::Enemy(iScene* scene, const iaMatrixd& matrix, uint64 playerID)
     : Entity(Fraction::Red, EntityType::Vehicle)
 {
     _playerID = playerID;
@@ -48,7 +48,7 @@ Enemy::Enemy(iScene* scene, const iaMatrixf& matrix, uint64 playerID)
     physicsNode->setMaterial(EntityManager::getInstance().getEntityMaterialID());
     physicsNode->setUserData(&_id);
     physicsNode->setForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &Enemy::onApplyForceAndTorque));
-    physicsNode->setAngularDamping(iaVector3f(10000, 10000, 10000));
+    physicsNode->setAngularDamping(iaVector3d(10000, 10000, 10000));
     physicsNode->setLinearDamping(100);
 
     _scene->getRoot()->insertNode(transformNode);
@@ -75,7 +75,7 @@ Enemy::~Enemy()
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->getMatrix(matrix);
         EnemyDestroyed* effect = new EnemyDestroyed(_scene, matrix);
     }
@@ -122,13 +122,13 @@ void Enemy::hitBy(uint64 entityID)
     }
 }
 
-iaVector3f Enemy::updatePos()
+iaVector3d Enemy::updatePos()
 {
-    iaVector3f result;
+    iaVector3d result;
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
     if (transformNode != nullptr)
     {
-        iaMatrixf matrix;
+        iaMatrixd matrix;
         transformNode->getMatrix(matrix);
         result = matrix._pos;
     }
