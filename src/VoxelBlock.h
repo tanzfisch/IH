@@ -127,11 +127,11 @@ public:
     */
     uint64 _parent = INVALID_VOXELBLOCKID;
 
-    /*! pointers to children
+    /*! indexes to children
     */
     uint64 _children[8];
 
-    /*! pointers to neighbour in same LOD
+    /*! indexes to neighbour in same LOD
     */
     uint64 _neighbours[6];
 
