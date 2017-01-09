@@ -129,7 +129,7 @@ private:
 
     /*! voxel block discovery distance
     */
-    static const int64 _voxelBlockDiscoveryDistance = 2;
+    static const int64 _voxelBlockDiscoveryDistance = 10;
 
     /*! block quibic size
     */
@@ -143,7 +143,12 @@ private:
     */
     vector<unordered_map<iaVector3I, VoxelBlock*, VectorHasher, VectorEqualFn>> _voxelBlocks;
 
+    /*! map of voxel block IDs to voxel blocks
+    */
     map<uint64, VoxelBlock*> _voxelBlocksMap;
+
+    /*! next voxel block id
+    */
     uint64 _nextVoxelBlockID = 1;
 
     /*! map of voxel blocks that have to be deleted
