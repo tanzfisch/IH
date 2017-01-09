@@ -35,6 +35,8 @@ public:
     */
     static const uint64 INVALID_VOXELBLOCKID = 0;
 
+    /*! block ID
+    */
     uint64 _id = INVALID_VOXELBLOCKID;
 
     /*! bit mask with current neighbors LOD settings
