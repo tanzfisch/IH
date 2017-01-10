@@ -49,6 +49,8 @@ VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
     _deleteBlocksSection = iStatistics::getInstance().registerSection("VT:delete", 3);
     _applyActionsSection = iStatistics::getInstance().registerSection("VT:applyActions", 3);
     _updateVisBlocksSection = iStatistics::getInstance().registerSection("VT:vis", 3);
+
+    iRenderer::getInstance().setWorldGridResolution(1000.0);
 }
 
 VoxelTerrain::~VoxelTerrain()
