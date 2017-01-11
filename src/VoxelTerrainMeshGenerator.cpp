@@ -157,6 +157,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
     }
 
     delete voxelData;
+    delete voxelDataNextLOD;
 
     return result;
 }
