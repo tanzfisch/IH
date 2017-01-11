@@ -230,63 +230,77 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 
 void VoxelTerrain::deleteBlocks()
 {
-    /* auto iter = _voxelBlocksToDelete.begin();
-     while (iter != _voxelBlocksToDelete.end())
-     {
-         if (canBeDeleted((*iter)))
-         {
-             deleteBlock((*iter));
-             iter = _voxelBlocksToDelete.erase(iter);
-         }
-         else
-         {
-             iter++;
-         }
-     }*/
+    con_endl("blocks to delete " << _voxelBlocksToDelete.size());
+
+    auto iter = _voxelBlocksToDelete.begin();
+    while (iter != _voxelBlocksToDelete.end())
+    {
+        if (canBeDeleted((*iter)))
+        {
+            VoxelBlock* voxelBlock = (*iter);
+            iter = _voxelBlocksToDelete.erase(iter);
+            deleteBlock(voxelBlock);
+        }
+        else
+        {
+            iter++;
+        }
+    }
 }
 
 bool VoxelTerrain::canBeDeleted(VoxelBlock* voxelBlock)
 {
-    bool result = true;
-    /*   if (voxelBlock->_children[0] != nullptr)
-       {
-           for (int i = 0; i < 8; ++i)
-           {
-               if (!canBeDeleted(voxelBlock->_children[i]))
-               {
-                   result = false;
-               }
-           }
-       }
+    for (int i = 0; i < 8; ++i)
+    {
+        auto child = _voxelBlocksMap.find(voxelBlock->_children[i]);
+        if (child != _voxelBlocksMap.end())
+        {
+            return false;
+        }
+    }
 
-       if (result)
-       {
-           if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
-               voxelBlock->_state == Stage::GeneratingMesh ||
-               voxelBlock->_state == Stage::GeneratingVoxel ||
-               voxelBlock->_state == Stage::Setup)
-           {
-               result = false;
-           }
-       }*/
+    if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
+        voxelBlock->_state == Stage::GeneratingMesh ||
+        voxelBlock->_state == Stage::GeneratingVoxel ||
+        voxelBlock->_state == Stage::Setup)
+    {
+        return false;
+    }
 
-    return result;
+    return true;
 }
 
 void VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
 {
-    /*  if (voxelBlock->_children[0] != nullptr)
-      {
-          for (int i = 0; i < 8; ++i)
-          {
-              deleteBlock(voxelBlock->_children[i]);
-          }
-      }*/
+    auto parent = _voxelBlocksMap.find(voxelBlock->_parent);
+    if (parent != _voxelBlocksMap.end())
+    {
+        for (int i = 0; i < 8; ++i)
+        {
+            if ((*parent).second->_children[i] == voxelBlock->_id)
+            {
+                (*parent).second->_children[i] = VoxelBlock::INVALID_VOXELBLOCKID;
+            }
+        }
+    }
 
-      // detachNeighbours(voxelBlock);
-     //  destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+    if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
+    {
+        destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
+    }
 
-   //    delete voxelBlock;
+    // nope does not work yet :-(
+    /*if (voxelBlock->_voxelData != nullptr)
+    {
+        delete voxelBlock->_voxelData;
+    }
+        
+    if (voxelBlock->_voxelBlockInfo != nullptr)
+    {
+        delete voxelBlock->_voxelBlockInfo;
+    }
+
+    delete voxelBlock;*/
 }
 
 void VoxelTerrain::setNeighboursDirty(VoxelBlock* voxelBlock)
@@ -399,30 +413,44 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
                     {
                         voxelBlocks[voxelBlockPosition] = createVoxelBlock(_lowestLOD, voxelBlockPosition*actualBlockSize, iaVector3I());
                     }
-                    /*else
+                    else
                     {
                         auto blockIter = voxelBlocksToDelete.find(voxelBlockPosition);
                         if (blockIter != voxelBlocksToDelete.end())
                         {
                             voxelBlocksToDelete.erase(blockIter);
                         }
-                    }*/
+                    }
                 }
             }
         }
 
-        /*for(auto iter : voxelBlocksToDelete)
+        for (auto iter : voxelBlocksToDelete)
         {
-            con_endl("delete voxel block " << iter.second->_position);
-
             auto blockIter = voxelBlocks.find(iter.second->_position);
             if (blockIter != voxelBlocks.end())
             {
                 voxelBlocks.erase(blockIter);
             }
 
-            _voxelBlocksToDelete.push_back(iter.second);
-        }*/
+            collectBlocksToDelete(iter.second, _voxelBlocksToDelete);
+        }
+    }
+}
+
+void VoxelTerrain::collectBlocksToDelete(VoxelBlock* currentBlock, vector<VoxelBlock*>& dst)
+{
+    detachNeighbours(currentBlock);
+    dst.push_back(currentBlock);
+
+    for (int i = 0; i < 8; ++i)
+    {
+        auto child = _voxelBlocksMap.find(currentBlock->_children[i]);
+
+        if (child != _voxelBlocksMap.end())
+        {
+            collectBlocksToDelete((*child).second, dst);
+        }
     }
 }
 
@@ -437,45 +465,45 @@ void VoxelTerrain::setInRange(VoxelBlock* voxelBlock, bool inRange)
 
 void VoxelTerrain::detachNeighbours(VoxelBlock* voxelBlock)
 {
-    VoxelBlock* neighbour = _voxelBlocksMap[voxelBlock->_neighbours[0]];
-    if (neighbour != nullptr)
+    auto neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[0]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[1] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[1] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[0] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[1]];
-    if (neighbour != nullptr)
+    neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[1]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[0] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[0] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[1] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[2]];
-    if (neighbour != nullptr)
+    neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[2]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[3] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[3] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[2] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[3]];
-    if (neighbour != nullptr)
+    neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[3]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[2] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[2] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[3] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[4]];
-    if (neighbour != nullptr)
+    neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[4]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[5] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[5] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[4] = VoxelBlock::INVALID_VOXELBLOCKID;
 
-    neighbour = _voxelBlocksMap[voxelBlock->_neighbours[5]];
-    if (neighbour != nullptr)
+    neighbour = _voxelBlocksMap.find(voxelBlock->_neighbours[5]);
+    if (neighbour != _voxelBlocksMap.end())
     {
-        neighbour->_neighbours[4] = VoxelBlock::INVALID_VOXELBLOCKID;
+        (*neighbour).second->_neighbours[4] = VoxelBlock::INVALID_VOXELBLOCKID;
     }
     voxelBlock->_neighbours[5] = VoxelBlock::INVALID_VOXELBLOCKID;
 }
@@ -583,7 +611,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         }
     }
 
-    if (voxelBlock->_children[0] != 0)
+    if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
     {
         bool childrenInRange = false;
 
@@ -808,7 +836,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
     bool blockVisible = voxelBlock->_inRange;
     bool meshVisible = blockVisible;
 
-    if (voxelBlock->_children[0] != 0)
+    if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
     {
         childrenVisible = true;
         for (int i = 0; i < 8; ++i)

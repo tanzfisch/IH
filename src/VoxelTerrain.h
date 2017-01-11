@@ -175,6 +175,8 @@ private:
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
 
+    void collectBlocksToDelete(VoxelBlock* currentBlock, vector<VoxelBlock*>& dst);
+
     void setNeighboursDirty(VoxelBlock* voxelBlock);
     void setInRange(VoxelBlock* voxelBlock, bool inRange);
 
