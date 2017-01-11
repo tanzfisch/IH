@@ -237,9 +237,8 @@ void VoxelTerrain::deleteBlocks()
     {
         if (canBeDeleted((*iter)))
         {
-            VoxelBlock* voxelBlock = (*iter);
+            deleteBlock((*iter));
             iter = _voxelBlocksToDelete.erase(iter);
-            deleteBlock(voxelBlock);
         }
         else
         {
@@ -252,17 +251,23 @@ bool VoxelTerrain::canBeDeleted(VoxelBlock* voxelBlock)
 {
     for (int i = 0; i < 8; ++i)
     {
-        auto child = _voxelBlocksMap.find(voxelBlock->_children[i]);
-        if (child != _voxelBlocksMap.end())
+        if (voxelBlock->_children[i] != VoxelBlock::INVALID_VOXELBLOCKID)
         {
             return false;
         }
     }
 
-    if (voxelBlock->_modelNodeIDQueued != iNode::INVALID_NODE_ID ||
-        voxelBlock->_state == Stage::GeneratingMesh ||
-        voxelBlock->_state == Stage::GeneratingVoxel ||
-        voxelBlock->_state == Stage::Setup)
+    if (voxelBlock->_state == Stage::GeneratingMesh)
+    {
+        finalizeMesh(voxelBlock);
+    }
+
+    if (voxelBlock->_transformNodeIDQueued != iNode::INVALID_NODE_ID)
+    {
+        return false;
+    }
+
+    if (voxelBlock->_voxelGenerationTaskID != iTask::INVALID_TASK_ID)
     {
         return false;
     }
@@ -289,7 +294,12 @@ void VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
         destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
     }
 
-    // nope does not work yet :-(
+    auto block = _voxelBlocksMap.find(voxelBlock->_id);
+    if (block != _voxelBlocksMap.end())
+    {
+        _voxelBlocksMap.erase(block);
+    }
+
     /*if (voxelBlock->_voxelData != nullptr)
     {
         delete voxelBlock->_voxelData;
@@ -427,12 +437,6 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
 
         for (auto iter : voxelBlocksToDelete)
         {
-            auto blockIter = voxelBlocks.find(iter.second->_position);
-            if (blockIter != voxelBlocks.end())
-            {
-                voxelBlocks.erase(blockIter);
-            }
-
             collectBlocksToDelete(iter.second, _voxelBlocksToDelete);
         }
     }
@@ -441,15 +445,21 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
 void VoxelTerrain::collectBlocksToDelete(VoxelBlock* currentBlock, vector<VoxelBlock*>& dst)
 {
     detachNeighbours(currentBlock);
-    dst.push_back(currentBlock);
 
-    for (int i = 0; i < 8; ++i)
+    auto foundBlock = _voxelBlocks[currentBlock->_lod].find(currentBlock->_positionInLOD);
+    if (foundBlock != _voxelBlocks[currentBlock->_lod].end())
     {
-        auto child = _voxelBlocksMap.find(currentBlock->_children[i]);
+        _voxelBlocks[currentBlock->_lod].erase(foundBlock);
+        dst.push_back(currentBlock);
 
-        if (child != _voxelBlocksMap.end())
+        for (int i = 0; i < 8; ++i)
         {
-            collectBlocksToDelete((*child).second, dst);
+            auto child = _voxelBlocksMap.find(currentBlock->_children[i]);
+
+            if (child != _voxelBlocksMap.end())
+            {
+                collectBlocksToDelete((*child).second, dst);
+            }
         }
     }
 }
@@ -646,7 +656,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         if (voxelBlock->_voxelBlockInfo == nullptr)
         {
             voxelBlock->_voxelData = new iVoxelData();
-            voxelBlock->_voxelData->setMode(iaRLEMode::Compressed);
             voxelBlock->_voxelData->setClearValue(0);
 
             voxelBlock->_voxelBlockInfo = new VoxelBlockInfo();
@@ -1007,72 +1016,78 @@ void VoxelTerrain::updateMesh(VoxelBlock* voxelBlock)
     {
         if (voxelBlock->_voxelData != nullptr)
         {
-            TileInformation tileInformation;
-            tileInformation._materialID = _terrainMaterialID;
-            tileInformation._voxelData = voxelBlock->_voxelData;
-
-            if (voxelBlock->_parent != VoxelBlock::INVALID_VOXELBLOCKID)
+            auto parent = _voxelBlocksMap.find(voxelBlock->_parent);
+            if (parent != _voxelBlocksMap.end())
             {
+                TileInformation tileInformation;
+
+                tileInformation._materialID = _terrainMaterialID;
                 tileInformation._voxelOffsetToNextLOD.set(voxelBlock->_parentAdress._x * 16, voxelBlock->_parentAdress._y * 16, voxelBlock->_parentAdress._z * 16);
-                VoxelBlock* parent = _voxelBlocksMap[voxelBlock->_parent];
-                tileInformation._voxelDataNextLOD = parent->_voxelData;
+                tileInformation._voxelData = new iVoxelData();
+                voxelBlock->_voxelData->getCopy(*(tileInformation._voxelData));
+                tileInformation._voxelDataNextLOD = new iVoxelData();
+                (*parent).second->_voxelData->getCopy(*(tileInformation._voxelDataNextLOD));
+                tileInformation._lod = voxelBlock->_lod;
+                tileInformation._neighboursLOD = voxelBlock->_neighboursLOD;
+                voxelBlock->_neighboursLOD = tileInformation._neighboursLOD;
+
+                iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
+                inputParam->_identifier = "vtg";
+                inputParam->_joinVertexes = true;
+                inputParam->_needsRenderContext = false;
+                inputParam->_modelSourceType = iModelSourceType::Generated;
+                inputParam->_loadPriority = 0;
+                inputParam->_parameters.setData(reinterpret_cast<const char*>(&tileInformation), sizeof(TileInformation));
+
+                iaString tileName = iaString::itoa(voxelBlock->_position._x);
+                tileName += ":";
+                tileName += iaString::itoa(voxelBlock->_position._y);
+                tileName += ":";
+                tileName += iaString::itoa(voxelBlock->_position._z);
+                tileName += ":";
+                tileName += iaString::itoa(voxelBlock->_lod);
+                tileName += ":";
+                tileName += iaString::itoa(voxelBlock->_mutationCounter++);
+
+                iNodeTransform* transform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+
+                transform->translate(voxelBlock->_position._x, voxelBlock->_position._y, voxelBlock->_position._z);
+
+                iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+                modelNode->setModel(tileName, inputParam);
+
+                transform->insertNode(modelNode);
+                insertNodeAsync(_rootNode, transform);
+
+                voxelBlock->_transformNodeIDQueued = transform->getID();
+                voxelBlock->_modelNodeIDQueued = modelNode->getID();
+
+                voxelBlock->_dirty = false;
             }
-
-            tileInformation._lod = voxelBlock->_lod;
-            tileInformation._neighboursLOD = voxelBlock->_neighboursLOD;
-            voxelBlock->_neighboursLOD = tileInformation._neighboursLOD;
-
-            iModelDataInputParameter* inputParam = new iModelDataInputParameter(); // will be deleted by iModel
-            inputParam->_identifier = "vtg";
-            inputParam->_joinVertexes = true;
-            inputParam->_needsRenderContext = false;
-            inputParam->_modelSourceType = iModelSourceType::Generated;
-            inputParam->_loadPriority = 0;
-            inputParam->_parameters.setData(reinterpret_cast<const char*>(&tileInformation), sizeof(TileInformation));
-
-            iaString tileName = iaString::itoa(voxelBlock->_position._x);
-            tileName += ":";
-            tileName += iaString::itoa(voxelBlock->_position._y);
-            tileName += ":";
-            tileName += iaString::itoa(voxelBlock->_position._z);
-            tileName += ":";
-            tileName += iaString::itoa(voxelBlock->_lod);
-            tileName += ":";
-            tileName += iaString::itoa(voxelBlock->_mutationCounter++);
-
-            iNodeTransform* transform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-
-            transform->translate(voxelBlock->_position._x, voxelBlock->_position._y, voxelBlock->_position._z);
-
-            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-            modelNode->setModel(tileName, inputParam);
-
-            transform->insertNode(modelNode);
-            insertNodeAsync(_rootNode, transform);
-
-            voxelBlock->_transformNodeIDQueued = transform->getID();
-            voxelBlock->_modelNodeIDQueued = modelNode->getID();
-
-            voxelBlock->_dirty = false;
         }
     }
     else
     {
-        static int count = 0;
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
-        if (modelNode != nullptr &&
-            modelNode->isLoaded())
+        finalizeMesh(voxelBlock);
+    }
+}
+
+void VoxelTerrain::finalizeMesh(VoxelBlock* voxelBlock)
+{
+    static int count = 0;
+    iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
+    if (modelNode != nullptr &&
+        modelNode->isLoaded())
+    {
+        if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
         {
-            if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
-            {
-                destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
-            }
-
-            voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;
-            voxelBlock->_modelNodeIDCurrent = voxelBlock->_modelNodeIDQueued;
-            voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
-
-            voxelBlock->_state = Stage::Ready;
+            destroyNodeAsync(voxelBlock->_transformNodeIDCurrent);
         }
+
+        voxelBlock->_transformNodeIDCurrent = voxelBlock->_transformNodeIDQueued;
+        voxelBlock->_modelNodeIDCurrent = voxelBlock->_modelNodeIDQueued;
+        voxelBlock->_modelNodeIDQueued = iNode::INVALID_NODE_ID;
+
+        voxelBlock->_state = Stage::Ready;
     }
 }

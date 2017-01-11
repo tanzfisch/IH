@@ -45,7 +45,7 @@ Granade::Granade(iScene* scene, const iaMatrixd& matrix, Fraction fraction)
     iNodeModel* bulletModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
     bulletModel->setModel("cube.ompf", nullptr);
 
-    iaMatrixf offset;
+    iaMatrixd offset;
     iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
     physicsNode->addSphere(1, offset);
     physicsNode->finalizeCollision();

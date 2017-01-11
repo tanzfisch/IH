@@ -175,6 +175,8 @@ private:
     */
     uint32 _lodTrigger = iNode::INVALID_NODE_ID;
 
+
+
     void collectBlocksToDelete(VoxelBlock* currentBlock, vector<VoxelBlock*>& dst);
 
     void setNeighboursDirty(VoxelBlock* voxelBlock);
@@ -219,6 +221,7 @@ private:
     bool updateVisibility(VoxelBlock* voxelBlock);
 
     void updateMesh(VoxelBlock* voxelBlock);
+    void finalizeMesh(VoxelBlock* voxelBlock);
 
     void setNodeActiveAsync(iNode* node, bool active);
     void insertNodeAsync(iNode* src, iNode* dst);

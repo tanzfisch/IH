@@ -147,7 +147,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 		if (tileInformation->_lod == 0)
 		{
 			iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
-			iaMatrixf offset;
+			iaMatrixd offset;
 			physicsNode->addMesh(mesh, 1, offset);
 			physicsNode->finalizeCollision(true);
 			physicsNode->setMaterial(EntityManager::getInstance().getTerrainMaterialID());
@@ -155,6 +155,8 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
 			result->insertNode(physicsNode);
 		}
     }
+
+    delete voxelData;
 
     return result;
 }

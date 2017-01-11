@@ -43,7 +43,7 @@ StaticEnemy::StaticEnemy(iScene* scene, const iaMatrixd& matrix, uint64 playerID
     iNodeModel* bodyModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
     bodyModel->setModel("crate.ompf", nullptr);
 
-    iaMatrixf offset;
+    iaMatrixd offset;
     iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
     _physicsNodeID = physicsNode->getID();
     physicsNode->addBox(1,2,1, offset);

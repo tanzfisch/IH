@@ -78,7 +78,7 @@ Bullet::Bullet(iScene* scene, const iaVector3d& addForce, const iaMatrixd& matri
 	iNodeTransform* emitterTransform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
 	emitterTransform->rotate(-0.5 * M_PI, iaAxis::X);
 
-	iaMatrixf offset;
+	iaMatrixd offset;
 	iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
 	physicsNode->addSphere(0.5, offset);
 	physicsNode->finalizeCollision();

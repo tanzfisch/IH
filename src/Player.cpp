@@ -53,7 +53,7 @@ Player::Player(iScene* scene, const iaMatrixd& matrix)
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLODTrigger));
     _lodTriggerID = lodTrigger->getID();
 
-    iaMatrixf offset;
+    iaMatrixd offset;
     iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
     _physicsNodeID = physicsNode->getID();
     physicsNode->addSphere(1, offset);
