@@ -14,7 +14,7 @@ namespace Igor
 	class iScene;
 }
 
-enum class Stage
+enum class Stage : uint8
 {
     Initial,
     Setup,
@@ -47,6 +47,16 @@ public:
     */
     bool _dirty = true;
 
+    /*! if true mesh is in visible range (and SHOULD be visible)
+
+    but can be actually not rendered because e.g. the mesh is not ready yet
+    */
+    bool _inRange = false;
+
+    /*! if true neighbours changed and we might have to regenerate the mesh
+    */
+    bool _dirtyNeighbours = true;
+
     /*! id of voxel generation task
 
     there is only one at a time needed
@@ -71,23 +81,11 @@ public:
 
     /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models
     */
-    uint32 _mutationCounter = 0;
+    uint16 _mutationCounter = 0;
 
-    /*! position of block relative to parent
-
-    \todo check if we can do this differently
+    /*! index position of block relative to parent
     */
-    iaVector3I _parentAdress;
-
-    /*! center position of block
-    */
-    iaVector3I _blockCenterPos;
-
-    /*! blocks position
-
-    -x,-y,-z corner
-    */
-    iaVector3I _position;
+    uint8 _childAdress;
 
     /*! blocks position as index in corresponding LOD
     */
@@ -97,19 +95,9 @@ public:
     */
     uint32 _lod = 0;
 
-    /*! size of this block based on LOD
+    /*! world size of block
     */
-    uint32 _size = 0;
-
-    /*! if true mesh is in visible range (and SHOULD be visible)
-
-    but can be actually not rendered because e.g. the mesh is not ready yet
-    */
-    bool _inRange = false;
-
-    /*! if true neighbours changed and we might have to regenerate the mesh
-    */
-    bool _dirtyNeighbours = true;
+    uint16 _size = 0;
 
     /*! current state of the block
     */
@@ -119,7 +107,7 @@ public:
     */
     iVoxelData* _voxelData = nullptr;
 
-    /*! voxel block info
+    /*! voxel block info needed to generated voxel data
     */
     VoxelBlockInfo* _voxelBlockInfo = nullptr;
 

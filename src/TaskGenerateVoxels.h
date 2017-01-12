@@ -25,7 +25,7 @@ struct VoxelBlockInfo
 {
     /*! absolute position of voxel block
     */
-    iaVector3I _position;
+    iaVector3I _positionInLOD;
 
     /*! level of detail dependent offset to absolute grid
     */
@@ -37,13 +37,13 @@ struct VoxelBlockInfo
 
     /*! size of voxel block in voxel
     */
-    iaVector3i _size;
+    uint64 _size;
 
     /*! the destination voxel data structure
     */
     iVoxelData* _voxelData = nullptr;
 
-    /*! true if the generated voxel data contains a air-solid transition
+    /*! true if the generated voxel data contains an air to solid transition
     */
     bool _transition = false;
 };

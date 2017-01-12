@@ -182,7 +182,7 @@ private:
     void setNeighboursDirty(VoxelBlock* voxelBlock);
     void setInRange(VoxelBlock* voxelBlock, bool inRange);
 
-    VoxelBlock* createVoxelBlock(uint32 lod, iaVector3I position, iaVector3I parentAdress);
+    VoxelBlock* createVoxelBlock(uint32 lod, iaVector3I parentPositionInLOD, uint8 childAdress);
 
     void deleteBlocks();
     void deleteBlock(VoxelBlock* voxelBlock);

@@ -192,7 +192,7 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
-    matrix.translate(998600, 400, 897700);
+    matrix.translate(9986, 400, 8977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 }
@@ -420,12 +420,12 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 {
     iPerlinNoise perlinNoise; // TODO move from here
 
-    iVoxelData* voxelData = voxelBlockInfo->_voxelData;
-    iaVector3I& position = voxelBlockInfo->_position;
-    iaVector3f& lodOffset = voxelBlockInfo->_lodOffset;
-    iaVector3i& size = voxelBlockInfo->_size;
-
     uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
+    iVoxelData* voxelData = voxelBlockInfo->_voxelData;
+    iaVector3I position = voxelBlockInfo->_positionInLOD;
+    position *= (32 * lodFactor);
+    iaVector3f& lodOffset = voxelBlockInfo->_lodOffset;
+    uint64& size = voxelBlockInfo->_size;
 
     const float64 from = 0.35;
     const float64 to = 0.36;
@@ -433,7 +433,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 
     if (voxelData != nullptr)
     {
-        voxelData->initData(size._x, size._y, size._z);
+        voxelData->initData(size, size, size);
 
 #if 1
         for (int64 x = 0; x < voxelData->getWidth(); ++x)
@@ -504,9 +504,9 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                 float64 heightDiff = (transdiff / static_cast<float64>(lodFactor));
                 if (heightDiff > 0)
                 {
-                    if (heightDiff > size._y)
+                    if (heightDiff > size)
                     {
-                        heightDiff = size._y;
+                        heightDiff = size;
                     }
 
                     int64 diffi = static_cast<uint64>(heightDiff);
