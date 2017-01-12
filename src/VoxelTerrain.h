@@ -228,7 +228,7 @@ private:
     void removeNodeAsync(iNode* src, iNode* dst);
     void destroyNodeAsync(uint32 nodeID);
 
-    uint32 calcLODTransition(VoxelBlock* voxelBlock);
+    uint8 calcLODTransition(VoxelBlock* voxelBlock);
 
     /*! init
     */

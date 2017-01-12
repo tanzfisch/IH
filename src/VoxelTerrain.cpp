@@ -797,7 +797,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         {
             if (voxelBlock->_dirtyNeighbours)
             {
-                uint32 neighborsLOD = calcLODTransition(voxelBlock);
+                uint8 neighborsLOD = calcLODTransition(voxelBlock);
                 if (voxelBlock->_neighboursLOD != neighborsLOD)
                 {
                     voxelBlock->_neighboursLOD = neighborsLOD;
@@ -920,9 +920,9 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
 #define HIGHER_NEIGHBOR_LOD_ZPOSITIVE 0x02
 #define HIGHER_NEIGHBOR_LOD_ZNEGATIVE 0x01
 
-uint32 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
+uint8 VoxelTerrain::calcLODTransition(VoxelBlock* voxelBlock)
 {
-    uint32 result = 0;
+    uint8 result = 0;
 
     if (voxelBlock->_lod >= _lowestLOD)
     {
