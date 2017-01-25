@@ -140,12 +140,12 @@ void IslandHopper::initScene()
     // reate a sky box and add it to scene
     iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
     skyBoxNode->setTextures(
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-        iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg", iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp));
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+        iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp));
     skyBoxNode->setTextureScale(1);
     // create a sky box material
     _materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
@@ -393,7 +393,7 @@ void IslandHopper::init()
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-    iStatistics::getInstance().setVerbosity(iRenderStatisticsVerbosity::FPSMetricsAndTasks);
+    _statisticsVisualizer.setVerbosity(iRenderStatisticsVerbosity::FPSMetricsAndTasks);
 
     uint64 particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
     iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->setName("PMat");
@@ -708,7 +708,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 
     case iKeyCode::F3:
     {
-        iRenderStatisticsVerbosity level = iStatistics::getInstance().getVerbosity();
+        iRenderStatisticsVerbosity level = _statisticsVisualizer.getVerbosity();
 
         if (level == iRenderStatisticsVerbosity::All)
         {
@@ -721,7 +721,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
             level = static_cast<iRenderStatisticsVerbosity>(value);
         }
 
-        iStatistics::getInstance().setVerbosity(level);
+        _statisticsVisualizer.setVerbosity(level);
     }
     break;
     }
@@ -936,8 +936,6 @@ void IslandHopper::onRender()
 
 void IslandHopper::onRenderOrtho()
 {
-    iStatistics::getInstance().drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
-
     iaMatrixd matrix;
     iRenderer::getInstance().setViewMatrix(matrix);
     matrix.translate(0, 0, -30);
@@ -986,6 +984,8 @@ void IslandHopper::onRenderOrtho()
             _activeControls = false;
         }
     }
+
+    _statisticsVisualizer.drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
     iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 }

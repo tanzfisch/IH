@@ -184,7 +184,7 @@ void Enemy::handle()
     }*/
 }
 
-void Enemy::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep, int threadIndex)
+void Enemy::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep)
 {  
     body->setForce(_force);
 }

@@ -7,6 +7,7 @@
 #include <iTimerHandle.h>
 #include <iModelResourceFactory.h>
 #include <iKeyboard.h>
+#include <iStatisticsVisualizer.h>
 using namespace Igor;
 
 #include <iaMatrix.h>
@@ -42,6 +43,10 @@ public:
 	void run();
 
 private:
+
+    /*! visualize statistics
+    */
+    iStatisticsVisualizer _statisticsVisualizer;
 
     bool _loading = true;
     bool _activeControls = false;
