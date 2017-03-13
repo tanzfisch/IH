@@ -47,7 +47,7 @@ using namespace Igor;
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
-// #define SIN_WAVE_TERRAIN
+//#define SIN_WAVE_TERRAIN
 
 IslandHopper::IslandHopper()
 {
@@ -194,7 +194,7 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
-    matrix.translate(1798600, 2300, 1597700);
+    matrix.translate(17986, 2300, 15977);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 }
@@ -475,7 +475,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 
                 float64 height = (noise * 2000) + 2000;
 #ifdef SIN_WAVE_TERRAIN
-                height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
+                height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
 
                 float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;

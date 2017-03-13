@@ -117,7 +117,7 @@ private:
 
     /*! lowest allowed lod
     */
-    static const uint32 _lowestLOD = 10;
+    static const uint32 _lowestLOD = 10; // max 10
 
     /*! voxel block discovery distance
     */
