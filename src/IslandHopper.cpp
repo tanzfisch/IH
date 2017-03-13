@@ -47,6 +47,8 @@ using namespace Igor;
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
+// #define SIN_WAVE_TERRAIN
+
 IslandHopper::IslandHopper()
 {
     init();
@@ -164,7 +166,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(263.5 - i * 2.2);
+        waterNode->setWaterPosition(2000.0 - i * 2.2);
 
         if (i == 9)
         {
@@ -192,7 +194,7 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
-    matrix.translate(9986, 400, 8977);
+    matrix.translate(1798600, 2300, 1597700);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 }
@@ -411,8 +413,6 @@ void IslandHopper::init()
     registerHandles();
 }
 
-// #define SIN_WAVE_TERRAIN
-
 void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 {
     iPerlinNoise perlinNoise; // TODO move from here
@@ -473,21 +473,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                     noise *= 2.0;
                 }
 
-                noise += 0.01;
-
-                if (noise < 0.0)
-                {
-                    noise *= 1000.0;
-                }
-
-                noise += 0.12;
-
-                if (noise < 0)
-                {
-                    noise = 0;
-                }
-
-                float64 height = (noise * 2000);
+                float64 height = (noise * 2000) + 2000;
 #ifdef SIN_WAVE_TERRAIN
                 height = 341 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
@@ -679,19 +665,19 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::F5:
-                player->setPosition(iaVector3d(9986, 400, 8977));
+                player->setPosition(iaVector3d(9986, 2300, 8977));
                 break;
 
             case iKeyCode::F6:
-                player->setPosition(iaVector3d(27934.5, 553.604, 17452.6));
+                player->setPosition(iaVector3d(27934.5, 2700, 17452.6));
                 break;
 
             case iKeyCode::F7:
-                player->setPosition(iaVector3d(16912.3, 1000, 31719.6));
+                player->setPosition(iaVector3d(16912.3, 3000, 31719.6));
                 break;
 
             case iKeyCode::F8:
-                player->setPosition(iaVector3d(10841.6, 3000, 25283.8));
+                player->setPosition(iaVector3d(10841.6, 4500, 25283.8));
                 break;
             }
         }

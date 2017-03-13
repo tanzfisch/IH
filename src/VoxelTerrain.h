@@ -115,21 +115,17 @@ private:
     */
     uint32 _totalSection = 0;
 
-    /*! amount of configured LOD
+    /*! lowest allowed lod
     */
-    static const uint32 _lodCount = 8;
-
-    /*! visible distance for all the LOD
-    */
-    static const float64 _visibleDistance[_lodCount];
-
-    /*! lowest configured LOD
-    */
-    static const uint32 _lowestLOD = _lodCount - 1;
+    static const uint32 _lowestLOD = 10;
 
     /*! voxel block discovery distance
     */
-    static const int64 _voxelBlockDiscoveryDistance = 10;
+    static const int64 _voxelBlockDiscoveryDistance = 8;
+
+    /*! voxel block setup distance
+    */
+    static const int64 _voxelBlockSetupDistance = 4;
 
     /*! block quibic size
     */

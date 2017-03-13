@@ -30,8 +30,8 @@ using namespace IgorAux;
 
 //#define DISABLE_SECTIONS
 // #define FIX_POSITION
-// #define FIX_HEIGHT
-// #define WIREFRAME
+//#define FIX_HEIGHT
+//#define WIREFRAME
 
 iaVector3I childOffsetPosition[8] = 
 { 
@@ -654,7 +654,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
     switch (voxelBlock->_state)
     {
     case Stage::Initial:
-        if (distance._x <= 4 && distance._y <= 4 && distance._z <= 4)
+        if (distance._x <= _voxelBlockSetupDistance && distance._y <= _voxelBlockSetupDistance && distance._z <= _voxelBlockSetupDistance)
         {
             voxelBlock->_state = Stage::Setup;
         }
