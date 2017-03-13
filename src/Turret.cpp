@@ -31,7 +31,7 @@ Turret::Turret(iScene* scene, iNodeTransform* parent, Fraction fraction, uint64 
 
     iNodeModel* turret = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
     _turretNodeID = turret->getID();
-    turret->setModel("turret.ompf", nullptr);
+    turret->setModel("turret.ompf");
 
     _parentNodeID = parent->getID();
     parent->insertNode(turret);

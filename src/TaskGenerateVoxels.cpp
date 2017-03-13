@@ -16,6 +16,5 @@ TaskGenerateVoxels::TaskGenerateVoxels(VoxelBlockInfo* voxelBlockInfo, uint32 pr
 void TaskGenerateVoxels::run()
 {
     _generateVoxelsDelegate(_voxelBlockInfo);    
-    finishTask();
 }
 

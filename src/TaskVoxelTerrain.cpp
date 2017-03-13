@@ -24,6 +24,5 @@ void TaskVoxelTerrain::run()
     {
         _voxelTerrain->handleVoxelBlocks();
     }
-    finishTask();
 }
 
