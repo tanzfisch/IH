@@ -411,7 +411,7 @@ void IslandHopper::init()
     registerHandles();
 }
 
-#define SIN_WAVE_TERRAIN
+// #define SIN_WAVE_TERRAIN
 
 void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 {

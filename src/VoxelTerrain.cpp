@@ -243,8 +243,6 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 
 void VoxelTerrain::deleteBlocks()
 {
-    con_endl("blocks to delete " << _voxelBlocksToDelete.size());
-
     auto iter = _voxelBlocksToDelete.begin();
     while (iter != _voxelBlocksToDelete.end())
     {
@@ -344,14 +342,13 @@ void VoxelTerrain::setNeighboursDirty(VoxelBlock* voxelBlock)
     }
 }
 
-VoxelBlock* VoxelTerrain::createVoxelBlock(uint32 lod, iaVector3I parentPositionInLOD, uint8 childAdress)
+VoxelBlock* VoxelTerrain::createVoxelBlock(uint32 lod, iaVector3I positionInLOD, uint8 childAdress)
 {
     con_assert(lod >= 0 && lod <= _lowestLOD, "lod out of range");
 
     VoxelBlock* result = new VoxelBlock();
 
-    result->_positionInLOD = parentPositionInLOD;
-    result->_positionInLOD *= 2;
+    result->_positionInLOD = positionInLOD;
     result->_positionInLOD += childOffsetPosition[childAdress];
 
     result->_lod = lod;
@@ -433,7 +430,7 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
                     auto blockIter = voxelBlocks.find(voxelBlockPosition);
                     if (blockIter == voxelBlocks.end())
                     {
-                        voxelBlocks[voxelBlockPosition] = createVoxelBlock(_lowestLOD, voxelBlockPosition, 0);
+                        createVoxelBlock(_lowestLOD, voxelBlockPosition, 0);
                     }
                     else
                     {
@@ -711,36 +708,37 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                         float64 halfSize = static_cast<float64>(voxelBlock->_size >> 1);
 
                         uint32 childLOD = voxelBlock->_lod - 1;
-                        iaVector3I parentPositionInLOD = voxelBlock->_positionInLOD;
-                        VoxelBlock* child = createVoxelBlock(childLOD, parentPositionInLOD, 0);
+                        iaVector3I positionInLOD = voxelBlock->_positionInLOD;
+                        positionInLOD *= 2;
+                        VoxelBlock* child = createVoxelBlock(childLOD, positionInLOD, 0);
                         voxelBlock->_children[0] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 1);
+                        child = createVoxelBlock(childLOD, positionInLOD, 1);
                         voxelBlock->_children[1] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 2);
+                        child = createVoxelBlock(childLOD, positionInLOD, 2);
                         voxelBlock->_children[2] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 3);
+                        child = createVoxelBlock(childLOD, positionInLOD, 3);
                         voxelBlock->_children[3] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 4);
+                        child = createVoxelBlock(childLOD, positionInLOD, 4);
                         voxelBlock->_children[4] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 5);
+                        child = createVoxelBlock(childLOD, positionInLOD, 5);
                         voxelBlock->_children[5] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 6);
+                        child = createVoxelBlock(childLOD, positionInLOD, 6);
                         voxelBlock->_children[6] = child->_id;
                         child->_parent = voxelBlock->_id;
 
-                        child = createVoxelBlock(childLOD, parentPositionInLOD, 7);
+                        child = createVoxelBlock(childLOD, positionInLOD, 7);
                         voxelBlock->_children[7] = child->_id;
                         child->_parent = voxelBlock->_id;
 

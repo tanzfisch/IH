@@ -79,7 +79,7 @@ public:
     */
     uint32 _modelNodeIDQueued = iNode::INVALID_NODE_ID;
 
-    /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models
+    /*! everytime the tile changes this counter goes up so Igor can tell the difference between the models before and after
     */
     uint16 _mutationCounter = 0;
 
