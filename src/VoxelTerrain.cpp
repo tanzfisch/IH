@@ -33,8 +33,8 @@ using namespace IgorAux;
 //#define FIX_HEIGHT
 //#define WIREFRAME
 
-iaVector3I childOffsetPosition[8] = 
-{ 
+iaVector3I childOffsetPosition[8] =
+{
     iaVector3I(0, 0, 0),
     iaVector3I(1, 0, 0),
     iaVector3I(1, 0, 1),
@@ -42,7 +42,7 @@ iaVector3I childOffsetPosition[8] =
     iaVector3I(0, 1, 0),
     iaVector3I(1, 1, 0),
     iaVector3I(1, 1, 1),
-    iaVector3I(0, 1, 1) 
+    iaVector3I(0, 1, 1)
 };
 
 VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
@@ -58,7 +58,7 @@ VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
 
     _totalSection = iStatistics::getInstance().registerSection("VT:all", 3);
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
-    _updateBlocksSection = iStatistics::getInstance().registerSection("VT:blocks", 3);
+    _updateBlocksSection = iStatistics::getInstance().registerSection("VT:update", 3);
     _deleteBlocksSection = iStatistics::getInstance().registerSection("VT:delete", 3);
     _applyActionsSection = iStatistics::getInstance().registerSection("VT:applyActions", 3);
     _updateVisBlocksSection = iStatistics::getInstance().registerSection("VT:vis", 3);
@@ -221,24 +221,28 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 {
     auto& voxelBlocks = _voxelBlocks[_lowestLOD];
 
+#ifndef DISABLE_SECTIONS
+    iStatistics::getInstance().beginSection(_updateBlocksSection);
+#endif
     for (auto block : voxelBlocks)
     {
-#ifndef DISABLE_SECTIONS
-        iStatistics::getInstance().beginSection(_updateBlocksSection);
-#endif
         update(block.second, observerPosition);
+    }
+
 #ifndef DISABLE_SECTIONS
-        iStatistics::getInstance().endSection(_updateBlocksSection);
+    iStatistics::getInstance().endSection(_updateBlocksSection);
 #endif
 
 #ifndef DISABLE_SECTIONS
-        iStatistics::getInstance().beginSection(_updateVisBlocksSection);
+    iStatistics::getInstance().beginSection(_updateVisBlocksSection);
 #endif
+    for (auto block : voxelBlocks)
+    {
         updateVisibility(block.second);
-#ifndef DISABLE_SECTIONS
-        iStatistics::getInstance().endSection(_updateVisBlocksSection);
-#endif
     }
+#ifndef DISABLE_SECTIONS
+    iStatistics::getInstance().endSection(_updateVisBlocksSection);
+#endif
 }
 
 void VoxelTerrain::deleteBlocks()
@@ -315,7 +319,7 @@ void VoxelTerrain::deleteBlock(VoxelBlock* voxelBlock)
     {
         delete voxelBlock->_voxelData;
     }
-        
+
     if (voxelBlock->_voxelBlockInfo != nullptr)
     {
         delete voxelBlock->_voxelBlockInfo;
@@ -918,6 +922,10 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
         {
             meshVisible = false;
         }
+    }
+    else
+    {
+        meshVisible = false;
     }
 
     return (meshVisible || childrenVisible);
