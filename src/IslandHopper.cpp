@@ -166,7 +166,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(2000.0 - i * 2.2);
+        waterNode->setWaterPosition(1500.0 - i * 2.2);
 
         if (i == 9)
         {
@@ -470,10 +470,10 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 
                 if (noise < 0.0)
                 {
-                    noise *= 2.0;
+                    noise *= 5.0;
                 }
 
-                float64 height = (noise * 2000) + 2000;
+                float64 height = (noise * 2000) + 1500;
 #ifdef SIN_WAVE_TERRAIN
                 height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
