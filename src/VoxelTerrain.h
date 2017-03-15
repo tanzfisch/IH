@@ -83,7 +83,7 @@ private:
     */
     GenerateVoxelsDelegate _generateVoxelsDelegate;
 
-    /*! queuef  actions
+    /*! queue of actions
     */
     vector<iNodeFactory::iAction> _actionQueue;
 
