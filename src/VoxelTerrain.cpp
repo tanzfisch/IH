@@ -825,7 +825,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             {
                 iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
                 if (modelNode != nullptr &&
-                    modelNode->isLoaded())
+                    modelNode->isReady())
                 {
                     voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
                     voxelBlock->_state = Stage::GeneratingMesh;
@@ -879,7 +879,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
                 {
                     iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(child->_modelNodeIDCurrent));
                     if (modelNode != nullptr &&
-                        modelNode->isLoaded())
+                        modelNode->isReady())
                     {
                         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(child->_transformNodeIDCurrent));
                         if (transformNode != nullptr)
@@ -900,7 +900,7 @@ bool VoxelTerrain::updateVisibility(VoxelBlock* voxelBlock)
     {
         iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
         if (modelNode != nullptr &&
-            modelNode->isLoaded())
+            modelNode->isReady())
         {
             iNode* group = static_cast<iNodeMesh*>(modelNode->getChild("group"));
             if (group != nullptr)
@@ -1099,7 +1099,7 @@ void VoxelTerrain::finalizeMesh(VoxelBlock* voxelBlock)
     static int count = 0;
     iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDQueued));
     if (modelNode != nullptr &&
-        modelNode->isLoaded())
+        modelNode->isReady())
     {
         if (voxelBlock->_transformNodeIDCurrent != iNode::INVALID_NODE_ID)
         {
