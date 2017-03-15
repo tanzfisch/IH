@@ -48,6 +48,7 @@ using namespace Igor;
 #include "EntityManager.h"
 
 //#define SIN_WAVE_TERRAIN
+#define USE_WATER
 
 IslandHopper::IslandHopper()
 {
@@ -163,6 +164,7 @@ void IslandHopper::initScene()
     // TODO just provisorical water
     // create a water plane and add it to scene
 
+#ifdef USE_WATER
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
@@ -189,6 +191,7 @@ void IslandHopper::initScene()
         // insert sky box to scene
         _scene->getRoot()->insertNode(waterNode);
     }
+#endif
 }
 
 void IslandHopper::initPlayer()
