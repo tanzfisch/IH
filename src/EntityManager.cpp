@@ -60,8 +60,9 @@ void EntityManager::unregisterEntity(Entity* entity)
 
 void EntityManager::getEntities(const iSphered& sphere, vector<uint64>& result)
 {
-    _octree->resetFilter();
-    _octree->filter(sphere);
+    _octree->clearFilter();
+    _octree->addFilter(sphere);
+    _octree->filter();
     _octree->getResult(result);
 }
 
