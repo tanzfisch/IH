@@ -471,12 +471,12 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 
                 noise += 0.0025;
 
-                if (noise < 0.0)
-                {
-                    noise *= 5.0;
-                }
-
                 float64 height = (noise * 2000) + 1500;
+
+                if (height < 1300)
+                {
+                    height = 1300;
+                }
 #ifdef SIN_WAVE_TERRAIN
                 height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
@@ -522,7 +522,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                     {
                         pos._y = y * lodFactor + position._y + lodOffset._y;
 
-                        if (pos._y > 180 &&
+                        if (pos._y > 1400 &&
                             pos._y > height - 50 &&
                             pos._y < height + 10)
                         {
