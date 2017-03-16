@@ -970,7 +970,7 @@ void IslandHopper::onRenderOrtho()
             _activeControls = false;
         }
     }
-
+    
     _statisticsVisualizer.drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
     iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));

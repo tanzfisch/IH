@@ -28,8 +28,7 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 #include "TaskVoxelTerrain.h"
 
-//#define DISABLE_SECTIONS
-// #define FIX_POSITION
+//#define FIX_POSITION
 //#define FIX_HEIGHT
 //#define WIREFRAME
 
@@ -56,12 +55,14 @@ VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
         _voxelBlocks.push_back(voxelBlocks);
     }
 
+#ifdef USE_VERBOSE_STATISTICS
     _totalSection = iStatistics::getInstance().registerSection("VT:all", 3);
     _discoverBlocksSection = iStatistics::getInstance().registerSection("VT:discover", 3);
     _updateBlocksSection = iStatistics::getInstance().registerSection("VT:update", 3);
     _deleteBlocksSection = iStatistics::getInstance().registerSection("VT:delete", 3);
     _applyActionsSection = iStatistics::getInstance().registerSection("VT:applyActions", 3);
     _updateVisBlocksSection = iStatistics::getInstance().registerSection("VT:vis", 3);
+#endif
 
     iRenderer::getInstance().setWorldGridResolution(1000.0);
 }
@@ -160,15 +161,15 @@ void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 
 void VoxelTerrain::handleVoxelBlocks()
 {
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_totalSection);
 #endif
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_deleteBlocksSection);
 #endif
     deleteBlocks();
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_deleteBlocksSection);
 #endif
 
@@ -191,28 +192,28 @@ void VoxelTerrain::handleVoxelBlocks()
 
         iaVector3I observerPosition(pos._x, pos._y, pos._z);
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
         iStatistics::getInstance().beginSection(_discoverBlocksSection);
 #endif
         discoverBlocks(observerPosition);
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
         iStatistics::getInstance().endSection(_discoverBlocksSection);
 #endif
 
         updateBlocks(observerPosition);
     }
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_applyActionsSection);
 #endif
     // apply all actions at once so they will be synced with next frame
     iNodeFactory::getInstance().applyActionsAsync(_actionQueue);
     _actionQueue.clear();
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_applyActionsSection);
 #endif
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_totalSection);
 #endif
 }
@@ -221,7 +222,7 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
 {
     auto& voxelBlocks = _voxelBlocks[_lowestLOD];
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_updateBlocksSection);
 #endif
     for (auto block : voxelBlocks)
@@ -229,18 +230,18 @@ void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
         update(block.second, observerPosition);
     }
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_updateBlocksSection);
 #endif
 
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_updateVisBlocksSection);
 #endif
     for (auto block : voxelBlocks)
     {
         updateVisibility(block.second);
     }
-#ifndef DISABLE_SECTIONS
+#ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_updateVisBlocksSection);
 #endif
 }
