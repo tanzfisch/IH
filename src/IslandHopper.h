@@ -73,6 +73,8 @@ private:
     iNodeLight* _lightNode = nullptr;
 
     VoxelTerrain* _voxelTerrain = nullptr;
+
+    iPixmap* _heightMap = nullptr;
     
     uint32 _materialWithTextureAndBlending = 0;
     uint32 _octreeMaterial = 0;

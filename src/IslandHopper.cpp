@@ -168,7 +168,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(1500.0 - i * 2.2);
+        waterNode->setWaterPosition(50.0 - i * 2.2);
 
         if (i == 9)
         {
@@ -197,7 +197,7 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
-    matrix.translate(17986, 2300, 15977);
+    matrix.translate(650000, 800, 750000);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 }
@@ -409,6 +409,8 @@ void IslandHopper::init()
     iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
     iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
 
+    _heightMap = iTextureResourceFactory::getInstance().loadFileAsPixmap("NewZealand.png");
+
     // launch resource handlers
     _taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
     _taskFlushTextures = iTaskManager::getInstance().addTask(new iTaskFlushTextures(&_window));
@@ -442,14 +444,14 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
             {
                 iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
 
-                float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
+                /*float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
                 contour -= 0.7;
 
                 if (contour > 0.0)
                 {
                     contour *= 3;
                 }
-
+                
                 float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
                 noise += contour;
 
@@ -476,7 +478,16 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                 if (height < 1300)
                 {
                     height = 1300;
-                }
+                }*/
+                iaColor4f color;
+                _heightMap->getPixelBiLinear(pos._x * 0.003, pos._z * 0.003, color);
+                //uint32 pixel = _heightMap->getPixel(static_cast<int64>(pos._x * 0.003) % _heightMap->getWidth(), static_cast<int64>(pos._z * 0.003) % _heightMap->getHeight());
+                float64 height = color._r * 4000;
+
+                float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.0025, 0, pos._z * 0.0025), 8, 0.5) - 0.5;
+
+                height += noise * 400;
+
 #ifdef SIN_WAVE_TERRAIN
                 height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
