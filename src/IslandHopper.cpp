@@ -50,6 +50,12 @@ using namespace Igor;
 //#define SIN_WAVE_TERRAIN
 #define USE_WATER
 
+const float64 mapScaleXZ = 0.003693182;
+const float64 highestMontain = 3742;
+const float64 baseHeight = 152;
+const float64 dataHeightScale = highestMontain + baseHeight;
+const float64 waterOffset = 500;
+
 IslandHopper::IslandHopper()
 {
     init();
@@ -168,7 +174,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(50.0 - i * 2.2);
+        waterNode->setWaterPosition(baseHeight + waterOffset - i * 1);
 
         if (i == 9)
         {
@@ -197,7 +203,8 @@ void IslandHopper::initScene()
 void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
-    matrix.translate(650000, 800, 750000);
+    //matrix.translate(730000, 4800, 530000);
+    matrix.translate(640000, 4800, 400000);
     Player* player = new Player(_scene, matrix);
     _playerID = player->getID();
 }
@@ -390,12 +397,18 @@ void IslandHopper::init()
     iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
     iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
-    // set up statistics
+    // setup some materials
     _font = new iTextureFont("StandardFont.png");
     _materialWithTextureAndBlending = iMaterialResourceFactory::getInstance().createMaterial("TextureAndBlending");
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
     iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+
+    _materialSolid = iMaterialResourceFactory::getInstance().createMaterial();
+    iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+    iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+
+    // configure statistics
     _statisticsVisualizer.setVerbosity(iRenderStatisticsVerbosity::FPSMetricsAndTasks);
 
     uint64 particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
@@ -410,6 +423,7 @@ void IslandHopper::init()
     iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
 
     _heightMap = iTextureResourceFactory::getInstance().loadFileAsPixmap("NewZealand.png");
+    _minimap = iTextureResourceFactory::getInstance().loadFile("NewZealandMini.png", iResourceCacheMode::Keep, iTextureBuildMode::Normal);
 
     // launch resource handlers
     _taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
@@ -437,55 +451,26 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
     {
         voxelData->initData(size, size, size);
 
-#if 1
         for (int64 x = 0; x < voxelData->getWidth(); ++x)
         {
             for (int64 z = 0; z < voxelData->getDepth(); ++z)
             {
                 iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
 
-                /*float64 contour = perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
-                contour -= 0.7;
-
-                if (contour > 0.0)
-                {
-                    contour *= 3;
-                }
-                
-                float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
-                noise += contour;
-
-                if (noise < 0.0)
-                {
-                    noise *= 0.5;
-                }
-                else
-                {
-                    noise *= 2.0;
-                }
-
-                noise += 0.0025;
-
-                if (noise < 0.0)
-                {
-                    noise *= 2.0;
-                }
-
-                noise += 0.0025;
-
-                float64 height = (noise * 2000) + 1500;
-
-                if (height < 1300)
-                {
-                    height = 1300;
-                }*/
                 iaColor4f color;
-                _heightMap->getPixelBiLinear(pos._x * 0.003, pos._z * 0.003, color);
-                //uint32 pixel = _heightMap->getPixel(static_cast<int64>(pos._x * 0.003) % _heightMap->getWidth(), static_cast<int64>(pos._z * 0.003) % _heightMap->getHeight());
-                float64 height = color._r * 4000;
+                _heightMap->getPixelBiLinear(pos._x * mapScaleXZ, pos._z * mapScaleXZ, color);
+                float64 height = color._r * dataHeightScale;
+
+                height -= baseHeight;
+
+                if (height < 0)
+                {
+                    height * 10;
+                }
+
+                height += waterOffset + 100;
 
                 float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.0025, 0, pos._z * 0.0025), 8, 0.5) - 0.5;
-
                 height += noise * 400;
 
 #ifdef SIN_WAVE_TERRAIN
@@ -519,7 +504,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                     }
                 }
 
-                float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
+                /*float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
                 cavelikeliness -= 0.5;
                 if (cavelikeliness > 0.0)
                 {
@@ -558,43 +543,9 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                             }
                         }
                     }
-                }
+                }*/
             }
         }
-#else
-        for (int64 x = 0; x < voxelData->getWidth(); ++x)
-        {
-            for (int64 y = 0; y < voxelData->getHeight(); ++y)
-            {
-                for (int64 z = 0; z < voxelData->getDepth(); ++z)
-                {
-                    iaVector3f pos(x * lodFactor + position._x + offset._x,
-                        y * lodFactor + position._y + offset._y,
-                        z * lodFactor + position._z + offset._z);
-
-                    if (pos._y > 0 && pos._y < 2000)
-                    {
-                        float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.001, pos._y * 0.001, pos._z * 0.001), 4, 0.5);
-
-                        if (onoff <= from)
-                        {
-                            if (onoff >= to)
-                            {
-                                float64 gradient = 1.0 - ((onoff - from) * factor);
-                                voxelData->setVoxelDensity(iaVector3I(x, y, z), (gradient * 254) + 1);
-                                _voxelBlockInfo->_transition = true;
-                            }
-                            else
-                            {
-                                voxelData->setVoxelDensity(iaVector3I(x, y, z), 128);
-                                _voxelBlockInfo->_transition = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-#endif
     }
 }
 
@@ -970,6 +921,29 @@ void IslandHopper::onRenderOrtho()
             position += ",";
             position += iaString::ftoa(player->getSphere()._center._z, 0);
             iRenderer::getInstance().drawString(_window.getClientWidth() * 0.05, _window.getClientHeight() * 0.10, position);
+
+            const float64 size = 300;
+            iaMatrixd mapMatrix;
+            mapMatrix.translate(10, 10, -30);
+            iRenderer::getInstance().setModelMatrix(mapMatrix);
+
+            iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
+            iRenderer::getInstance().drawTexture(0, 0, size, size, _minimap);
+
+            iMaterialResourceFactory::getInstance().setMaterial(_materialSolid);
+            iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
+            iRenderer::getInstance().drawLine(0, 0, size, 0);
+            iRenderer::getInstance().drawLine(0, 0, 0, size);
+            iRenderer::getInstance().drawLine(size, 0, size, size);
+            iRenderer::getInstance().drawLine(0, size, size, size);
+
+            iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
+            float64 playerPosZ = player->getSphere()._center._z * mapScaleXZ * size / 4096;
+            float64 playerPosX = player->getSphere()._center._x * mapScaleXZ * size / 4096;
+            iRenderer::getInstance().drawLine(0, playerPosZ, size, playerPosZ);
+            iRenderer::getInstance().drawLine(playerPosX, 0, playerPosX, size);
+
+            iRenderer::getInstance().setModelMatrix(matrix);
 
             player->drawReticle(_window);
         }

@@ -28,6 +28,7 @@ namespace Igor
     class iTargetMaterial;
     class iNodeTransformControl;
     class iNodeLODTrigger;
+    class iTexture;
 }
 
 class Enemy;
@@ -75,8 +76,10 @@ private:
     VoxelTerrain* _voxelTerrain = nullptr;
 
     iPixmap* _heightMap = nullptr;
+    shared_ptr<iTexture> _minimap;
     
     uint32 _materialWithTextureAndBlending = 0;
+    uint32 _materialSolid = 0;
     uint32 _octreeMaterial = 0;
     int32 _materialSkyBox = 0;
 
