@@ -78,12 +78,12 @@ void IslandHopper::registerHandles()
     _window.registerWindowResizeDelegate(WindowResizeDelegate(this, &IslandHopper::onWindowResized));
     _window.registerWindowCloseDelegate(WindowCloseDelegate(this, &IslandHopper::onWindowClosed));
 
-    iApplication::getInstance().registerApplicationHandleDelegate(iApplicationHandleDelegate(this, &IslandHopper::onHandle));
+    iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &IslandHopper::onHandle));
 }
 
 void IslandHopper::unregisterHandles()
 {
-    iApplication::getInstance().unregisterApplicationHandleDelegate(iApplicationHandleDelegate(this, &IslandHopper::onHandle));
+    iApplication::getInstance().unregisterApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &IslandHopper::onHandle));
 
     _window.unregisterWindowResizeDelegate(WindowResizeDelegate(this, &IslandHopper::onWindowResized));
     _window.unregisterWindowCloseDelegate(WindowCloseDelegate(this, &IslandHopper::onWindowClosed));
