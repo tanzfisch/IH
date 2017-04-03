@@ -1,0 +1,1 @@
+in order to build Island Hopper you also need to checkout https://github.com/tanzfisch/Igor.git right next to it
