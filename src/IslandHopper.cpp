@@ -459,48 +459,51 @@ void IslandHopper::createSmokingBox()
 		startOrientation.setValue(0.0, iaVector2f(0.0, 2.0 * M_PI));
 
 		iaGradientVector2f startOrientationRate;
-		startOrientationRate.setValue(0.0, iaVector2f(-0.05, 0.05));
+		startOrientationRate.setValue(0.0, iaVector2f(-0.01, 0.01));
 
 		iaGradientColor4f smokeGradient;
-		smokeGradient.setValue(0.0, iaColor4f(1, 1, 1, 0));
-		smokeGradient.setValue(0.2, iaColor4f(1, 1, 1, 1.0));
-		smokeGradient.setValue(0.5, iaColor4f(1, 1, 1, 1.0));
-		smokeGradient.setValue(1.0, iaColor4f(1, 1, 1, 0));
+		smokeGradient.setValue(0.0, iaColor4f(0, 0, 0, 0));
+		smokeGradient.setValue(0.1, iaColor4f(0, 0, 0, 0.5));
+		smokeGradient.setValue(0.6, iaColor4f(0, 0, 0, 0.3));
+		smokeGradient.setValue(1.0, iaColor4f(0, 0, 0, 0));
 
 		iaGradientVector2f smokeSize;
-		smokeSize.setValue(0.0, iaVector2f(0.75, 1.5));
+		smokeSize.setValue(0.0, iaVector2f(0.5, 1.0));
 
 		iaGradientVector2f smokeVisibility;
 		smokeVisibility.setValue(0.0, iaVector2f(7.0, 10.0));
 
 		iaGradientf smokeEmission;
-		smokeEmission.setValue(0.0, 2);
+		smokeEmission.setValue(0.0, 1);
 
 		iaGradientVector2f smokeLift;
-		smokeLift.setValue(0.0, iaVector2f(0.00001, 0.00003));
+		smokeLift.setValue(0.0, iaVector2f(0.001, 0.0015));
+		smokeLift.setValue(10.0, iaVector2f(0.0, 0.0));
 
 		iaGradientf sizeScale;
 		sizeScale.setValue(0.0, 1.0);
-		sizeScale.setValue(10.0, 3.0);
+		sizeScale.setValue(10.0, 5.0);
 
 		iNodeParticleSystem* smokeParticleSystem = static_cast<iNodeParticleSystem*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeParticleSystem));
 		smokeParticleSystem->setMaterial(_particlesMaterial);
-		smokeParticleSystem->setTextureA("particleDot.png");
-		smokeParticleSystem->setTextureB("octave1.png");
-		smokeParticleSystem->setTextureC("octave2.png");
-		smokeParticleSystem->setVortexTorque(0.5, 0.7);
-		smokeParticleSystem->setStartOrientationGradient(startOrientation);
-		smokeParticleSystem->setStartOrientationRateGradient(startOrientationRate);
-		smokeParticleSystem->setVorticityConfinement(0.05);
-		smokeParticleSystem->setVortexRange(10.0, 20.0);
+		smokeParticleSystem->setTextureA("particleTrail.png");
+		//smokeParticleSystem->setTextureB("octave1.png");
+		//smokeParticleSystem->setTextureC("octave2.png");
+		smokeParticleSystem->setVelocityOriented();
+		smokeParticleSystem->setVortexTorque(10.5, 20.0);
+		smokeParticleSystem->setVorticityConfinement(0.5);
+		smokeParticleSystem->setVortexRange(5.0, 10.0);
 		smokeParticleSystem->setVortexToParticleRate(10);
+		//smokeParticleSystem->setStartOrientationGradient(startOrientation);
+		//smokeParticleSystem->setStartOrientationRateGradient(startOrientationRate);
 		smokeParticleSystem->setStartSizeGradient(smokeSize);
 		smokeParticleSystem->setSizeScaleGradient(sizeScale);
 		smokeParticleSystem->setColorGradient(smokeGradient);
 		smokeParticleSystem->setStartVisibleTimeGradient(smokeVisibility);
 		smokeParticleSystem->setEmissionGradient(smokeEmission);
 		smokeParticleSystem->setStartLiftGradient(smokeLift);
-		_scene->getRoot()->insertNode(smokeParticleSystem);
+		smokeParticleSystem->setPeriodTime(10.0);
+		//smokeParticleSystem->setAirDrag(0.98);
 		smokeParticleSystem->start();
 
 		// fire 
@@ -514,13 +517,10 @@ void IslandHopper::createSmokingBox()
 		visibility.setValue(0.0, iaVector2f(0.2, 0.5));
 
 		iaGradientVector2f fireLift;
-		fireLift.setValue(0.0, iaVector2f(0.1, 0.2));
+		fireLift.setValue(0.0, iaVector2f(0.008, 0.015));
 
 		iaGradientf emission;
 		emission.setValue(0.0, 4);
-
-		iaGradientVector2f velocity;
-		velocity.setValue(0.0, iaVector2f(0.05, 0.1));
 
 		iaGradientVector2f startSize;
 		startSize.setValue(0.0, iaVector2f(0.3, 0.7));
@@ -533,21 +533,23 @@ void IslandHopper::createSmokingBox()
 		particleSystem->setEmissionGradient(emission);
 		particleSystem->setStartVisibleTimeGradient(visibility);
 		particleSystem->setStartSizeGradient(startSize);
-		//particleSystem->setStartVelocityGradient(velocity);
 		particleSystem->setPeriodTime(2.0);
 		particleSystem->setVortexTorque(0.2, 0.5);
 		particleSystem->setVorticityConfinement(0.05);
-		particleSystem->setVortexRange(10.0, 15.0);
+		particleSystem->setVortexRange(1.0, 2.0);
 		particleSystem->setVortexToParticleRate(5);
-		_scene->getRoot()->insertNode(particleSystem);
+		particleSystem->setStartLiftGradient(fireLift);
 		particleSystem->start();
 
 		iNodeEmitter* emitter = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
 		particleSystem->setEmitter(emitter->getID());
-		smokeParticleSystem->setEmitter(emitter->getID());
 		emitter->setType(iEmitterType::Cube);
-		emitter->setSize(1.0);
+		emitter->setSize(0.5);
 
+		iNodeEmitter* smokeEmitter = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
+		smokeParticleSystem->setEmitter(smokeEmitter->getID());
+		smokeEmitter->setType(iEmitterType::Point);
+		
 		iPhysicsCollision* boxCollision = iPhysics::getInstance().createBox(1, 1, 1, iaMatrixd());
 		iPhysicsBody* boxBody = iPhysics::getInstance().createBody(boxCollision);
 		boxBody->setMass(10);
@@ -563,6 +565,13 @@ void IslandHopper::createSmokingBox()
 		iPhysics::getInstance().bindTransformNode(boxBody, transformNode);
 		_scene->getRoot()->insertNode(transformNode);
 		transformNode->insertNode(emitter);
+		transformNode->insertNode(smokeEmitter);
+
+		iNodeTransform* workaroundTransformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+		workaroundTransformNode->translate(player->getSphere()._center);
+		workaroundTransformNode->insertNode(particleSystem);
+		workaroundTransformNode->insertNode(smokeParticleSystem);
+		_scene->getRoot()->insertNode(workaroundTransformNode);
 	}
 }
 
