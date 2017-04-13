@@ -30,7 +30,6 @@ using namespace IgorAux;
 
 //#define FIX_POSITION
 //#define FIX_HEIGHT
-//#define WIREFRAME
 
 iaVector3I childOffsetPosition[8] =
 {
@@ -138,11 +137,6 @@ void VoxelTerrain::init(iScene* scene)
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->compileShader();
     iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-
-#ifdef WIREFRAME
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-    iMaterialResourceFactory::getInstance().getMaterial(_terrainMaterialID)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
-#endif
 }
 
 void VoxelTerrain::deinit()
@@ -157,6 +151,11 @@ void VoxelTerrain::deinit()
 void VoxelTerrain::setLODTrigger(uint32 lodTriggerID)
 {
     _lodTrigger = lodTriggerID;
+}
+
+uint64 VoxelTerrain::getMaterial() const
+{
+	return _terrainMaterialID;
 }
 
 void VoxelTerrain::handleVoxelBlocks()

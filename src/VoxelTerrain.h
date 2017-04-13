@@ -77,6 +77,10 @@ public:
     */
     void setLODTrigger(uint32 lodTriggerID);
 
+	/*! \returns terrain material ID
+	*/
+	uint64 getMaterial() const;
+
 private:
 
     /*! delegate registered by application to generate voxel data

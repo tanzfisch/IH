@@ -47,6 +47,9 @@ public:
     void startFastTurn();
     void stopFastTurn();
 
+	void startFastTravel();
+	void stopFastTravel();
+
     void shootPrimaryWeapon(iView& view, const iaVector3d& screenCoordinates);
     void shootSecondaryWeapon(iView& view, const iaVector3d& screenCoordinates);
     void dig(uint64 toolSize, uint8 toolDensity);
@@ -71,6 +74,7 @@ private:
     bool _rollLeft = false;
     bool _rollRight = false;
     bool _fastTurn = false;
+	bool _fastTravel = false;
 
 	uint32 _physicsNodeID = iNode::INVALID_NODE_ID;
     uint32 _lodTriggerID = iNode::INVALID_NODE_ID;

@@ -31,7 +31,6 @@ using namespace IgorAux;
 #include <iPixmap.h>
 #include <iStatistics.h>
 #include <iTargetMaterial.h>
-#include <iPerlinNoise.h>
 #include <iNodeTransformControl.h>
 #include <iNodeLODTrigger.h>
 #include <iNodeLODSwitch.h>
@@ -39,6 +38,9 @@ using namespace IgorAux;
 #include <iPhysics.h>
 #include <iPhysicsMaterialCombo.h>
 #include <iNodeWater.h>
+#include <iNodeParticleSystem.h>
+#include <iNodeEmitter.h>
+#include <iPhysicsBody.h>
 using namespace Igor;
 
 #include "Player.h"
@@ -52,9 +54,8 @@ using namespace Igor;
 
 const float64 mapScaleXZ = 0.003693182;
 const float64 highestMontain = 3742;
-const float64 baseHeight = 152;
-const float64 dataHeightScale = highestMontain + baseHeight;
-const float64 waterOffset = 500;
+const float64 dataHeightScale = highestMontain;
+const float64 waterOffset = 1000;
 
 IslandHopper::IslandHopper()
 {
@@ -123,7 +124,7 @@ void IslandHopper::initViews()
 #endif
     _window.open();
 
-    iMouse::getInstance().showCursor(false);
+    iMouse::getInstance().showCursor(true);
 
     _viewOrtho.setOrthogonal(0, _window.getClientWidth(), _window.getClientHeight(), 0);
 }
@@ -168,6 +169,18 @@ void IslandHopper::initScene()
     // insert sky box to scene
     _scene->getRoot()->insertNode(skyBoxNode);
 
+	// set up a meterial for the particles
+	_particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D1, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D2, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->setOrder(201);
+
     // TODO just provisorical water
     // create a water plane and add it to scene
 
@@ -175,7 +188,7 @@ void IslandHopper::initScene()
     for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
     {
         iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-        waterNode->setWaterPosition(baseHeight + waterOffset - i * 1);
+        waterNode->setWaterPosition(waterOffset - i * 1);
 
         if (i == 9)
         {
@@ -205,9 +218,10 @@ void IslandHopper::initPlayer()
 {
     iaMatrixd matrix;
     //matrix.translate(730000, 4800, 530000);
-    matrix.translate(640000, 4800, 400000);
+//    matrix.translate(759669, 4817, 381392);
+	matrix.translate(759844, 4661, 381278);
     Player* player = new Player(_scene, matrix);
-    _playerID = player->getID();
+    _playerID = player->getID();	
 }
 
 void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)
@@ -386,6 +400,8 @@ void IslandHopper::init()
 {
     con(" -- OpenGL 3D Test --" << endl);
 
+	_perlinNoise.generateBase(313373);
+
     initViews();
     initScene();
 
@@ -425,18 +441,147 @@ void IslandHopper::init()
 
     _heightMap = iTextureResourceFactory::getInstance().loadFileAsPixmap("NewZealand.png");
     _minimap = iTextureResourceFactory::getInstance().loadFile("NewZealandMini.png", iResourceCacheMode::Keep, iTextureBuildMode::Normal);
-
-    // launch resource handlers
+    
+	// launch resource handlers
     _taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
     _taskFlushTextures = iTaskManager::getInstance().addTask(new iTaskFlushTextures(&_window));
 
     registerHandles();
 }
 
+void IslandHopper::createSmokingBox()
+{
+	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+
+	if (player != nullptr)
+	{
+		iaGradientVector2f startOrientation;
+		startOrientation.setValue(0.0, iaVector2f(0.0, 2.0 * M_PI));
+
+		iaGradientVector2f startOrientationRate;
+		startOrientationRate.setValue(0.0, iaVector2f(-0.05, 0.05));
+
+		iaGradientColor4f smokeGradient;
+		smokeGradient.setValue(0.0, iaColor4f(1, 1, 1, 0));
+		smokeGradient.setValue(0.2, iaColor4f(1, 1, 1, 1.0));
+		smokeGradient.setValue(0.5, iaColor4f(1, 1, 1, 1.0));
+		smokeGradient.setValue(1.0, iaColor4f(1, 1, 1, 0));
+
+		iaGradientVector2f smokeSize;
+		smokeSize.setValue(0.0, iaVector2f(0.75, 1.5));
+
+		iaGradientVector2f smokeVisibility;
+		smokeVisibility.setValue(0.0, iaVector2f(7.0, 10.0));
+
+		iaGradientf smokeEmission;
+		smokeEmission.setValue(0.0, 2);
+
+		iaGradientVector2f smokeLift;
+		smokeLift.setValue(0.0, iaVector2f(0.00001, 0.00003));
+
+		iaGradientf sizeScale;
+		sizeScale.setValue(0.0, 1.0);
+		sizeScale.setValue(10.0, 3.0);
+
+		iNodeParticleSystem* smokeParticleSystem = static_cast<iNodeParticleSystem*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeParticleSystem));
+		smokeParticleSystem->setMaterial(_particlesMaterial);
+		smokeParticleSystem->setTextureA("particleDot.png");
+		smokeParticleSystem->setTextureB("octave1.png");
+		smokeParticleSystem->setTextureC("octave2.png");
+		smokeParticleSystem->setVortexTorque(0.5, 0.7);
+		smokeParticleSystem->setStartOrientationGradient(startOrientation);
+		smokeParticleSystem->setStartOrientationRateGradient(startOrientationRate);
+		smokeParticleSystem->setVorticityConfinement(0.05);
+		smokeParticleSystem->setVortexRange(10.0, 20.0);
+		smokeParticleSystem->setVortexToParticleRate(10);
+		smokeParticleSystem->setStartSizeGradient(smokeSize);
+		smokeParticleSystem->setSizeScaleGradient(sizeScale);
+		smokeParticleSystem->setColorGradient(smokeGradient);
+		smokeParticleSystem->setStartVisibleTimeGradient(smokeVisibility);
+		smokeParticleSystem->setEmissionGradient(smokeEmission);
+		smokeParticleSystem->setStartLiftGradient(smokeLift);
+		_scene->getRoot()->insertNode(smokeParticleSystem);
+		smokeParticleSystem->start();
+
+		// fire 
+		iaGradientColor4f colors;
+		colors.setValue(0.0, iaColor4f(1.0, 0.9, 0.9, 0.0));
+		colors.setValue(0.2, iaColor4f(1.0, 0.9, 0.9, 1.0));
+		colors.setValue(0.4, iaColor4f(1.0, 0.9, 0.9, 1.0));
+		colors.setValue(1.0, iaColor4f(0.0, 0.0, 0.0, 0.0));
+
+		iaGradientVector2f visibility;
+		visibility.setValue(0.0, iaVector2f(0.2, 0.5));
+
+		iaGradientVector2f fireLift;
+		fireLift.setValue(0.0, iaVector2f(0.1, 0.2));
+
+		iaGradientf emission;
+		emission.setValue(0.0, 4);
+
+		iaGradientVector2f velocity;
+		velocity.setValue(0.0, iaVector2f(0.05, 0.1));
+
+		iaGradientVector2f startSize;
+		startSize.setValue(0.0, iaVector2f(0.3, 0.7));
+
+		iNodeParticleSystem* particleSystem = static_cast<iNodeParticleSystem*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeParticleSystem));
+		particleSystem->setMaterial(_particlesMaterial);
+		particleSystem->setTextureA("particleFire.png");
+		particleSystem->setFirstTextureTiling(4, 4);
+		particleSystem->setColorGradient(colors);
+		particleSystem->setEmissionGradient(emission);
+		particleSystem->setStartVisibleTimeGradient(visibility);
+		particleSystem->setStartSizeGradient(startSize);
+		//particleSystem->setStartVelocityGradient(velocity);
+		particleSystem->setPeriodTime(2.0);
+		particleSystem->setVortexTorque(0.2, 0.5);
+		particleSystem->setVorticityConfinement(0.05);
+		particleSystem->setVortexRange(10.0, 15.0);
+		particleSystem->setVortexToParticleRate(5);
+		_scene->getRoot()->insertNode(particleSystem);
+		particleSystem->start();
+
+		iNodeEmitter* emitter = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
+		particleSystem->setEmitter(emitter->getID());
+		smokeParticleSystem->setEmitter(emitter->getID());
+		emitter->setType(iEmitterType::Cube);
+		emitter->setSize(1.0);
+
+		iPhysicsCollision* boxCollision = iPhysics::getInstance().createBox(1, 1, 1, iaMatrixd());
+		iPhysicsBody* boxBody = iPhysics::getInstance().createBody(boxCollision);
+		boxBody->setMass(10);
+		boxBody->registerForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &IslandHopper::onApplyForceAndTorqueBox));
+
+		iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+		transformNode->translate(player->getSphere()._center);
+
+		iNodeModel* crate = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+		crate->setModel("crate.ompf");
+		transformNode->insertNode(crate);
+
+		iPhysics::getInstance().bindTransformNode(boxBody, transformNode);
+		_scene->getRoot()->insertNode(transformNode);
+		transformNode->insertNode(emitter);
+	}
+}
+
+void IslandHopper::onApplyForceAndTorqueBox(iPhysicsBody* body, float32 timestep)
+{
+	float64 Ixx;
+	float64 Iyy;
+	float64 Izz;
+	float64 mass;
+	iaVector3d force;
+
+	iPhysics::getInstance().getMassMatrix(static_cast<void*>(body->getNewtonBody()), mass, Ixx, Iyy, Izz);
+	force.set(0.0f, -mass * static_cast<float32>(__IGOR_GRAVITY__), 0.0f);
+
+	body->setForce(force);
+}
+
 void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 {
-    iPerlinNoise perlinNoise; // TODO move from here
-
     uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
     iVoxelData* voxelData = voxelBlockInfo->_voxelData;
     iaVector3I position = voxelBlockInfo->_positionInLOD;
@@ -446,7 +591,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 
     const float64 from = 0.35;
     const float64 to = 0.36;
-    float64 factor = 1.0 / (to - from);
+    float64 factor = 1.0 / (to - from);	
 
     if (voxelData != nullptr)
     {
@@ -459,20 +604,30 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                 iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
 
                 iaColor4f color;
-                _heightMap->getPixelBiLinear(pos._x * mapScaleXZ, pos._z * mapScaleXZ, color);
+                _heightMap->getPixelBiLinear(fmod(pos._x * mapScaleXZ, _heightMap->getWidth()), fmod(pos._z * mapScaleXZ, _heightMap->getHeight()), color);
                 float64 height = color._r * dataHeightScale;
 
-                height -= baseHeight;
+				height -= 100;
 
                 if (height < 0)
-                {
-                    height * 10;
-                }
+				{
+					height *= 2;
+				}
+				
+				height += 100;
 
-                height += waterOffset + 100;
+				if (height < 0)
+				{
+					height *= 10;
+				}
+				
+				if(height >= -50)
+				{
+					float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.0025, 0, pos._z * 0.0025), 8, 0.5) - 0.5;
+					height += noise * 300;
+				}
 
-                float64 noise = perlinNoise.getValue(iaVector3d(pos._x * 0.0025, 0, pos._z * 0.0025), 8, 0.5) - 0.5;
-                height += noise * 400;
+                height += waterOffset;
 
 #ifdef SIN_WAVE_TERRAIN
                 height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
@@ -505,7 +660,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                     }
                 }
 
-                /*float64 cavelikeliness = perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
+                float64 cavelikeliness = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001 + 12345, 0, pos._z * 0.0001 + 12345), 3, 0.6);
                 cavelikeliness -= 0.5;
                 if (cavelikeliness > 0.0)
                 {
@@ -519,11 +674,11 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                     {
                         pos._y = y * lodFactor + position._y + lodOffset._y;
 
-                        if (pos._y > 1400 &&
-                            pos._y > height - 50 &&
+                        if (pos._y > waterOffset &&
+                            pos._y > height - 300 &&
                             pos._y < height + 10)
                         {
-                            float64 onoff = perlinNoise.getValue(iaVector3d(pos._x * 0.006, pos._y * 0.006, pos._z * 0.006), 5, 0.5);
+                            float64 onoff = _perlinNoise.getValue(iaVector3d(pos._x * 0.01, pos._y * 0.01, pos._z * 0.01), 5, 0.5);
 
                             float64 diff = (pos._y - (height - 50)) / 50.0;
                             onoff += (1.0 - diff) * 0.1;
@@ -544,7 +699,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
                             }
                         }
                     }
-                }*/
+                }
             }
         }
     }
@@ -615,7 +770,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::LShift:
-                player->startFastTurn();
+                //player->startFastTurn();
                 break;
 
             case iKeyCode::One:
@@ -627,7 +782,8 @@ void IslandHopper::onKeyPressed(iKeyCode key)
                 break;
 
             case iKeyCode::Space:
-                player->dig(_toolSize, _toolDensity);
+                //player->dig(_toolSize, _toolDensity);
+				player->startFastTravel();
                 break;
 
             case iKeyCode::F5:
@@ -709,8 +865,12 @@ void IslandHopper::onKeyReleased(iKeyCode key)
                 player->stopDown();
                 break;
 
+			case iKeyCode::Space:
+				player->stopFastTravel();
+				break;
+
             case iKeyCode::LShift:
-                player->stopFastTurn();
+                //player->stopFastTurn();
                 break;
 
             case iKeyCode::One:
@@ -720,6 +880,33 @@ void IslandHopper::onKeyReleased(iKeyCode key)
             case iKeyCode::Three:
                 player->stopRollRight();
                 break;
+
+			case iKeyCode::F12:
+				{
+					_wireframe = !_wireframe;
+
+					uint64 terrainMaterial = _voxelTerrain->getMaterial();
+
+					if (_wireframe)
+					{
+						iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+						iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+					}
+					else
+					{
+						iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
+						iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::Off);
+					}
+				}
+				break;
+
+			case iKeyCode::F11:
+				_showMinimap = !_showMinimap;
+				break;
+
+			case iKeyCode::B:
+				createSmokingBox();
+				break;
             }
         }
     }
@@ -772,7 +959,7 @@ void IslandHopper::onMouseDown(iKeyCode key)
         Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
         if (player != nullptr)
         {
-            if (key == iKeyCode::MouseMiddle)
+           /* if (key == iKeyCode::MouseMiddle)
             {
                 iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
                 player->shootSecondaryWeapon(_view, updown);
@@ -782,14 +969,32 @@ void IslandHopper::onMouseDown(iKeyCode key)
             {
                 iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
                 player->shootPrimaryWeapon(_view, updown);
-            }
+            }*/
         }
     }
 }
 
 void IslandHopper::onMouseUp(iKeyCode key)
 {
+	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+	if (player != nullptr)
+	{
+		if (iKeyboard::getInstance().getKey(iKeyCode::LShift) && key == iKeyCode::MouseLeft)
+		{
+			iaVector2i pos = iMouse::getInstance().getPos();
 
+			pos._x -= 10;
+			pos._y -= 10;
+
+			float64 miniMapSize = 300;
+
+			if (pos._x <= miniMapSize && pos._y <= miniMapSize)
+			{
+				float64 height = player->getSphere()._center._y;
+				player->setPosition(iaVector3d(static_cast<float64>(pos._x) / mapScaleXZ / miniMapSize * 4096, height, static_cast<float64>(pos._y) / mapScaleXZ / miniMapSize * 4096));
+			}
+		}
+	}
 }
 
 void IslandHopper::onWindowClosed()
@@ -843,7 +1048,8 @@ void IslandHopper::onHandle()
 {
     if (_loading)
     {
-//        if (iTaskManager::getInstance().getQueuedRegularTaskCount() < 4)
+		if (iTimer::getInstance().getTimerTime() > 3000 &&
+			iTaskManager::getInstance().getQueuedRegularTaskCount() < 4)
         {
             _loading = false;
             _activeControls = true;
@@ -894,6 +1100,9 @@ void IslandHopper::onRenderOrtho()
 
     if (_loading)
     {
+		iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
+		iRenderer::getInstance().drawRectangle(0, 0, _window.getClientWidth(), _window.getClientHeight());
+
         iRenderer::getInstance().setColor(iaColor4f(0, 0, 1, 1));
         iRenderer::getInstance().setFontSize(40.0f);
         iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "generating level ...", iHorizontalAlignment::Center, iVerticalAlignment::Center);
@@ -908,10 +1117,10 @@ void IslandHopper::onRenderOrtho()
 
             iRenderer::getInstance().setFontSize(15.0f);
             iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.05, _window.getClientHeight() * 0.05, healthText);
+            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.30, _window.getClientHeight() * 0.05, healthText);
 
             iRenderer::getInstance().setColor(iaColor4f(0, 0, 1, 1));
-            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.10, _window.getClientHeight() * 0.05, shieldText);
+            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.35, _window.getClientHeight() * 0.05, shieldText);
 
             iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 
@@ -921,30 +1130,33 @@ void IslandHopper::onRenderOrtho()
             position += iaString::ftoa(player->getSphere()._center._y, 0);
             position += ",";
             position += iaString::ftoa(player->getSphere()._center._z, 0);
-            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.05, _window.getClientHeight() * 0.10, position);
+            iRenderer::getInstance().drawString(_window.getClientWidth() * 0.30, _window.getClientHeight() * 0.10, position);
 
             const float64 size = 300;
             iaMatrixd mapMatrix;
             mapMatrix.translate(10, 10, -30);
             iRenderer::getInstance().setModelMatrix(mapMatrix);
 
-            iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
-            iRenderer::getInstance().drawTexture(0, 0, size, size, _minimap);
+			if (_showMinimap)
+			{
+				iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
+				iRenderer::getInstance().drawTexture(0, 0, size, size, _minimap);
 
-            iMaterialResourceFactory::getInstance().setMaterial(_materialSolid);
-            iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
-            iRenderer::getInstance().drawLine(0, 0, size, 0);
-            iRenderer::getInstance().drawLine(0, 0, 0, size);
-            iRenderer::getInstance().drawLine(size, 0, size, size);
-            iRenderer::getInstance().drawLine(0, size, size, size);
+				iMaterialResourceFactory::getInstance().setMaterial(_materialSolid);
+				iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
+				iRenderer::getInstance().drawLine(0, 0, size, 0);
+				iRenderer::getInstance().drawLine(0, 0, 0, size);
+				iRenderer::getInstance().drawLine(size, 0, size, size);
+				iRenderer::getInstance().drawLine(0, size, size, size);
 
-            iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-            float64 playerPosZ = player->getSphere()._center._z * mapScaleXZ * size / 4096;
-            float64 playerPosX = player->getSphere()._center._x * mapScaleXZ * size / 4096;
-            iRenderer::getInstance().drawLine(0, playerPosZ, size, playerPosZ);
-            iRenderer::getInstance().drawLine(playerPosX, 0, playerPosX, size);
+				iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
+				float64 playerPosZ = player->getSphere()._center._z * mapScaleXZ * size / 4096;
+				float64 playerPosX = player->getSphere()._center._x * mapScaleXZ * size / 4096;
+				iRenderer::getInstance().drawLine(0, playerPosZ, size, playerPosZ);
+				iRenderer::getInstance().drawLine(playerPosX, 0, playerPosX, size);
 
-            iRenderer::getInstance().setModelMatrix(matrix);
+				iRenderer::getInstance().setModelMatrix(matrix);
+			}
 
             player->drawReticle(_window);
         }

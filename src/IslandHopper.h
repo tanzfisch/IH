@@ -8,6 +8,7 @@
 #include <iModelResourceFactory.h>
 #include <iKeyboard.h>
 #include <iStatisticsVisualizer.h>
+#include <iPerlinNoise.h>
 using namespace Igor;
 
 #include <iaMatrix.h>
@@ -29,6 +30,7 @@ namespace Igor
     class iNodeTransformControl;
     class iNodeLODTrigger;
     class iTexture;
+	class iPhysicsBody;
 }
 
 class Enemy;
@@ -49,8 +51,12 @@ private:
     */
     iStatisticsVisualizer _statisticsVisualizer;
 
+	iPerlinNoise _perlinNoise;
+
     bool _loading = true;
     bool _activeControls = false;
+	bool _wireframe = false;
+	bool _showMinimap = false;
 
     iWindow _window;
     iView _view;
@@ -78,10 +84,11 @@ private:
     iPixmap* _heightMap = nullptr;
     shared_ptr<iTexture> _minimap;
     
-    uint32 _materialWithTextureAndBlending = 0;
-    uint32 _materialSolid = 0;
-    uint32 _octreeMaterial = 0;
-    int32 _materialSkyBox = 0;
+	uint64 _materialWithTextureAndBlending = 0;
+	uint64 _materialSolid = 0;
+	uint64 _octreeMaterial = 0;
+	uint64 _materialSkyBox = 0;
+	uint64 _particlesMaterial = 0;
 
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
@@ -107,7 +114,11 @@ private:
     void deinit();
     void init();
 
-    void onRender();
+	void createSmokingBox();
+
+	void onApplyForceAndTorqueBox(iPhysicsBody* body, float32 timestep);
+		
+	void onRender();
     void onHandle();
     void onRenderOrtho();
 

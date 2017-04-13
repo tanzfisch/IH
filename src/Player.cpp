@@ -381,6 +381,11 @@ void Player::handle()
 {
     float32 speed = 2000;
 
+	if (_fastTravel)
+	{
+		speed = 25000;
+	}
+
     const float32 offsetIncrease = 0.1;
     iaMatrixd matrix;
     iaVector3d resultingForce;
@@ -513,6 +518,16 @@ void Player::startFastTurn()
 void Player::stopFastTurn()
 {
     _fastTurn = false;
+}
+
+void Player::startFastTravel()
+{
+	_fastTravel = true;
+}
+
+void Player::stopFastTravel()
+{
+	_fastTravel = false;
 }
 
 void Player::startForward()
