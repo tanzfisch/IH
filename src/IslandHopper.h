@@ -9,12 +9,14 @@
 #include <iKeyboard.h>
 #include <iStatisticsVisualizer.h>
 #include <iPerlinNoise.h>
+#include <iLSystem.h>
 using namespace Igor;
 
 #include <iaMatrix.h>
 using namespace IgorAux;
 
 #include "VoxelTerrain.h"
+#include "PlantMeshGenerator.h"
 
 namespace Igor
 {
@@ -52,6 +54,14 @@ private:
     iStatisticsVisualizer _statisticsVisualizer;
 
 	iPerlinNoise _perlinNoise;
+
+	iLSystem _lSystemType1;
+	iLSystem _lSystemType2;
+	iLSystem _lSystemType3;
+
+	PlantInformation plantInformationType1;
+	PlantInformation plantInformationType2;
+	PlantInformation plantInformationType3;
 
     bool _loading = true;
     bool _activeControls = false;
@@ -93,6 +103,14 @@ private:
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
 
+	void initLSystems();
+	void initStyle1();
+	void initStyle2();
+	void initStyle3();
+	void generatePlant(const iaMatrixd& matrix, PlantInformation& plantInformation, uint32 iterations, uint64 seed);
+
+	void createWaveParticleSystem();
+
     void generateVoxelData(VoxelBlockInfo* voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);
@@ -114,7 +132,7 @@ private:
     void deinit();
     void init();
 
-	void createSmokingBox();
+	void createSmokingBox(const iaVector3d& pos);
 
 	void onApplyForceAndTorqueBox(iPhysicsBody* body, float32 timestep);
 		
