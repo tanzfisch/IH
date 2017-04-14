@@ -164,10 +164,10 @@ void PlantMeshGenerator::generateTrunk(const iaVector3f& dir)
     iaVector3f c = vecs[2];
     iaVector3f d = vecs[3];
 
-    a *= 0.005;
-    b *= 0.005;
-    c *= 0.005;
-    d *= 0.005;
+    a *= 0.007;
+    b *= 0.007;
+    c *= 0.007;
+    d *= 0.007;
 
     uint32 ai = _meshBuilderTrunk.addVertex(_modelMatrix * a);
     uint32 bi = _meshBuilderTrunk.addVertex(_modelMatrix * b);
@@ -213,7 +213,7 @@ void PlantMeshGenerator::generateFlower(const iaVector3f& dir)
     iaMatrixf scale;
     iaMatrixf current;
 
-    scale.scale(0.06, 0.06, 0.06);
+    scale.scale(0.1, 0.1, 0.1);
 
     const iaVector3f vecs[4] = { { 0,0,0 },{ 1, 0.2f, 0 } ,{ 0.75f, 0.4f, -0.2f },{ 0.75f, 0.4f, 0.2f } };
 
@@ -254,7 +254,7 @@ void PlantMeshGenerator::generateBud(const iaVector3f& dir)
     iaMatrixf scale;
     iaMatrixf current;
 
-    scale.scale(0.02, 0.02, 0.02);
+    scale.scale(0.05, 0.05, 0.05);
 
     const iaVector3f vecs[4] = { { 0,0,0 },{ 1, 1.2f, 0 } ,{ 0, 1.2f, 1 },{ 0, 2, 0 } };
 
@@ -295,7 +295,7 @@ void PlantMeshGenerator::generateLeaf(const iaVector3f& dir)
     iaMatrixf scale;
     iaMatrixf current;
 
-    scale.scale(0.07, 0.07, 0.07);
+    scale.scale(0.1, 0.1, 0.1);
 
     const iaVector3f vecs[4] = { { 0,0,0 },{ 1, 0.2f, 0 } ,{ 0.75f, 0.4f, -0.2f },{ 0.75f, 0.4f, 0.2f } };
 

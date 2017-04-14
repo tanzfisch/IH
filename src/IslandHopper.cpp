@@ -229,7 +229,7 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
 {
 	return;
 
-	/*iaVector3I pos;
+/*	iaVector3I pos;
 	iaVector3I diff;
 	diff = max;
 	diff -= min;
@@ -579,6 +579,34 @@ void IslandHopper::initLSystems()
 	matrix._pos.set(759848, 4653, 381262.5);
 	matrix.rotate(0.7, iaAxis::Y);
 	generatePlant(matrix, plantInformationType1, 5, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759846, 4652.5, 381262.5);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType1, 5, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759845.5, 4652.5, 381263);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType1, 4, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759843, 4652.5, 381263.5);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType1, 5, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759843.25, 4652.5, 381262.5);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType1, 6, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759843.5, 4652.3, 381262);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType1, 4, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759841, 4652, 381263.5);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType3, 6, iTimer::getInstance().getTime());
+
+	matrix._pos.set(759840.5, 4652, 381264);
+	matrix.rotate(0.7, iaAxis::Y);
+	generatePlant(matrix, plantInformationType2, 5, iTimer::getInstance().getTime());
 }
 
 void IslandHopper::initStyle1()
@@ -605,7 +633,7 @@ void IslandHopper::initStyle1()
 	_lSystemType1.setAgeFilter('*', iLSystemAgeFunction::Greater, 4);
 
 	plantInformationType1._segmentLenght = 0.0125;
-	plantInformationType1._segmentAngle = 0.3;
+	plantInformationType1._segmentAngle = 0.4;
 	plantInformationType1._trunkColor.set(0, 0.8, 0);
 	plantInformationType1._budColor.set(0.8, 0.7, 0.0);
 	plantInformationType1._flowerColor.set(1, 0, 0);
@@ -639,7 +667,7 @@ void IslandHopper::initStyle2()
 	_lSystemType2.setAgeFilter('*', iLSystemAgeFunction::Greater, 4);
 
 	plantInformationType2._segmentLenght = 0.025;
-	plantInformationType2._segmentAngle = 0.25;
+	plantInformationType2._segmentAngle = 0.3;
 	plantInformationType2._trunkColor.set(0, 0.7, 0);
 	plantInformationType2._budColor.set(0.5, 0.5, 0.9);
 	plantInformationType2._flowerColor.set(1, 0, 1);
@@ -670,7 +698,7 @@ void IslandHopper::initStyle3()
 	_lSystemType3.setRule('*', weightedRule3);
 	_lSystemType3.setAgeFilter('*', iLSystemAgeFunction::Greater, 4);
 
-	plantInformationType3._segmentLenght = 0.0125;
+	plantInformationType3._segmentLenght = 0.012;
 	plantInformationType3._segmentAngle = 0.5;
 	plantInformationType3._trunkColor.set(0, 0.8, 0);
 	plantInformationType3._budColor.set(0.8, 0.8, 0.5);
@@ -683,30 +711,38 @@ void IslandHopper::initStyle3()
 
 void IslandHopper::generatePlant(const iaMatrixd& matrix, PlantInformation& plantInformation, uint32 iterations, uint64 seed)
 {
-	static uint64 plantType = 0;
+	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+	if (player != nullptr)
+	{
+		static uint64 plantType = 0;
 
-	plantInformation._iterations = iterations;
-	plantInformation._materialID = iMaterialResourceFactory::getInstance().getDefaultMaterialID();
-	plantInformation._seed = seed;
+		plantInformation._iterations = iterations;
+		plantInformation._materialID = iMaterialResourceFactory::getInstance().getDefaultMaterialID();
+		plantInformation._seed = seed;
 
-	iModelDataInputParameter* inputParam = new iModelDataInputParameter();
-	inputParam->_identifier = "pg";
-	inputParam->_joinVertexes = true;
-	inputParam->_needsRenderContext = false;
-	inputParam->_modelSourceType = iModelSourceType::Generated;
-	inputParam->_loadPriority = 0;
-	inputParam->_parameters.setData(reinterpret_cast<const char*>(&plantInformation), sizeof(PlantInformation));
+		iModelDataInputParameter* inputParam = new iModelDataInputParameter();
+		inputParam->_identifier = "pg";
+		inputParam->_joinVertexes = true;
+		inputParam->_needsRenderContext = false;
+		inputParam->_modelSourceType = iModelSourceType::Generated;
+		inputParam->_loadPriority = 0;
+		inputParam->_parameters.setData(reinterpret_cast<const char*>(&plantInformation), sizeof(PlantInformation));
 
-	iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-	modelNode->setModel(iaString("plant_") + iaString::itoa(plantType++), iResourceCacheMode::Free, inputParam);
+		iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+		modelNode->setModel(iaString("plant_") + iaString::itoa(plantType++), iResourceCacheMode::Free, inputParam);
 
-	iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-	transformNode->setMatrix(matrix);
+		iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+		transformNode->setMatrix(matrix);
 
-	// and add to scene
-	transformNode->insertNode(modelNode);
+		iNodeLODSwitch* lodSwitch = static_cast<iNodeLODSwitch*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLODSwitch));
+		lodSwitch->insertNode(modelNode);
+		lodSwitch->setThresholds(modelNode, 0, 10 * iterations);
+		lodSwitch->addTrigger(player->getLODTriggerID());
 
-	_scene->getRoot()->insertNode(transformNode);
+		transformNode->insertNode(lodSwitch);
+
+		_scene->getRoot()->insertNode(transformNode);
+	}
 }
 
 void IslandHopper::createSmokingBox(const iaVector3d& pos)
@@ -1212,14 +1248,14 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 				break;
 
 			case iKeyCode::B:
+			{
+				Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+				if (player != nullptr)
 				{
-					Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-					if (player != nullptr)
-					{
-						createSmokingBox(player->getSphere()._center);
-					}
+					createSmokingBox(player->getSphere()._center);
 				}
-				break;
+			}
+			break;
 			}
 		}
 	}
