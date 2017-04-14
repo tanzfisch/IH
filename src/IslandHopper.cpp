@@ -179,7 +179,7 @@ void IslandHopper::initScene()
 	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
 	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
 	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->setOrder(201);
+	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->setOrder(500);
 
     // TODO just provisorical water
     // create a water plane and add it to scene
@@ -461,41 +461,53 @@ void IslandHopper::createSmokingBox()
 		iaGradientVector2f startOrientationRate;
 		startOrientationRate.setValue(0.0, iaVector2f(-0.01, 0.01));
 
+#if 0
+		iaGradientColor4f smokeGradient;
+		smokeGradient.setValue(0.0f, iaColor4f(1, 0, 1, 0.0));
+		smokeGradient.setValue(0.2f, iaColor4f(0, 0, 1, 1.0));
+		smokeGradient.setValue(0.4f, iaColor4f(0, 1, 1, 1.0));
+		smokeGradient.setValue(0.6f, iaColor4f(0, 1, 0, 1.0));
+		smokeGradient.setValue(0.8f, iaColor4f(1, 1, 0, 1.0));
+		smokeGradient.setValue(1.0f, iaColor4f(1, 0, 0, 0.0));
+
+#else
 		iaGradientColor4f smokeGradient;
 		smokeGradient.setValue(0.0, iaColor4f(0, 0, 0, 0));
-		smokeGradient.setValue(0.1, iaColor4f(0, 0, 0, 0.5));
-		smokeGradient.setValue(0.6, iaColor4f(0, 0, 0, 0.3));
+		smokeGradient.setValue(0.1, iaColor4f(0, 0, 0, 1.0));
+		smokeGradient.setValue(0.6, iaColor4f(0, 0, 0, 1.0));
 		smokeGradient.setValue(1.0, iaColor4f(0, 0, 0, 0));
+#endif
 
 		iaGradientVector2f smokeSize;
 		smokeSize.setValue(0.0, iaVector2f(0.5, 1.0));
 
 		iaGradientVector2f smokeVisibility;
-		smokeVisibility.setValue(0.0, iaVector2f(7.0, 10.0));
+		smokeVisibility.setValue(0.0, iaVector2f(4.0, 5.0));
 
 		iaGradientf smokeEmission;
 		smokeEmission.setValue(0.0, 1);
 
 		iaGradientVector2f smokeLift;
-		smokeLift.setValue(0.0, iaVector2f(0.001, 0.0015));
-		smokeLift.setValue(10.0, iaVector2f(0.0, 0.0));
+		smokeLift.setValue(0.0, iaVector2f(0.0003, 0.0005));
+		smokeLift.setValue(4.0, iaVector2f(0.0003, 0.0005));
+		smokeLift.setValue(5.0, iaVector2f(0.00002, 0.00003));
 
 		iaGradientf sizeScale;
 		sizeScale.setValue(0.0, 1.0);
-		sizeScale.setValue(10.0, 5.0);
+		sizeScale.setValue(5.0, 15.0);
 
 		iNodeParticleSystem* smokeParticleSystem = static_cast<iNodeParticleSystem*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeParticleSystem));
 		smokeParticleSystem->setMaterial(_particlesMaterial);
-		smokeParticleSystem->setTextureA("particleTrail.png");
-		//smokeParticleSystem->setTextureB("octave1.png");
-		//smokeParticleSystem->setTextureC("octave2.png");
+		smokeParticleSystem->setTextureA("particleDot.png");
+		smokeParticleSystem->setTextureB("octave1.png");
+		smokeParticleSystem->setTextureC("octave2.png");
 		smokeParticleSystem->setVelocityOriented();
-		smokeParticleSystem->setVortexTorque(10.5, 20.0);
-		smokeParticleSystem->setVorticityConfinement(0.5);
-		smokeParticleSystem->setVortexRange(5.0, 10.0);
-		smokeParticleSystem->setVortexToParticleRate(10);
-		//smokeParticleSystem->setStartOrientationGradient(startOrientation);
-		//smokeParticleSystem->setStartOrientationRateGradient(startOrientationRate);
+		smokeParticleSystem->setVortexTorque(0.02, 0.04);
+		smokeParticleSystem->setVorticityConfinement(0.2);
+		smokeParticleSystem->setVortexRange(2.0, 4.0);
+		smokeParticleSystem->setVortexToParticleRate(0.05);
+		smokeParticleSystem->setStartOrientationGradient(startOrientation);
+		smokeParticleSystem->setStartOrientationRateGradient(startOrientationRate);
 		smokeParticleSystem->setStartSizeGradient(smokeSize);
 		smokeParticleSystem->setSizeScaleGradient(sizeScale);
 		smokeParticleSystem->setColorGradient(smokeGradient);
@@ -503,7 +515,6 @@ void IslandHopper::createSmokingBox()
 		smokeParticleSystem->setEmissionGradient(smokeEmission);
 		smokeParticleSystem->setStartLiftGradient(smokeLift);
 		smokeParticleSystem->setPeriodTime(10.0);
-		//smokeParticleSystem->setAirDrag(0.98);
 		smokeParticleSystem->start();
 
 		// fire 
