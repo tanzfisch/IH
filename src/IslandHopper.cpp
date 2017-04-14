@@ -521,7 +521,7 @@ void IslandHopper::createWaveParticleSystem()
 
 	// position the emitter in scene using a transform node
 	iNodeTransform* emitterTransform = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-	emitterTransform->translate(706373, 1255, 553638);
+	emitterTransform->translate(706363.5, 1219, 553599);
 	emitterTransform->insertNode(emitter);
 	emitterTransform->insertNode(particleSystem);
 	_scene->getRoot()->insertNode(emitterTransform);
@@ -853,6 +853,11 @@ void IslandHopper::onApplyForceAndTorqueBox(iPhysicsBody* body, float32 timestep
 	body->setForce(force);
 }
 
+__IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const iaVector3f& checkPos)
+{
+	return 1.0 / ((checkPos._x - metaballPos._x) * (checkPos._x - metaballPos._x) + (checkPos._y - metaballPos._y) * (checkPos._y - metaballPos._y) + (checkPos._z - metaballPos._z) * (checkPos._z - metaballPos._z));
+}
+
 void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 {
 	uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
@@ -974,19 +979,30 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 					}
 				}
 
+				const float64 toMeta = 0.0175;
+
 				for (int64 y = 0; y < voxelData->getHeight(); ++y)
 				{
 					pos._y = y * lodFactor + position._y + lodOffset._y;
 
-					if (pos._x >= 706370 &&
-						pos._x <= 706380 &&
-						pos._y >= 1240 &&
-						pos._y <= 1250 &&
-						pos._z >= 553600 &&
-						pos._z <= 553650)
+					if (pos._x >= 706000 &&
+						pos._x <= 707000 &&
+						pos._y >= 1000 &&
+						pos._y <= 2000 &&
+						pos._z >= 553000 &&
+						pos._z <= 554000)
 					{
-						voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
-						voxelBlockInfo->_transition = true;
+						float64 distance = 0;
+						for (auto hole : _holes)
+						{
+							distance += metaballFunction(hole._center, pos) * hole._radius;
+						}
+
+						if (distance >= toMeta)
+						{
+							voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
+							voxelBlockInfo->_transition = true;
+						}
 					}
 				}
 			}
@@ -1315,6 +1331,13 @@ void IslandHopper::deinitVoxelData()
 
 void IslandHopper::initVoxelData()
 {
+	_holes.push_back(iSpheref(iaVector3f(706378, 1245, 553640), 0.6));
+	_holes.push_back(iSpheref(iaVector3f(706378, 1235, 553635), 0.5));
+	_holes.push_back(iSpheref(iaVector3f(706380, 1230, 553630), 0.4));
+	_holes.push_back(iSpheref(iaVector3f(706390, 1220, 553620), 0.6));
+	_holes.push_back(iSpheref(iaVector3f(706380, 1230, 553610), 0.5));
+	_holes.push_back(iSpheref(iaVector3f(706370, 1220, 553600), 0.7));
+
 	_voxelTerrain = new VoxelTerrain(GenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData));
 
 	_voxelTerrain->setScene(_scene);
@@ -1353,10 +1376,10 @@ void IslandHopper::onHandle()
 			_mouseDelta.set(0, 0);
 
 			createWaveParticleSystem();
-			createSmokingBox(iaVector3d(759845, 4750, 381248));
-			createSmokingBox(iaVector3d(759829, 4770, 381244));
+			createSmokingBox(iaVector3d(759845, 4720, 381248));
+			createSmokingBox(iaVector3d(759829, 4750, 381244));
 
-			createSmokingBox(iaVector3d(759811, 4720, 381189));
+			createSmokingBox(iaVector3d(759811, 4700, 381189));
 		}
 	}
 	else

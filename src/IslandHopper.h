@@ -103,6 +103,8 @@ private:
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
 
+	vector<iSpheref> _holes;
+
 	void initLSystems();
 	void initStyle1();
 	void initStyle2();
