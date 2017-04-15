@@ -105,7 +105,11 @@ private:
 
 	vector<iSpheref> _holes;
 
+    void onShackReady(uint32 modelNodeID);
+    void makeCollisions(iNode* node);
+
 	void initLSystems();
+    void initShack();
 	void initStyle1();
 	void initStyle2();
 	void initStyle3();

@@ -41,6 +41,7 @@ using namespace IgorAux;
 #include <iNodeParticleSystem.h>
 #include <iNodeEmitter.h>
 #include <iPhysicsBody.h>
+#include <iNodeMesh.h>
 using namespace Igor;
 
 #include "Player.h"
@@ -410,6 +411,7 @@ void IslandHopper::init()
 	initVoxelData();
 
 	initLSystems();
+    initShack();
 
 	// set up octree debug rendering
 	_octreeMaterial = iMaterialResourceFactory::getInstance().createMaterial("Octree");
@@ -525,6 +527,57 @@ void IslandHopper::createWaveParticleSystem()
 	emitterTransform->insertNode(emitter);
 	emitterTransform->insertNode(particleSystem);
 	_scene->getRoot()->insertNode(emitterTransform);
+}
+
+void IslandHopper::initShack()
+{
+    /*iPhysicsCollision* meshCollision = iPhysics::getInstance().createMesh()
+    iPhysicsBody* meshBody = iPhysics::getInstance().createBody(boxCollision);
+    meshBody->setMass(10);
+    meshBody->registerForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &IslandHopper::onApplyForceAndTorqueBox));*/
+
+    iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+    transformNode->translate(iaVector3d(759832.7, 4653.6, 381257));
+    transformNode->rotate(0.2, iaAxis::Y);
+
+    iNodeModel* shackModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+    shackModel->setModel("shack.ompf");
+    //shackModel->registerModelReadyDelegate(iModelReadyDelegate(this, &IslandHopper::onShackReady));
+    transformNode->insertNode(shackModel);
+
+//    iPhysics::getInstance().bindTransformNode(meshBody, transformNode);
+    _scene->getRoot()->insertNode(transformNode);
+
+}
+
+void IslandHopper::onShackReady(uint32 modelNodeID)
+{
+    iNode* node = iNodeFactory::getInstance().getNode(modelNodeID);
+    makeCollisions(node);
+}
+
+// TODO need something lile this inside the engine for convenience
+void IslandHopper::makeCollisions(iNode* node)
+{
+    if (node->getType() == iNodeType::iNodeMesh)
+    {
+        iNodeMesh* meshNode = static_cast<iNodeMesh*>(node);
+        iPhysicsCollision* collision = iPhysics::getInstance().createMesh(meshNode->getMesh(), 0, iaMatrixd());
+        if (collision != nullptr)
+        {
+            iPhysicsBody* body = iPhysics::getInstance().createBody(collision);
+            body->setMass(0);
+            iaMatrixd matrix;
+            matrix.translate(759832.7, 4653.6, 381257);
+            body->setMatrix(matrix);
+            body->setMaterial(_voxelTerrain->getMaterial());
+        }
+    }
+
+    for (auto child : node->getChildren())
+    {
+        makeCollisions(child);
+    }
 }
 
 void IslandHopper::initLSystems()
@@ -1040,6 +1093,27 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 							voxelBlockInfo->_transition = true;
 						}
 					}
+
+                    if (pos._x >= 759832 &&
+                        pos._x <= 759836 &&
+                        pos._y >= 4654 &&
+                        pos._y <= 4660 &&
+                        pos._z >= 381254 &&
+                        pos._z <= 381258)
+                    {
+                        voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
+                        voxelBlockInfo->_transition = true;
+                    }
+
+                    if (pos._x >= 759832 &&
+                        pos._x <= 759836 &&
+                        pos._y == 4653 &&
+                        pos._z >= 381258 &&
+                        pos._z <= 381262)
+                    {
+                        voxelData->setVoxelDensity(iaVector3I(x, y, z), 40);
+                        voxelBlockInfo->_transition = true;
+                    }
 				}
 			}
 		}
