@@ -413,6 +413,8 @@ void IslandHopper::init()
 	initLSystems();
     initShack();
 
+    iPhysics::getInstance().start();
+
 	// set up octree debug rendering
 	_octreeMaterial = iMaterialResourceFactory::getInstance().createMaterial("Octree");
 	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
