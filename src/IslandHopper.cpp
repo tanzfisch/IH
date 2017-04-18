@@ -117,8 +117,7 @@ void IslandHopper::initViews()
 	_window.addView(&_view);
 	_window.addView(&_viewOrtho);
 #if 1
-	_window.setSize(1280, 600);
-	_window.setPosition(100, 100);
+	_window.setClientSize(1280, 600);
 #else
 	_window.setSizeByDesktop();
 	_window.setFullscreen();
@@ -411,9 +410,7 @@ void IslandHopper::init()
 	initVoxelData();
 
 	initLSystems();
-    initShack();
-
-    iPhysics::getInstance().start();
+    initShack();    
 
 	// set up octree debug rendering
 	_octreeMaterial = iMaterialResourceFactory::getInstance().createMaterial("Octree");
@@ -433,7 +430,7 @@ void IslandHopper::init()
 	iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
 	// configure statistics
-	_statisticsVisualizer.setVerbosity(iRenderStatisticsVerbosity::FPSMetricsAndTasks);
+	_statisticsVisualizer.setVerbosity(iRenderStatisticsVerbosity::FPSOnly);
 
 	uint64 particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
 	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->setName("PMat");
@@ -1204,22 +1201,6 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 				//player->dig(_toolSize, _toolDensity);
 				player->startFastTravel();
 				break;
-
-			case iKeyCode::F5:
-				player->setPosition(iaVector3d(706378, 1280, 553650));
-				break;
-
-			case iKeyCode::F6:
-				player->setPosition(iaVector3d(27934.5, 2700, 17452.6));
-				break;
-
-			case iKeyCode::F7:
-				player->setPosition(iaVector3d(16912.3, 3000, 31719.6));
-				break;
-
-			case iKeyCode::F8:
-				player->setPosition(iaVector3d(10841.6, 4500, 25283.8));
-				break;
 			}
 		}
 	}
@@ -1300,6 +1281,30 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 				player->stopRollRight();
 				break;
 
+            case iKeyCode::F5:
+                player->setPosition(iaVector3d(706378, 1280, 553650));
+                break;
+
+            case iKeyCode::F6:
+                player->setPosition(iaVector3d(27934.5, 2700, 17452.6));
+                break;
+
+            case iKeyCode::F7:
+                player->setPosition(iaVector3d(16912.3, 3000, 31719.6));
+                break;
+
+            case iKeyCode::F8:
+                player->setPosition(iaVector3d(10841.6, 4500, 25283.8));
+                break;
+
+            case iKeyCode::F9:
+                iPhysics::getInstance().start();
+                break;
+
+            case iKeyCode::F11:
+                _showMinimap = !_showMinimap;
+                break;
+
 			case iKeyCode::F12:
 			{
 				_wireframe = !_wireframe;
@@ -1318,10 +1323,6 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 				}
 			}
 			break;
-
-			case iKeyCode::F11:
-				_showMinimap = !_showMinimap;
-				break;
 
 			case iKeyCode::B:
 			{
