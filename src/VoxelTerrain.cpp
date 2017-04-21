@@ -28,8 +28,8 @@ using namespace IgorAux;
 #include "TaskGenerateVoxels.h"
 #include "TaskVoxelTerrain.h"
 
-//#define FIX_POSITION
-//#define FIX_HEIGHT
+// #define FIX_POSITION
+// #define FIX_HEIGHT
 
 iaVector3I childOffsetPosition[8] =
 {
@@ -186,7 +186,7 @@ void VoxelTerrain::handleVoxelBlocks()
 #endif
 
 #ifdef FIX_HEIGHT
-        pos._y = 310;
+        pos._y = 3100;
 #endif
 
         iaVector3I observerPosition(pos._x, pos._y, pos._z);

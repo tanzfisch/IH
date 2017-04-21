@@ -32,7 +32,6 @@
     <ClCompile Include="..\src\IslandHopper.cpp" />
     <ClCompile Include="..\src\main.cpp" />
     <ClCompile Include="..\src\MuzzleFlash.cpp" />
-    <ClCompile Include="..\src\PlantMeshGenerator.cpp" />
     <ClCompile Include="..\src\Player.cpp" />
     <ClCompile Include="..\src\StaticEnemy.cpp" />
     <ClCompile Include="..\src\TaskGenerateVoxels.cpp" />
@@ -57,7 +56,6 @@
     <ClInclude Include="..\src\Granade.h" />
     <ClInclude Include="..\src\IslandHopper.h" />
     <ClInclude Include="..\src\MuzzleFlash.h" />
-    <ClInclude Include="..\src\PlantMeshGenerator.h" />
     <ClInclude Include="..\src\Player.h" />
     <ClInclude Include="..\src\StaticEnemy.h" />
     <ClInclude Include="..\src\TaskGenerateVoxels.h" />

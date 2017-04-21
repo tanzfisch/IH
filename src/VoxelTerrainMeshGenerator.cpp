@@ -77,7 +77,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("white.png"), 2);
 
         iaRandomNumberGenerator rand;
-#if 0
+#if 1
         rand.setSeed(reinterpret_cast<uint32>(voxelData));
 #else
         rand.setSeed(tileInformation->_lod);

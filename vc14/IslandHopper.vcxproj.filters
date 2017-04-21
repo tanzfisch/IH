@@ -10,9 +10,6 @@
     <Filter Include="src\Entities">
       <UniqueIdentifier>{bd42fb1d-ae84-402b-a6aa-76de420a39b0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\props">
-      <UniqueIdentifier>{8f713fdf-a838-47ce-94d5-5a9cc2b74b78}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -75,9 +72,6 @@
     <ClCompile Include="..\src\TaskVoxelTerrain.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\PlantMeshGenerator.cpp">
-      <Filter>src\props</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\IslandHopper.h">
@@ -139,9 +133,6 @@
     </ClInclude>
     <ClInclude Include="..\src\TaskVoxelTerrain.h">
       <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\PlantMeshGenerator.h">
-      <Filter>src\props</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
