@@ -106,7 +106,7 @@ private:
 
     void onMouseMoved(int32 x1, int32 y1, int32 x2, int32 y2, iWindow* _window);
 
-    void onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max);
+    //void onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max);
     
     void onMouseUp(iKeyCode key);
     void onMouseDown(iKeyCode key);

@@ -7,6 +7,7 @@ using namespace IgorAux;
 #include <iVoxelData.h>
 #include <iTaskManager.h>
 #include <iNode.h>
+#include <iTask.h>
 using namespace Igor;
 
 namespace Igor
@@ -23,6 +24,8 @@ enum class Stage : uint8
     Ready,
     Empty
 };
+
+class VoxelBlockInfo;
 
 /*! voxel block (or tile) or specific LOD
 */

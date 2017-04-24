@@ -225,11 +225,9 @@ void IslandHopper::initPlayer()
 	_playerID = player->getID();
 }
 
-void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)
+/*void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)
 {
-	return;
-
-/*	iaVector3I pos;
+	iaVector3I pos;
 	iaVector3I diff;
 	diff = max;
 	diff -= min;
@@ -394,8 +392,8 @@ void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I&
 				break;
 			}
 		}
-	}/**/
-}
+	}
+}*/
 
 void IslandHopper::init()
 {

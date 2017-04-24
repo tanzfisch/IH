@@ -72,6 +72,9 @@
     <ClCompile Include="..\src\TaskVoxelTerrain.cpp">
       <Filter>src\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\VoxelOperationBox.cpp">
+      <Filter>src\Terrain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\IslandHopper.h">
@@ -132,6 +135,12 @@
       <Filter>src\Entities</Filter>
     </ClInclude>
     <ClInclude Include="..\src\TaskVoxelTerrain.h">
+      <Filter>src\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VoxelOperation.h">
+      <Filter>src\Terrain</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\VoxelOperationBox.h">
       <Filter>src\Terrain</Filter>
     </ClInclude>
   </ItemGroup>

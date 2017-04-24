@@ -81,6 +81,8 @@ public:
 	*/
 	uint64 getMaterial() const;
 
+    void applyOperation(VoxelOperation* );
+
 private:
 
     /*! delegate registered by application to generate voxel data
