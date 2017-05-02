@@ -27,6 +27,7 @@ using namespace IgorAux;
 
 #include "TaskGenerateVoxels.h"
 #include "TaskVoxelTerrain.h"
+#include "VoxelOperationBox.h"
 
 // #define FIX_POSITION
 // #define FIX_HEIGHT
@@ -69,6 +70,12 @@ VoxelTerrain::VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate)
 VoxelTerrain::~VoxelTerrain()
 {
     deinit();
+}
+
+void VoxelTerrain::modify(const iAABoxI& box, uint8 density)
+{
+    VoxelOperationBox* voxelOperationBox = new VoxelOperationBox(box, density);
+    _operationQueue.push(voxelOperationBox);
 }
 
 void VoxelTerrain::setScene(iScene* scene)

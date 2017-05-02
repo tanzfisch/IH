@@ -1,25 +1,79 @@
 #include "VoxelOperationBox.h"
 #include "VoxelBlock.h"
+#include "VoxelTerrain.h"
 
-VoxelOperationBox::VoxelOperationBox(iaVector3I from, iaVector3I to, uint8 density)
+VoxelOperationBox::VoxelOperationBox(const iAABoxI& box, uint8 density)
 {
-    _from = from;
-    _to = to;
+    _box = box;
     _density = density;
 }
 
-void VoxelOperationBox::getRange(iaVector3I& from, iaVector3I& to)
+void VoxelOperationBox::getBoundings(iAABoxI& boundings)
 {
-    from = _from;
-    to = _to;
+    boundings = _box;
 }
 
-void VoxelOperationBox::apply(VoxelBlock* voxelBlock, const iaVector3I& worldPos, const iaVector3I& blockPos)
+void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
 {
     iVoxelData* voxelData = voxelBlock->_voxelData;
 
+    iaVector3I from = _box._center;
+    from -= _box._halfWidths;
+    iaVector3I to = _box._center;
+    to += _box._halfWidths;
+
+    int64 lodFactor = pow(2, voxelBlock->_lod);
+    from /= lodFactor;
+    to /= lodFactor;
+
+    iaVector3I voxelBlockFrom = voxelBlock->_positionInLOD * VoxelTerrain::_voxelBlockSize;
+    voxelBlockFrom._x -= VoxelTerrain::_voxelBlockOverlap;
+    voxelBlockFrom._y -= VoxelTerrain::_voxelBlockOverlap;
+    voxelBlockFrom._z -= VoxelTerrain::_voxelBlockOverlap;
+
+    from -= voxelBlockFrom;
+    to -= voxelBlockFrom;
+
+    if (from._x < 0)
+    {
+        from._x = 0;
+    }
+    if (from._y < 0)
+    {
+        from._y = 0;
+    }
+    if (from._z < 0)
+    {
+        from._z = 0;
+    }
+
+    int64 fullVoxelBlockSize = VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap + VoxelTerrain::_voxelBlockOverlap;
+
+    if (to._x > fullVoxelBlockSize)
+    {
+        to._x = fullVoxelBlockSize;
+    }
+    if (to._y > fullVoxelBlockSize)
+    {
+        to._y = fullVoxelBlockSize;
+    }
+    if (to._z > fullVoxelBlockSize)
+    {
+        to._z = fullVoxelBlockSize;
+    }
+
+    int64 poleHeight = to._y - from._y + 1;
+
+    for (int64 x = from._x; x < to._x; ++x)
+    {
+        for (int64 z = from._z; z < to._z; ++z)
+        {
+            voxelData->setVoxelPole(iaVector3I(x, 0, z), poleHeight, _density);
+        }
+    }
+
     // TODO use iAABox
-    if (worldPos._x >= _from._x &&
+ /*   if (worldPos._x >= _from._x &&
         worldPos._x <= _to._x &&
         worldPos._y >= _from._y &&
         worldPos._y <= _to._y &&
@@ -27,7 +81,7 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock, const iaVector3I& worldPos
         worldPos._z <= _to._z)
     {
         voxelData->setVoxelDensity(blockPos, _density);
-    }
+    }*/
 
   /*      for (int64 y = 0; y < voxelData->getHeight(); ++y)
         {

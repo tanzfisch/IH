@@ -3,22 +3,21 @@
 
 #include "VoxelOperation.h"
 
-struct VoxelOperationBox : public VoxelOperation
+class VoxelOperationBox : public VoxelOperation
 {
 
 private:
 
-    iaVector3I _from;
-    iaVector3I _to;
+    iAABoxI _box;
     uint8 _density = 0;
 
 public:
 
-    VoxelOperationBox(iaVector3I from, iaVector3I to, uint8 density);
+    VoxelOperationBox(const iAABoxI& box, uint8 density);
 
-    void apply(VoxelBlock* voxelBlock, const iaVector3I& worldPos, const iaVector3I& blockPos);
+    void apply(VoxelBlock* voxelBlock);
 
-    void getRange(iaVector3I& from, iaVector3I& to);
+    void getBoundings(iAABoxI& boundings);
 
 };
 

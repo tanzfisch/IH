@@ -10,11 +10,13 @@ using namespace Igor;
 using namespace IgorAux;
 
 #include <unordered_map>
+#include <queue>
 using namespace std;
 
 #include "TaskGenerateVoxels.h"
 #include "VoxelTerrainMeshGenerator.h"
 #include "VoxelBlock.h"
+#include "VoxelOperation.h"
 
 namespace Igor
 {
@@ -57,6 +59,28 @@ class VoxelTerrain
 
 public:
 
+    /*! lowest allowed lod
+    
+    more than 10 might not work
+    */
+    static const uint32 _lowestLOD = 10;
+
+    /*! voxel block discovery distance
+    */
+    static const int64 _voxelBlockDiscoveryDistance = 8;
+
+    /*! voxel block setup distance
+    */
+    static const int64 _voxelBlockSetupDistance = 4;
+
+    /*! block quibic size
+    */
+    static const int32 _voxelBlockSize = 32;
+
+    /*! block overlap
+    */
+    static const int32 _voxelBlockOverlap = 2;
+
     /*! init
     */
     VoxelTerrain(GenerateVoxelsDelegate generateVoxelsDelegate);
@@ -81,9 +105,11 @@ public:
 	*/
 	uint64 getMaterial() const;
 
-    void applyOperation(VoxelOperation* );
+    void modify(const iAABoxI& box, uint8 density);
 
 private:
+
+    queue<VoxelOperation*> _operationQueue;
 
     /*! delegate registered by application to generate voxel data
     */
@@ -120,26 +146,6 @@ private:
     /*! performance section total handle
     */
     uint32 _totalSection = 0;
-
-    /*! lowest allowed lod
-    */
-    static const uint32 _lowestLOD = 10; // max 10
-
-    /*! voxel block discovery distance
-    */
-    static const int64 _voxelBlockDiscoveryDistance = 8;
-
-    /*! voxel block setup distance
-    */
-    static const int64 _voxelBlockSetupDistance = 4;
-
-    /*! block quibic size
-    */
-    static const int32 _voxelBlockSize = 32;
-
-    /*! block overlap
-    */
-    static const int32 _voxelBlockOverlap = 2;
 
     /*! the voxel data
     */
