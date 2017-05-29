@@ -89,7 +89,6 @@ private:
 	uint64 _materialSolid = 0;
 	uint64 _octreeMaterial = 0;
 	uint64 _materialSkyBox = 0;
-	uint64 _particlesMaterial = 0;
 
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;

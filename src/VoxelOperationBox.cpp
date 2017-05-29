@@ -47,7 +47,7 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
         from._z = 0;
     }
 
-    int64 fullVoxelBlockSize = VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap + VoxelTerrain::_voxelBlockOverlap;
+    int64 fullVoxelBlockSize = VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap;
 
     if (to._x > fullVoxelBlockSize)
     {

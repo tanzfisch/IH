@@ -31,7 +31,6 @@ using namespace IgorAux;
 #include <iPixmap.h>
 #include <iStatistics.h>
 #include <iTargetMaterial.h>
-#include <iNodeTransformControl.h>
 #include <iNodeLODTrigger.h>
 #include <iNodeLODSwitch.h>
 #include <iOctree.h>
@@ -44,13 +43,16 @@ using namespace IgorAux;
 #include <iNodeMesh.h>
 using namespace Igor;
 
+#include <iaConvert.h>
+using namespace IgorAux;
+
 #include "Player.h"
 #include "Enemy.h"
 #include "BossEnemy.h"
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
-//#define SIN_WAVE_TERRAIN
+// #define SIN_WAVE_TERRAIN
 #define USE_WATER
 
 const float64 mapScaleXZ = 0.003693182;
@@ -169,18 +171,6 @@ void IslandHopper::initScene()
 	// insert sky box to scene
 	_scene->getRoot()->insertNode(skyBoxNode);
 
-	// set up a meterial for the particles
-	_particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D1, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D2, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
-	iMaterialResourceFactory::getInstance().getMaterial(_particlesMaterial)->setOrder(500);
-
 	// TODO just provisorical water
 	// create a water plane and add it to scene
 
@@ -220,7 +210,7 @@ void IslandHopper::initPlayer()
 	//matrix.translate(730000, 4800, 530000);
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
-	matrix.translate(759846, 4655, 381272);
+	matrix.translate(759846, 4600, 381272);
 	Player* player = new Player(_scene, matrix);
 	_playerID = player->getID();
 }
@@ -506,7 +496,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 				height += waterOffset;
 
 #ifdef SIN_WAVE_TERRAIN
-				height = 2300 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
+				height = 10 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
 #endif
 
 				float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
@@ -701,47 +691,47 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
 		if (player != nullptr)
 		{
-			switch (key)
-			{
-			case iKeyCode::A:
-				player->stopLeft();
-				break;
+            switch (key)
+            {
+            case iKeyCode::A:
+                player->stopLeft();
+                break;
 
-			case iKeyCode::D:
-				player->stopRight();
-				break;
+            case iKeyCode::D:
+                player->stopRight();
+                break;
 
-			case iKeyCode::W:
-				player->stopForward();
-				break;
+            case iKeyCode::W:
+                player->stopForward();
+                break;
 
-			case iKeyCode::S:
-				player->stopBackward();
-				break;
+            case iKeyCode::S:
+                player->stopBackward();
+                break;
 
-			case iKeyCode::Q:
-				player->stopUp();
-				break;
+            case iKeyCode::Q:
+                player->stopUp();
+                break;
 
-			case iKeyCode::E:
-				player->stopDown();
-				break;
+            case iKeyCode::E:
+                player->stopDown();
+                break;
 
-			case iKeyCode::Space:
-				player->stopFastTravel();
-				break;
+            case iKeyCode::Space:
+                player->stopFastTravel();
+                break;
 
-			case iKeyCode::LShift:
-				//player->stopFastTurn();
-				break;
+            case iKeyCode::LShift:
+                //player->stopFastTurn();
+                break;
 
-			case iKeyCode::One:
-				player->stopRollLeft();
-				break;
+            case iKeyCode::One:
+                player->stopRollLeft();
+                break;
 
-			case iKeyCode::Three:
-				player->stopRollRight();
-				break;
+            case iKeyCode::Three:
+                player->stopRollRight();
+                break;
 
             case iKeyCode::F5:
                 player->setPosition(iaVector3d(706378, 1280, 553650));
@@ -758,6 +748,32 @@ void IslandHopper::onKeyReleased(iKeyCode key)
             case iKeyCode::F8:
                 player->setPosition(iaVector3d(10841.6, 4500, 25283.8));
                 break;
+
+            case iKeyCode::F9:
+                {
+                    Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+                    if (player != nullptr)
+                    {
+                        iAABoxI box;
+                        iaConvert::convert(player->getSphere()._center, box._center);
+                        box._halfWidths.set(10, 10, 10);
+                        _voxelTerrain->modify(box, 0);
+                    }
+                }
+                break;
+
+            case iKeyCode::F10:
+            {
+                Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+                if (player != nullptr)
+                {
+                    iAABoxI box;
+                    iaConvert::convert(player->getSphere()._center, box._center);
+                    box._halfWidths.set(10, 10, 10);
+                    _voxelTerrain->modify(box, 128);
+                }
+            }
+            break;
 
             case iKeyCode::F11:
                 _showMinimap = !_showMinimap;

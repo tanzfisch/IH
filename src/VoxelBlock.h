@@ -10,6 +10,9 @@ using namespace IgorAux;
 #include <iTask.h>
 using namespace Igor;
 
+#include <memory>
+using namespace std;
+
 namespace Igor
 {
 	class iScene;
@@ -26,6 +29,7 @@ enum class Stage : uint8
 };
 
 class VoxelBlockInfo;
+class VoxelOperation;
 
 /*! voxel block (or tile) or specific LOD
 */
@@ -125,6 +129,8 @@ public:
     /*! indexes to neighbour in same LOD
     */
     uint64 _neighbours[6];
+
+    vector<shared_ptr<VoxelOperation>> _voxelOperations;
 
 };
 

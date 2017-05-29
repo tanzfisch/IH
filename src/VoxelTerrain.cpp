@@ -74,8 +74,12 @@ VoxelTerrain::~VoxelTerrain()
 
 void VoxelTerrain::modify(const iAABoxI& box, uint8 density)
 {
+    con_endl("box center " << box._center);
+
     VoxelOperationBox* voxelOperationBox = new VoxelOperationBox(box, density);
-    _operationQueue.push(voxelOperationBox);
+    _operationsQueueMutex.lock();
+    _operationsQueue.push_back(shared_ptr<VoxelOperation>(voxelOperationBox));
+    _operationsQueueMutex.unlock();
 }
 
 void VoxelTerrain::setScene(iScene* scene)
@@ -165,7 +169,7 @@ uint64 VoxelTerrain::getMaterial() const
 	return _terrainMaterialID;
 }
 
-void VoxelTerrain::handleVoxelBlocks()
+void VoxelTerrain::update()
 {
 #ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_totalSection);
@@ -209,6 +213,8 @@ void VoxelTerrain::handleVoxelBlocks()
         updateBlocks(observerPosition);
     }
 
+    applyVoxelOperations();
+
 #ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().beginSection(_applyActionsSection);
 #endif
@@ -222,6 +228,78 @@ void VoxelTerrain::handleVoxelBlocks()
 #ifdef USE_VERBOSE_STATISTICS
     iStatistics::getInstance().endSection(_totalSection);
 #endif
+}
+
+void VoxelTerrain::applyVoxelOperations()
+{
+    _operationsQueueMutex.lock();
+    auto operations = _operationsQueue;
+    _operationsQueue.clear();
+    _operationsQueueMutex.unlock();
+
+    auto iterOp = operations.begin();
+    while (iterOp != operations.end())
+    {
+        applyVoxelOperation((*iterOp));
+        iterOp++;
+    }
+}
+
+void VoxelTerrain::applyVoxelOperation(shared_ptr<VoxelOperation> voxelOperation)
+{
+    iAABoxI boundings;
+    voxelOperation->getBoundings(boundings);
+
+    iaVector3I min = boundings._center;
+    min -= boundings._halfWidths;
+    iaVector3I max = boundings._center;
+    max += boundings._halfWidths;
+
+    float64 lodFactor = pow(2, _lowestLOD);
+    float64 actualBlockSize = _voxelBlockSize * lodFactor;
+    min /= actualBlockSize;
+    max /= actualBlockSize;
+
+    if (min._x < 0)
+    {
+        min._x = 0;
+    }
+
+    if (min._y < 0)
+    {
+        min._y = 0;
+    }
+
+    if (min._z < 0)
+    {
+        min._z = 0;
+    }
+
+    auto& voxelBlocks = _voxelBlocks[_lowestLOD];
+    iaVector3I voxelBlockPosition;
+
+    for (int64 voxelBlockX = min._x; voxelBlockX <= max._x; ++voxelBlockX)
+    {
+        for (int64 voxelBlockY = min._y; voxelBlockY <= max._y; ++voxelBlockY)
+        {
+            for (int64 voxelBlockZ = min._z; voxelBlockZ <= max._z; ++voxelBlockZ)
+            {
+                voxelBlockPosition.set(voxelBlockX, voxelBlockY, voxelBlockZ);
+                VoxelBlock* voxelBlock = nullptr;
+                auto blockIter = voxelBlocks.find(voxelBlockPosition);
+                if (blockIter != voxelBlocks.end())
+                {
+                    voxelBlock = (*blockIter).second;
+                }
+                else
+                {
+                    voxelBlock = createVoxelBlock(_lowestLOD, voxelBlockPosition, 0);
+                }
+
+                voxelBlock->_voxelOperations.push_back(voxelOperation);
+            }
+        }
+    }
 }
 
 void VoxelTerrain::updateBlocks(const iaVector3I& observerPosition)
@@ -414,11 +492,6 @@ void VoxelTerrain::discoverBlocks(const iaVector3I& observerPosition)
         if (start._y < 0)
         {
             start._y = 0;
-        }
-
-        if (start._y > 3) // TODO workaround maybe we need to be able to configure that 
-        {
-            start._y = 3;
         }
 
         if (start._z < 0)
@@ -693,7 +766,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         }
 
         voxelBlock->_state = Stage::GeneratingVoxel;
-
     }
     break;
 
@@ -703,6 +775,12 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         if (task == nullptr)
         {
             voxelBlock->_voxelGenerationTaskID = iTask::INVALID_TASK_ID;
+
+            if (voxelBlock->_voxelOperations.size())
+            {
+                voxelBlock->_voxelBlockInfo->_transition = true;
+            }
+
             if (!voxelBlock->_voxelBlockInfo->_transition)
             {
                 delete voxelBlock->_voxelData;
@@ -712,7 +790,7 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
             }
             else
             {
-                if (voxelBlock->_lod > 0)
+                if (voxelBlock->_lod != 0)
                 {
                     if (voxelBlock->_children[0] == 0)
                     {
@@ -827,22 +905,52 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
                 voxelBlock->_dirtyNeighbours = false;
             }
-
-            if (voxelBlock->_dirty)
-            {
-                iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
-                if (modelNode != nullptr &&
-                    modelNode->isReady())
-                {
-                    voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
-                    voxelBlock->_state = Stage::GeneratingMesh;
-
-                    voxelBlock->_dirty = false;
-                }
-            }
         }
     }
     break;
+    }
+
+    if (voxelBlock->_voxelOperations.size() > 0)
+    {
+        if (voxelBlock->_state != Stage::Empty)
+        {
+            if (voxelBlock->_voxelData != nullptr)
+            {
+                for (auto op : voxelBlock->_voxelOperations)
+                {
+                    op->apply(voxelBlock);
+                }
+
+                voxelBlock->_dirty = true;
+
+                if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
+                {
+                    for (int i = 0; i < 8; ++i)
+                    {
+                        _voxelBlocksMap[voxelBlock->_children[i]]->_voxelOperations = voxelBlock->_voxelOperations;
+                    }
+                }
+
+                voxelBlock->_voxelOperations.clear();
+            }
+        }
+        else
+        {
+            voxelBlock->_state = Stage::Initial;
+        }
+    }
+
+    if (voxelBlock->_dirty)
+    {
+        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
+        if (modelNode != nullptr &&
+            modelNode->isReady())
+        {
+            voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
+            voxelBlock->_state = Stage::GeneratingMesh;
+
+            voxelBlock->_dirty = false;
+        }
     }
 
     if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)

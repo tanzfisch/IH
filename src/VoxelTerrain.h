@@ -74,10 +74,14 @@ public:
     static const int64 _voxelBlockSetupDistance = 4;
 
     /*! block quibic size
+
+    can't be changed right now
     */
     static const int32 _voxelBlockSize = 32;
 
     /*! block overlap
+
+    can't be changed right now
     */
     static const int32 _voxelBlockOverlap = 2;
 
@@ -105,11 +109,18 @@ public:
 	*/
 	uint64 getMaterial() const;
 
+    /*! modifies voxel data by manipulating a box area
+
+    \param box the defined box area to manipulate
+    \param density the density to set within the box area
+    */
     void modify(const iAABoxI& box, uint8 density);
 
 private:
 
-    queue<VoxelOperation*> _operationQueue;
+    vector<shared_ptr<VoxelOperation>> _operationsQueue;
+
+    mutex _operationsQueueMutex;
 
     /*! delegate registered by application to generate voxel data
     */
@@ -220,9 +231,12 @@ private:
 
     /*! main handle callback
     */
-    void handleVoxelBlocks();
+    void update();
 
     void update(VoxelBlock* voxelBlock, iaVector3I observerPosition);
+
+    void applyVoxelOperations();
+    void applyVoxelOperation(shared_ptr<VoxelOperation> voxelOperation);
 
     bool updateVisibility(VoxelBlock* voxelBlock);
 

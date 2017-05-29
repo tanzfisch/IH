@@ -22,7 +22,7 @@ void TaskVoxelTerrain::run()
 {
     if (_voxelTerrain != nullptr)
     {
-        _voxelTerrain->handleVoxelBlocks();
+        _voxelTerrain->update();
     }
 }
 
