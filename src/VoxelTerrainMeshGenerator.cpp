@@ -59,7 +59,7 @@ iNode* VoxelTerrainMeshGenerator::importData(const iaString& sectionName, iModel
         meshNode->setVisible(false);
 
 		iTargetMaterial* targetMaterial = meshNode->getTargetMaterial();
-#if 1
+#if 0
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 0);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 1);
 		targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);

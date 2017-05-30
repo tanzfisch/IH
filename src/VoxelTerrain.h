@@ -63,15 +63,15 @@ public:
     
     more than 10 might not work
     */
-    static const uint32 _lowestLOD = 10;
+    static const uint32 _lowestLOD = 2;
 
     /*! voxel block discovery distance
     */
-    static const int64 _voxelBlockDiscoveryDistance = 8;
+    static const int64 _voxelBlockDiscoveryDistance = 4;
 
     /*! voxel block setup distance
     */
-    static const int64 _voxelBlockSetupDistance = 4;
+    static const int64 _voxelBlockSetupDistance = 2;
 
     /*! block quibic size
 

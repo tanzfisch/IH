@@ -776,11 +776,6 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         {
             voxelBlock->_voxelGenerationTaskID = iTask::INVALID_TASK_ID;
 
-            if (voxelBlock->_voxelOperations.size())
-            {
-                voxelBlock->_voxelBlockInfo->_transition = true;
-            }
-
             if (!voxelBlock->_voxelBlockInfo->_transition)
             {
                 delete voxelBlock->_voxelData;
@@ -880,7 +875,15 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                         }
                     }
                 }
-                voxelBlock->_state = Stage::GeneratingMesh;
+
+                if (voxelBlock->_lod == _lowestLOD)
+                {
+                    voxelBlock->_state = Stage::Ready; // can not generate mesh for lowest lod
+                }
+                else
+                {
+                    voxelBlock->_state = Stage::GeneratingMesh;
+                }
             }
         }
     }
@@ -906,51 +909,41 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                 voxelBlock->_dirtyNeighbours = false;
             }
         }
-    }
-    break;
-    }
 
-    if (voxelBlock->_voxelOperations.size() > 0)
-    {
-        if (voxelBlock->_state != Stage::Empty)
+        if (voxelBlock->_voxelOperations.size() > 0)
         {
-            if (voxelBlock->_voxelData != nullptr)
+            for (auto op : voxelBlock->_voxelOperations)
             {
-                for (auto op : voxelBlock->_voxelOperations)
+                op->apply(voxelBlock);
+            }
+
+            voxelBlock->_dirty = true;
+
+            if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
+            {
+                for (int i = 0; i < 8; ++i)
                 {
-                    op->apply(voxelBlock);
+                    _voxelBlocksMap[voxelBlock->_children[i]]->_voxelOperations = voxelBlock->_voxelOperations;
                 }
+            }
 
-                voxelBlock->_dirty = true;
+            voxelBlock->_voxelOperations.clear();
+        }
 
-                if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
-                {
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        _voxelBlocksMap[voxelBlock->_children[i]]->_voxelOperations = voxelBlock->_voxelOperations;
-                    }
-                }
+        if (voxelBlock->_dirty && voxelBlock->_lod != _lowestLOD)
+        {
+            iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
+            if (modelNode != nullptr &&
+                modelNode->isReady())
+            {
+                voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
+                voxelBlock->_state = Stage::GeneratingMesh;
 
-                voxelBlock->_voxelOperations.clear();
+                voxelBlock->_dirty = false;
             }
         }
-        else
-        {
-            voxelBlock->_state = Stage::Initial;
-        }
     }
-
-    if (voxelBlock->_dirty)
-    {
-        iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
-        if (modelNode != nullptr &&
-            modelNode->isReady())
-        {
-            voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
-            voxelBlock->_state = Stage::GeneratingMesh;
-
-            voxelBlock->_dirty = false;
-        }
+    break;
     }
 
     if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)

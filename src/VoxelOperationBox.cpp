@@ -27,9 +27,6 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
     to /= lodFactor;
 
     iaVector3I voxelBlockFrom = voxelBlock->_positionInLOD * VoxelTerrain::_voxelBlockSize;
-    voxelBlockFrom._x -= VoxelTerrain::_voxelBlockOverlap;
-    voxelBlockFrom._y -= VoxelTerrain::_voxelBlockOverlap;
-    voxelBlockFrom._z -= VoxelTerrain::_voxelBlockOverlap;
 
     from -= voxelBlockFrom;
     to -= voxelBlockFrom;
@@ -68,7 +65,7 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
     {
         for (int64 z = from._z; z < to._z; ++z)
         {
-            voxelData->setVoxelPole(iaVector3I(x, 0, z), poleHeight, _density);
+            voxelData->setVoxelPole(iaVector3I(x, from._y, z), poleHeight, _density);
         }
     }
 
