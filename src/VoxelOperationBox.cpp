@@ -15,8 +15,6 @@ void VoxelOperationBox::getBoundings(iAABoxI& boundings)
 
 void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
 {
-    iVoxelData* voxelData = voxelBlock->_voxelData;
-
     iaVector3I from = _box._center;
     from -= _box._halfWidths;
     iaVector3I to = _box._center;
@@ -26,7 +24,26 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
     from /= lodFactor;
     to /= lodFactor;
 
+    int64 fullVoxelBlockSize = VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap;
     iaVector3I voxelBlockFrom = voxelBlock->_positionInLOD * VoxelTerrain::_voxelBlockSize;
+    iaVector3I voxelBlockTo = voxelBlockFrom;
+    voxelBlockTo._x += fullVoxelBlockSize;
+    voxelBlockTo._y += fullVoxelBlockSize;
+    voxelBlockTo._z += fullVoxelBlockSize;
+
+    if (to._x < voxelBlockFrom._x ||
+        to._y < voxelBlockFrom._y ||
+        to._z < voxelBlockFrom._z)
+    {
+        return;
+    }
+
+    if (from._x > voxelBlockTo._x ||
+        from._y > voxelBlockTo._y ||
+        from._z > voxelBlockTo._z)
+    {
+        return;
+    }
 
     from -= voxelBlockFrom;
     to -= voxelBlockFrom;
@@ -44,8 +61,6 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
         from._z = 0;
     }
 
-    int64 fullVoxelBlockSize = VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap;
-
     if (to._x > fullVoxelBlockSize)
     {
         to._x = fullVoxelBlockSize;
@@ -59,71 +74,14 @@ void VoxelOperationBox::apply(VoxelBlock* voxelBlock)
         to._z = fullVoxelBlockSize;
     }
 
-    int64 poleHeight = to._y - from._y + 1;
+    int64 poleHeight = to._y - from._y;
 
     for (int64 x = from._x; x < to._x; ++x)
     {
         for (int64 z = from._z; z < to._z; ++z)
         {
-            voxelData->setVoxelPole(iaVector3I(x, from._y, z), poleHeight, _density);
+            voxelBlock->_voxelData->setVoxelPole(iaVector3I(x, from._y, z), poleHeight, _density);
         }
     }
-
-    // TODO use iAABox
- /*   if (worldPos._x >= _from._x &&
-        worldPos._x <= _to._x &&
-        worldPos._y >= _from._y &&
-        worldPos._y <= _to._y &&
-        worldPos._z >= _from._z &&
-        worldPos._z <= _to._z)
-    {
-        voxelData->setVoxelDensity(blockPos, _density);
-    }*/
-
-  /*      for (int64 y = 0; y < voxelData->getHeight(); ++y)
-        {
-            pos._y = y * lodFactor + position._y + lodOffset._y;
-
-            if (pos._x >= 706000 &&
-                pos._x <= 707000 &&
-                pos._y >= 1000 &&
-                pos._y <= 2000 &&
-                pos._z >= 553000 &&
-                pos._z <= 554000)
-            {
-                float64 distance = 0;
-                for (auto hole : _holes)
-                {
-                    distance += metaballFunction(hole._center, pos) * hole._radius;
-                }
-
-                if (distance >= toMeta)
-                {
-                    voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
-                    voxelBlockInfo->_transition = true;
-                }
-            }
-
-            if (pos._x >= 759832 &&
-                pos._x <= 759836 &&
-                pos._y >= 4654 &&
-                pos._y <= 4660 &&
-                pos._z >= 381254 &&
-                pos._z <= 381258)
-            {
-                voxelData->setVoxelDensity(iaVector3I(x, y, z), 0);
-                voxelBlockInfo->_transition = true;
-            }
-
-            if (pos._x >= 759832 &&
-                pos._x <= 759836 &&
-                pos._y == 4653 &&
-                pos._z >= 381258 &&
-                pos._z <= 381262)
-            {
-                voxelData->setVoxelDensity(iaVector3I(x, y, z), 40);
-                voxelBlockInfo->_transition = true;
-            }
-        }*/
 }
 

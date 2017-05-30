@@ -52,8 +52,8 @@ using namespace IgorAux;
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
-#define SIN_WAVE_TERRAIN
-//#define USE_WATER
+//#define SIN_WAVE_TERRAIN
+#define USE_WATER
 
 const float64 mapScaleXZ = 0.003693182;
 const float64 highestMontain = 3742;
@@ -210,7 +210,7 @@ void IslandHopper::initPlayer()
 	//matrix.translate(730000, 4800, 530000);
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
-	matrix.translate(759846, 6, 381272);
+	matrix.translate(759846, 4600, 381272);
 	Player* player = new Player(_scene, matrix);
 	_playerID = player->getID();
 }
@@ -459,7 +459,7 @@ void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
 	const float64 to = 0.36;
 	float64 factor = 1.0 / (to - from);
 
-	if (voxelData != nullptr)
+	if (voxelData != nullptr) // TODO remove
 	{
 		voxelData->initData(size, size, size);
 

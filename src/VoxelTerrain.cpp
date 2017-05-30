@@ -19,6 +19,7 @@
 #include <iStatistics.h>
 #include <iContouringCubes.h>
 #include <iPerlinNoise.h>
+#include <iIntersection.h>
 using namespace Igor;
 
 #include <iaConvert.h>
@@ -693,7 +694,20 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 {
     if (voxelBlock->_state == Stage::Empty)
     {
-        return;
+        if (voxelBlock->_voxelOperations.size() > 0)
+        {
+            voxelBlock->_voxelData = new iVoxelData();
+            voxelBlock->_voxelData->setClearValue(0);
+            voxelBlock->_voxelBlockInfo->_voxelData = voxelBlock->_voxelData;
+            voxelBlock->_voxelData->initData(voxelBlock->_voxelBlockInfo->_size, voxelBlock->_voxelBlockInfo->_size, voxelBlock->_voxelBlockInfo->_size);
+
+            voxelBlock->_voxelBlockInfo->_transition = true;
+            voxelBlock->_state = Stage::GeneratingVoxel;
+        }
+        else
+        {
+            return;
+        }
     }
 
     // distance in tiles of current lod in all three dimensions
@@ -882,7 +896,14 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
                 }
                 else
                 {
-                    voxelBlock->_state = Stage::GeneratingMesh;
+                    if (voxelBlock->_voxelOperations.size() > 0)
+                    {
+                        voxelBlock->_state = Stage::Ready;
+                    }
+                    else
+                    {
+                        voxelBlock->_state = Stage::GeneratingMesh;
+                    }
                 }
             }
         }
@@ -921,9 +942,30 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
 
             if (voxelBlock->_children[0] != VoxelBlock::INVALID_VOXELBLOCKID)
             {
+                int64 lodFactor = pow(2, voxelBlock->_lod - 1);
+                int64 halfVoxelBlockSize = (VoxelTerrain::_voxelBlockSize + VoxelTerrain::_voxelBlockOverlap) / 2 * lodFactor;
+
                 for (int i = 0; i < 8; ++i)
                 {
-                    _voxelBlocksMap[voxelBlock->_children[i]]->_voxelOperations = voxelBlock->_voxelOperations;
+                    VoxelBlock* child = _voxelBlocksMap[voxelBlock->_children[i]];
+
+                    iAABoxI box;
+                    box._halfWidths.set(halfVoxelBlockSize, halfVoxelBlockSize, halfVoxelBlockSize);
+                    box._center = child->_positionInLOD * VoxelTerrain::_voxelBlockSize;
+                    box._center *= lodFactor;
+                    box._center._x += halfVoxelBlockSize;
+                    box._center._y += halfVoxelBlockSize;
+                    box._center._z += halfVoxelBlockSize;
+
+                    iAABoxI opbox;
+                    for (auto op : voxelBlock->_voxelOperations)
+                    {
+                        op->getBoundings(opbox);
+                        if (iIntersection::intersects(opbox, box))
+                        {
+                            child->_voxelOperations.push_back(op);
+                        }
+                    }
                 }
             }
 
@@ -933,8 +975,8 @@ void VoxelTerrain::update(VoxelBlock* voxelBlock, iaVector3I observerPosition)
         if (voxelBlock->_dirty && voxelBlock->_lod != _lowestLOD)
         {
             iNodeModel* modelNode = static_cast<iNodeModel*>(iNodeFactory::getInstance().getNode(voxelBlock->_modelNodeIDCurrent));
-            if (modelNode != nullptr &&
-                modelNode->isReady())
+            if (modelNode == nullptr || (modelNode != nullptr &&
+                modelNode->isReady()))
             {
                 voxelBlock->_transformNodeIDQueued = iNode::INVALID_NODE_ID;
                 voxelBlock->_state = Stage::GeneratingMesh;

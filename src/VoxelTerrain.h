@@ -63,7 +63,7 @@ public:
     
     more than 10 might not work
     */
-    static const uint32 _lowestLOD = 2;
+    static const uint32 _lowestLOD = 10;
 
     /*! voxel block discovery distance
     */
