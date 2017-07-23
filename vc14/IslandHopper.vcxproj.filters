@@ -4,9 +4,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{2a13e08f-281c-4d2a-b742-0903e55efd71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Terrain">
-      <UniqueIdentifier>{20d1029d-3f2e-4e15-8c17-6b26fbca0ae5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Entities">
       <UniqueIdentifier>{bd42fb1d-ae84-402b-a6aa-76de420a39b0}</UniqueIdentifier>
     </Filter>
@@ -17,12 +14,6 @@
     </ClCompile>
     <ClCompile Include="..\src\IslandHopper.cpp">
       <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\TaskGenerateVoxels.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\VoxelTerrainMeshGenerator.cpp">
-      <Filter>src\Terrain</Filter>
     </ClCompile>
     <ClCompile Include="..\src\BossDestroyed.cpp">
       <Filter>src\Entities</Filter>
@@ -54,9 +45,6 @@
     <ClCompile Include="..\src\Player.cpp">
       <Filter>src\Entities</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\VoxelTerrain.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Granade.cpp">
       <Filter>src\Entities</Filter>
     </ClCompile>
@@ -69,22 +57,10 @@
     <ClCompile Include="..\src\Turret.cpp">
       <Filter>src\Entities</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\TaskVoxelTerrain.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\VoxelOperationBox.cpp">
-      <Filter>src\Terrain</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\IslandHopper.h">
       <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TaskGenerateVoxels.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\VoxelTerrainMeshGenerator.h">
-      <Filter>src\Terrain</Filter>
     </ClInclude>
     <ClInclude Include="..\src\BossDestroyed.h">
       <Filter>src\Entities</Filter>
@@ -116,12 +92,6 @@
     <ClInclude Include="..\src\Player.h">
       <Filter>src\Entities</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\VoxelTerrain.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\VoxelBlock.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Granade.h">
       <Filter>src\Entities</Filter>
     </ClInclude>
@@ -133,15 +103,6 @@
     </ClInclude>
     <ClInclude Include="..\src\Turret.h">
       <Filter>src\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\TaskVoxelTerrain.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\VoxelOperation.h">
-      <Filter>src\Terrain</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\VoxelOperationBox.h">
-      <Filter>src\Terrain</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

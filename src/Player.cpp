@@ -18,6 +18,7 @@
 #include <iMaterialResourceFactory.h>
 #include <iNodeEmitter.h>
 #include <iTimer.h>
+#include <iVoxelTerrain.h>
 using namespace Igor;
 
 #include <iaConsole.h>
@@ -27,7 +28,6 @@ using namespace IgorAux;
 #include "Bullet.h"
 #include "Granade.h"
 #include "EntityManager.h"
-#include "VoxelTerrain.h"
 #include "DigEffect.h"
 #include "MuzzleFlash.h"
 

@@ -10,12 +10,11 @@
 #include <iStatisticsVisualizer.h>
 #include <iPerlinNoise.h>
 #include <iLSystem.h>
+#include <iVoxelTerrain.h>
 using namespace Igor;
 
 #include <iaMatrix.h>
 using namespace IgorAux;
-
-#include "VoxelTerrain.h"
 
 namespace Igor
 {
@@ -80,7 +79,7 @@ private:
     iNodeTransform* _lightRotate = nullptr;
     iNodeLight* _lightNode = nullptr;
 
-    VoxelTerrain* _voxelTerrain = nullptr;
+    iVoxelTerrain* _voxelTerrain = nullptr;
 
     iPixmap* _heightMap = nullptr;
     shared_ptr<iTexture> _minimap;
@@ -95,7 +94,7 @@ private:
 
 	vector<iSpheref> _holes;
 
-    void generateVoxelData(VoxelBlockInfo* voxelBlockInfo);
+    void generateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);
     void onKeyReleased(iKeyCode key);

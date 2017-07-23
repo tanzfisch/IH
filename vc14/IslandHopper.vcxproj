@@ -34,15 +34,10 @@
     <ClCompile Include="..\src\MuzzleFlash.cpp" />
     <ClCompile Include="..\src\Player.cpp" />
     <ClCompile Include="..\src\StaticEnemy.cpp" />
-    <ClCompile Include="..\src\TaskGenerateVoxels.cpp" />
-    <ClCompile Include="..\src\TaskVoxelTerrain.cpp" />
     <ClCompile Include="..\src\Turret.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\src\VoxelOperationBox.cpp" />
-    <ClCompile Include="..\src\VoxelTerrain.cpp" />
-    <ClCompile Include="..\src\VoxelTerrainMeshGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\BossDestroyed.h" />
@@ -59,17 +54,10 @@
     <ClInclude Include="..\src\MuzzleFlash.h" />
     <ClInclude Include="..\src\Player.h" />
     <ClInclude Include="..\src\StaticEnemy.h" />
-    <ClInclude Include="..\src\TaskGenerateVoxels.h" />
-    <ClInclude Include="..\src\TaskVoxelTerrain.h" />
     <ClInclude Include="..\src\Turret.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\src\VoxelBlock.h" />
-    <ClInclude Include="..\src\VoxelOperation.h" />
-    <ClInclude Include="..\src\VoxelOperationBox.h" />
-    <ClInclude Include="..\src\VoxelTerrain.h" />
-    <ClInclude Include="..\src\VoxelTerrainMeshGenerator.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A22023DF-A529-488E-97A7-6B40F2CB5292}</ProjectGuid>

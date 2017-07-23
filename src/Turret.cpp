@@ -7,6 +7,7 @@
 #include <iScene.h>
 #include <iPhysics.h>
 #include <iTimer.h>
+#include <iVoxelTerrain.h>
 using namespace Igor;
 
 #include <iaString.h>
@@ -16,7 +17,6 @@ using namespace IgorAux;
 #include "EntityManager.h"
 #include "Bullet.h"
 #include "Granade.h"
-#include "VoxelTerrain.h"
 
 Turret::Turret(iScene* scene, iNodeTransform* parent, Fraction fraction, uint64 playerID)
     : Entity(fraction, EntityType::None)
