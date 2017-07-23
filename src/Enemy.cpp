@@ -11,6 +11,7 @@
 #include <iPhysicsJoint.h>
 #include <iPhysicsCollision.h>
 #include <iTimer.h>
+#include <iVoxelTerrain.h>
 using namespace Igor;
 
 #include <iaString.h>
@@ -20,7 +21,6 @@ using namespace IgorAux;
 #include "EntityManager.h"
 #include "Turret.h"
 #include "EnemyDestroyed.h"
-#include "VoxelTerrain.h"
 
 Enemy::Enemy(iScene* scene, const iaMatrixd& matrix, uint64 playerID)
     : Entity(Fraction::Red, EntityType::Vehicle)

@@ -446,7 +446,7 @@ __IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const ia
 	return 1.0 / ((checkPos._x - metaballPos._x) * (checkPos._x - metaballPos._x) + (checkPos._y - metaballPos._y) * (checkPos._y - metaballPos._y) + (checkPos._z - metaballPos._z) * (checkPos._z - metaballPos._z));
 }
 
-void IslandHopper::generateVoxelData(VoxelBlockInfo* voxelBlockInfo)
+void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 {
 	uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
 	iVoxelData* voxelData = voxelBlockInfo->_voxelData;
@@ -756,7 +756,7 @@ void IslandHopper::onKeyReleased(iKeyCode key)
                     {
                         iAABoxI box;
                         iaConvert::convert(player->getSphere()._center, box._center);
-                        box._halfWidths.set(5, 5, 5);
+                        box._halfWidths.set(10, 10, 10);
                         _voxelTerrain->modify(box, 0);
                     }
                 }
@@ -915,7 +915,7 @@ void IslandHopper::initVoxelData()
 	_holes.push_back(iSpheref(iaVector3f(706380, 1230, 553610), 0.5));
 	_holes.push_back(iSpheref(iaVector3f(706370, 1220, 553600), 0.7));
 
-	_voxelTerrain = new VoxelTerrain(GenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData));
+	_voxelTerrain = new iVoxelTerrain(iGenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData));
 
 	_voxelTerrain->setScene(_scene);
 	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
