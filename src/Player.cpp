@@ -31,7 +31,7 @@ using namespace IgorAux;
 #include "DigEffect.h"
 #include "MuzzleFlash.h"
 
-Player::Player(iScene* scene, const iaMatrixd& matrix)
+Player::Player(iScene* scene, iView& view, const iaMatrixd& matrix)
     : Entity(Fraction::Blue, EntityType::Vehicle)
 {
     _scene = scene;
@@ -118,15 +118,15 @@ Player::Player(iScene* scene, const iaMatrixd& matrix)
     transformNode->insertNode(transformCam);
     transformNode->insertNode(physicsNode);
     camera->insertNode(lodTrigger);
-    _scene->getRoot()->insertNode(transformNode);
-
-    camera->makeCurrent();
+    _scene->getRoot()->insertNode(transformNode);    
 
     _materialSolid = iMaterialResourceFactory::getInstance().createMaterial();
     iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
     iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
     _primaryWeaponTime = iTimer::getInstance().getTime();
+
+    //view.setCurrentCamera(_cameraNodeID);
 }
 
 Player::~Player()
