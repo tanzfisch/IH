@@ -36,7 +36,7 @@ Turret::Turret(iScene* scene, iNodeTransform* parent, Fraction fraction, uint64 
     _parentNodeID = parent->getID();
     parent->insertNode(turret);
 
-    _time = iTimer::getInstance().getTime();
+    _time = iTimer::getInstance().getApplicationTime();
 }
 
 Turret::~Turret()

@@ -124,7 +124,7 @@ Player::Player(iScene* scene, iView& view, const iaMatrixd& matrix)
     iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
     iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
-    _primaryWeaponTime = iTimer::getInstance().getTime();
+    _primaryWeaponTime = iTimer::getInstance().getApplicationTime();
 
     //view.setCurrentCamera(_cameraNodeID);
 }
@@ -282,7 +282,7 @@ void Player::shootSecondaryWeapon(iView& view, const iaVector3d& screenCoordinat
 
 void Player::shootPrimaryWeapon(iView& view, const iaVector3d& screenCoordinates)
 {
-    float64 currentTime = iTimer::getInstance().getTime();
+    float64 currentTime = iTimer::getInstance().getApplicationTime();
     if (currentTime > _primaryWeaponTime + 100)
     {
         iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
@@ -369,7 +369,7 @@ void Player::drawReticle(const iWindow& window)
 
     float32 scale = 0.001 * window.getClientWidth();
 
-    iMaterialResourceFactory::getInstance().setMaterial(_materialSolid);
+    iRenderer::getInstance().setMaterial(_materialSolid);
     iRenderer::getInstance().setLineWidth(1 * scale);
 
     iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));

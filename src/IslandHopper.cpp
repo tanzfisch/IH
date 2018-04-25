@@ -162,10 +162,11 @@ void IslandHopper::initScene()
 	skyBoxNode->setBoxSize(1000);
 	// create a sky box material
 	_materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
-	iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterialGroup(_materialSkyBox)->setOrder(10);
-	iMaterialResourceFactory::getInstance().getMaterialGroup(_materialSkyBox)->getMaterial()->setName("SkyBox");
+    auto material = iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox);
+    material->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+    material->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
+    material->setOrder(iMaterial::RENDER_ORDER_MIN);
+    material->setName("SkyBox");
 	// and set the sky box material
 	skyBoxNode->setMaterial(_materialSkyBox);
 	// insert sky box to scene
@@ -191,10 +192,11 @@ void IslandHopper::initScene()
 
 		// create a water material
 		uint64 materialWater = iMaterialResourceFactory::getInstance().createMaterial();
-		iMaterialResourceFactory::getInstance().getMaterialGroup(materialWater)->setOrder(300 - i);
-		iMaterialResourceFactory::getInstance().getMaterial(materialWater)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-		iMaterialResourceFactory::getInstance().getMaterial(materialWater)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-		iMaterialResourceFactory::getInstance().getMaterialGroup(materialWater)->getMaterial()->setName("WaterPlane");
+        material = iMaterialResourceFactory::getInstance().getMaterial(materialWater);
+        material->setOrder(iMaterial::RENDER_ORDER_MAX - i);
+        material->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+        material->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+        material->setName("WaterPlane");
 
 		// and set the water material
 		waterNode->setMaterial(materialWater);
@@ -826,13 +828,13 @@ void IslandHopper::onMouseWheel(int d)
 	}
 }
 
-void IslandHopper::onMouseMoved(int32 x1, int32 y1, int32 x2, int32 y2, iWindow* _window)
+void IslandHopper::onMouseMoved(const iaVector2i& from, const iaVector2i& to, iWindow* _window)
 {
 	if (_activeControls)
 	{
 		if (iMouse::getInstance().getRightButton())
 		{
-			_mouseDelta.set(x2 - x1, y2 - y1);
+			_mouseDelta.set(to._x - from._x, to._y - from._y);
 			iMouse::getInstance().setCenter(true);
 		}
 		else
@@ -945,7 +947,7 @@ void IslandHopper::onHandle()
 {
 	if (_loading)
 	{
-		if (iTimer::getInstance().getTimerTime() > 5000 &&
+		if (iTimer::getInstance().getApplicationTime() > 5000 &&
 			iTaskManager::getInstance().getQueuedRegularTaskCount() < 4)
 		{
 			_loading = false;
@@ -992,7 +994,7 @@ void IslandHopper::onRenderOrtho()
 	iRenderer::getInstance().setViewMatrix(matrix);
 	matrix.translate(0, 0, -30);
 	iRenderer::getInstance().setModelMatrix(matrix);
-	iMaterialResourceFactory::getInstance().setMaterial(_materialWithTextureAndBlending);
+    iRenderer::getInstance().setMaterial(_materialWithTextureAndBlending);
 	iRenderer::getInstance().setFont(_font);
 
 	if (_loading)
@@ -1039,7 +1041,7 @@ void IslandHopper::onRenderOrtho()
 				iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 				iRenderer::getInstance().drawTexture(0, 0, size, size, _minimap);
 
-				iMaterialResourceFactory::getInstance().setMaterial(_materialSolid);
+                iRenderer::getInstance().setMaterial(_materialSolid);
 				iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
 				iRenderer::getInstance().drawLine(0, 0, size, 0);
 				iRenderer::getInstance().drawLine(0, 0, 0, size);
