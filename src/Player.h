@@ -21,7 +21,7 @@ class Player : public Entity
 
 public:
 
-    Player(iScene* scene, iView& view, const iaMatrixd& matrix);
+    Player(iScene* scene, iView* view, const iaMatrixd& matrix);
     virtual ~Player();
 
     void startUp();

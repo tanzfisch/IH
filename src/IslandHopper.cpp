@@ -136,7 +136,6 @@ void IslandHopper::initScene()
 	_scene = iSceneFactory::getInstance().createScene();
 	_view.setScene(_scene);
 
-	// 1
 	_lightTranslate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
 	_lightTranslate->translate(100, 100, 100);
 	_lightRotate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
@@ -152,14 +151,13 @@ void IslandHopper::initScene()
 	// reate a sky box and add it to scene
 	iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
 	skyBoxNode->setTextures(
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/front.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/back.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/left.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/right.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/top.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
-		iTextureResourceFactory::getInstance().loadFile("skybox_day/bottom.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp));
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/front.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/back.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/left.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/right.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/top.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
+		iTextureResourceFactory::getInstance().requestFile("skybox_day/bottom.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp));
 	skyBoxNode->setTextureScale(1);
-	skyBoxNode->setBoxSize(1000);
 	// create a sky box material
 	_materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
     auto material = iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox);
@@ -213,7 +211,7 @@ void IslandHopper::initPlayer()
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
 	matrix.translate(759846, 4600, 381272);
-	Player* player = new Player(_scene, _view, matrix);
+	Player* player = new Player(_scene, &_view, matrix);
 	_playerID = player->getID();
 }
 
@@ -389,8 +387,6 @@ void IslandHopper::initPlayer()
 
 void IslandHopper::init()
 {
-	con(" -- OpenGL 3D Test --" << endl);
-
 	_perlinNoise.generateBase(313373);
 
 	initViews();

@@ -31,7 +31,7 @@ using namespace IgorAux;
 #include "DigEffect.h"
 #include "MuzzleFlash.h"
 
-Player::Player(iScene* scene, iView& view, const iaMatrixd& matrix)
+Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
     : Entity(Fraction::Blue, EntityType::Vehicle)
 {
     _scene = scene;
@@ -126,7 +126,7 @@ Player::Player(iScene* scene, iView& view, const iaMatrixd& matrix)
 
     _primaryWeaponTime = iTimer::getInstance().getApplicationTime();
 
-    //view.setCurrentCamera(_cameraNodeID);
+    view->setCurrentCamera(_cameraNodeID);
 }
 
 Player::~Player()
