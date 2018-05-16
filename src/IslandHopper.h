@@ -92,8 +92,6 @@ private:
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
 
-	vector<iSpheref> _holes;
-
     void generateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);

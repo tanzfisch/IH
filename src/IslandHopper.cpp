@@ -52,8 +52,8 @@ using namespace IgorAux;
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
-//#define SIN_WAVE_TERRAIN
-#define USE_WATER
+#define SIN_WAVE_TERRAIN
+// #define USE_WATER
 
 const float64 mapScaleXZ = 0.003693182;
 const float64 highestMontain = 3742;
@@ -210,180 +210,10 @@ void IslandHopper::initPlayer()
 	//matrix.translate(730000, 4800, 530000);
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
-	matrix.translate(759846, 4600, 381272);
+	matrix.translate(759846, 100, 381272);
 	Player* player = new Player(_scene, &_view, matrix);
 	_playerID = player->getID();
 }
-
-/*void IslandHopper::onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max)
-{
-	iaVector3I pos;
-	iaVector3I diff;
-	diff = max;
-	diff -= min;
-
-	srand(min._x + min._y + min._z);
-
-	iaMatrixf enemyMatrix;
-	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-
-	int count = 0;
-
-	iaVector3I center(10000, 9400, 10000 - 200);
-
-	for (int i = 0; i < 300; ++i)
-	{
-		pos.set(rand() % diff._x, rand() % diff._y, rand() % diff._z);
-		pos += min;
-
-		if (center.distance(pos) < 60)
-		{
-			bool addEnemy = true;
-
-			for (int x = -2; x < 3; x++)
-			{
-				for (int y = -2; y < 3; y++)
-				{
-					for (int z = -2; z < 3; z++)
-					{
-						if (VoxelTerrain::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
-						{
-							addEnemy = false;
-							break;
-						}
-					}
-				}
-			}
-
-			if (addEnemy)
-			{
-				enemyMatrix._pos.set(pos._x, pos._y, pos._z);
-				Enemy* enemy = new Enemy(_scene, enemyMatrix, _playerID);
-				count++;
-			}
-
-			if (count >= 20)
-			{
-				break;
-			}
-		}
-	}/**/
-
-	/*count = 0;
-
-	for (int i = 0; i < 800; ++i)
-	{
-		pos.set(rand() % diff._x, rand() % diff._y, rand() % diff._z);
-		pos += min;
-
-		if (center.distance(pos) < 60)
-		{
-			bool addEnemy = true;
-
-			for (int x = -1; x < 2; x++)
-			{
-				for (int y = -1; y < 2; y++)
-				{
-					for (int z = -1; z < 2; z++)
-					{
-						if (VoxelTerrain::getInstance().getVoxelDensity(iaVector3I(pos._x + x, pos._y + y, pos._z + z)) != 0)
-						{
-							addEnemy = false;
-							break;
-						}
-					}
-				}
-			}
-
-			if (addEnemy)
-			{
-				iaVector3f from(pos._x, pos._y, pos._z);
-
-				iaMatrixf matrix;
-
-				switch (rand() % 6)
-				{
-				case 0:
-					// nothing
-					break;
-
-				case 1:
-					matrix.rotate(M_PI * 0.5, iaAxis::Z);
-					break;
-
-				case 2:
-					matrix.rotate(M_PI * -0.5, iaAxis::Z);
-					break;
-
-				case 3:
-					matrix.rotate(M_PI, iaAxis::Z);
-					break;
-
-				case 4:
-					matrix.rotate(M_PI * 0.5, iaAxis::X);
-					break;
-
-				case 5:
-					matrix.rotate(M_PI * -0.5, iaAxis::X);
-					break;
-				}
-
-				iaVector3f to = from + matrix._top * -200;
-
-				iaVector3I right(matrix._right._x, matrix._right._y, matrix._right._z);
-				iaVector3I top(matrix._top._x, matrix._top._y, matrix._top._z);
-				iaVector3I depth(matrix._depth._x, matrix._depth._y, matrix._depth._z);
-				iaVector3I outside, inside;
-
-				VoxelTerrain::getInstance().castRay(iaVector3I(from._x, from._y, from._z), iaVector3I(to._x, to._y, to._z), outside, inside);
-
-				int rating = 0;
-
-				if (outside.distance(pos) < 190)
-				{
-					iSphered sphere(iaVector3d(outside._x, outside._y, outside._z), 5);
-					vector<uint64> result;
-					EntityManager::getInstance().getEntities(sphere, result);
-					if (result.empty())
-					{
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside + right) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside - right) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside + right + depth) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside - right + depth) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside + right - depth) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside - right - depth) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside + depth) != 0) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(inside - depth) != 0) rating++;
-
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside + right) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside - right) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside + right + depth) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside - right + depth) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside + right - depth) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside - right - depth) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside + depth) < 50) rating++;
-						if (VoxelTerrain::getInstance().getVoxelDensity(outside - depth) < 50) rating++;
-
-						if (rating > 10)
-						{
-							enemyMatrix.identity();
-							enemyMatrix = matrix;
-							enemyMatrix._pos.set(outside._x, outside._y, outside._z);
-							StaticEnemy* enemy = new StaticEnemy(_scene, enemyMatrix, _playerID);
-
-							count++;
-						}
-					}
-				}
-			}
-
-			if (count >= 100)
-			{
-				break;
-			}
-		}
-	}
-}*/
 
 void IslandHopper::init()
 {
@@ -439,6 +269,18 @@ void IslandHopper::init()
     iPhysics::getInstance().start();
 }
 
+void IslandHopper::initVoxelData()
+{
+    _voxelTerrain = new iVoxelTerrain(iGenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData), 11, 8);
+
+    _voxelTerrain->setScene(_scene);
+    Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
+    if (player != nullptr)
+    {
+        _voxelTerrain->setLODTrigger(player->getLODTriggerID());
+    }
+}
+
 __IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const iaVector3f& checkPos)
 {
 	return 1.0 / ((checkPos._x - metaballPos._x) * (checkPos._x - metaballPos._x) + (checkPos._y - metaballPos._y) * (checkPos._y - metaballPos._y) + (checkPos._z - metaballPos._z) * (checkPos._z - metaballPos._z));
@@ -466,7 +308,7 @@ void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 			for (int64 z = 0; z < voxelData->getDepth(); ++z)
 			{
 				iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
-
+#ifndef SIN_WAVE_TERRAIN
 				iaColor4f color;
 				_heightMap->getPixelBiLinear(fmod(pos._x * mapScaleXZ, _heightMap->getWidth()), fmod(pos._z * mapScaleXZ, _heightMap->getHeight()), color);
 				float64 height = color._r * dataHeightScale;
@@ -493,8 +335,8 @@ void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 
 				height += waterOffset;
 
-#ifdef SIN_WAVE_TERRAIN
-				height = 20 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 5.0;
+#else 
+                float64 height = 100 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 0.0;
 #endif
 
 				float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
@@ -781,7 +623,7 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 			    {
 				    _wireframe = !_wireframe;
 
-				    uint64 terrainMaterial = _voxelTerrain->getMaterial();
+				    uint64 terrainMaterial = _voxelTerrain->getMaterialID();
 
 				    if (_wireframe)
 				    {
@@ -901,25 +743,6 @@ void IslandHopper::deinitVoxelData()
 	{
 		delete _voxelTerrain;
 		_voxelTerrain = nullptr;
-	}
-}
-
-void IslandHopper::initVoxelData()
-{
-	_holes.push_back(iSpheref(iaVector3f(706378, 1245, 553640), 0.6));
-	_holes.push_back(iSpheref(iaVector3f(706378, 1235, 553635), 0.5));
-	_holes.push_back(iSpheref(iaVector3f(706380, 1230, 553630), 0.4));
-	_holes.push_back(iSpheref(iaVector3f(706390, 1220, 553620), 0.6));
-	_holes.push_back(iSpheref(iaVector3f(706380, 1230, 553610), 0.5));
-	_holes.push_back(iSpheref(iaVector3f(706370, 1220, 553600), 0.7));
-
-	_voxelTerrain = new iVoxelTerrain(iGenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData));
-
-	_voxelTerrain->setScene(_scene);
-	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-	if (player != nullptr)
-	{
-		_voxelTerrain->setLODTrigger(player->getLODTriggerID());
 	}
 }
 
