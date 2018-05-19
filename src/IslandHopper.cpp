@@ -268,7 +268,25 @@ void IslandHopper::initVoxelData()
     _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData), 
         iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated));
 
+    iTargetMaterial* targetMaterial = _voxelTerrain->getTargetMaterial();
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 1);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+    targetMaterial->setAmbient(iaColor3f(0.3f, 0.3f, 0.3f));
+    targetMaterial->setDiffuse(iaColor3f(0.8f, 0.8f, 0.8f));
+    targetMaterial->setSpecular(iaColor3f(1.0f, 1.0f, 1.0f));
+    targetMaterial->setEmissive(iaColor3f(0.0f, 0.0f, 0.0f));
+    targetMaterial->setShininess(1000.0f);
+
+    uint64 materialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
+    auto material = iMaterialResourceFactory::getInstance().getMaterial(materialID);
+    material->addShaderSource("terrain.vert", iShaderObjectType::Vertex);
+    material->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
+    material->compileShader();
+
+    _voxelTerrain->setMaterialID(materialID);
     _voxelTerrain->setScene(_scene);
+
     Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
     if (player != nullptr)
     {
