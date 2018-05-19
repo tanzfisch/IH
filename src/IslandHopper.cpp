@@ -265,8 +265,11 @@ void IslandHopper::init()
 
 void IslandHopper::initVoxelData()
 {
+    // it's a flat landscape so we can limit the discovery in the vertical axis
+    iaVector3I maxDiscovery(100000, 3, 100000);
+
     _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData), 
-        iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated));
+        iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
 
     iTargetMaterial* targetMaterial = _voxelTerrain->getTargetMaterial();
     targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
