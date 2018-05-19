@@ -52,13 +52,10 @@ using namespace IgorAux;
 #include "StaticEnemy.h"
 #include "EntityManager.h"
 
-#define SIN_WAVE_TERRAIN
-// #define USE_WATER
+// #define SIN_WAVE_TERRAIN
+#define USE_WATER
 
-const float64 mapScaleXZ = 0.003693182;
-const float64 highestMontain = 3742;
-const float64 dataHeightScale = highestMontain;
-const float64 waterOffset = 1000;
+const float64 waterOffset = 10000;
 
 IslandHopper::IslandHopper()
 {
@@ -210,7 +207,7 @@ void IslandHopper::initPlayer()
 	//matrix.translate(730000, 4800, 530000);
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
-	matrix.translate(759846, 100, 381272);
+	matrix.translate(759846, 10100, 381272);
 	Player* player = new Player(_scene, &_view, matrix);
 	_playerID = player->getID();
 }
@@ -256,9 +253,6 @@ void IslandHopper::init()
 	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
 	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
 
-	_heightMap = iTextureResourceFactory::getInstance().loadFileAsPixmap("NewZealand.png");
-	_minimap = iTextureResourceFactory::getInstance().loadFile("NewZealandMini.png", iResourceCacheMode::Keep, iTextureBuildMode::Normal);
-
 	// launch resource handlers
 	_taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
 	_taskFlushTextures = iTaskManager::getInstance().addTask(new iTaskFlushTextures(&_window));
@@ -271,7 +265,8 @@ void IslandHopper::init()
 
 void IslandHopper::initVoxelData()
 {
-    _voxelTerrain = new iVoxelTerrain(iGenerateVoxelsDelegate(this, &IslandHopper::generateVoxelData), 11, 8);
+    _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData), 
+        iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated));
 
     _voxelTerrain->setScene(_scene);
     Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
@@ -286,7 +281,11 @@ __IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const ia
 	return 1.0 / ((checkPos._x - metaballPos._x) * (checkPos._x - metaballPos._x) + (checkPos._y - metaballPos._y) * (checkPos._y - metaballPos._y) + (checkPos._z - metaballPos._z) * (checkPos._z - metaballPos._z));
 }
 
-void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
+void IslandHopper::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
+{
+}
+
+void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 {
 	uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
 	iVoxelData* voxelData = voxelBlockInfo->_voxelData;
@@ -309,34 +308,10 @@ void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 			{
 				iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
 #ifndef SIN_WAVE_TERRAIN
-				iaColor4f color;
-				_heightMap->getPixelBiLinear(fmod(pos._x * mapScaleXZ, _heightMap->getWidth()), fmod(pos._z * mapScaleXZ, _heightMap->getHeight()), color);
-				float64 height = color._r * dataHeightScale;
-
-				height -= 100;
-
-				if (height < 0)
-				{
-					height *= 2;
-				}
-
-				height += 100;
-
-				if (height < 0)
-				{
-					height *= 10;
-				}
-
-				if (height >= -50)
-				{
-					float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.0025, 0, pos._z * 0.0025), 8, 0.5) - 0.5;
-					height += noise * 300;
-				}
-
-				height += waterOffset;
-
+                // TODO
+                float64 height = 10000 + (sin(pos._x * 0.0025) + sin(pos._z * 0.0025)) * 200.0;
 #else 
-                float64 height = 100 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 0.0;
+                float64 height = 10000 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 20.0;
 #endif
 
 				float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
@@ -413,8 +388,6 @@ void IslandHopper::generateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 
 void IslandHopper::deinit()
 {
-	iModelResourceFactory::getInstance().unregisterModelDataIO("pg");
-
 	unregisterHandles();
 
 	iTaskManager::getInstance().abortTask(_taskFlushModels);
@@ -615,10 +588,6 @@ void IslandHopper::onKeyReleased(iKeyCode key)
             }
             break;
 
-            case iKeyCode::F11:
-                _showMinimap = !_showMinimap;
-                break;
-
 			case iKeyCode::F12:
 			    {
 				    _wireframe = !_wireframe;
@@ -706,25 +675,6 @@ void IslandHopper::onMouseDown(iKeyCode key)
 
 void IslandHopper::onMouseUp(iKeyCode key)
 {
-	Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-	if (player != nullptr)
-	{
-		if (iKeyboard::getInstance().getKey(iKeyCode::LShift) && key == iKeyCode::MouseLeft)
-		{
-			iaVector2i pos = iMouse::getInstance().getPos();
-
-			pos._x -= 10;
-			pos._y -= 10;
-
-			float64 miniMapSize = 300;
-
-			if (pos._x <= miniMapSize && pos._y <= miniMapSize)
-			{
-				float64 height = player->getSphere()._center._y;
-				player->setPosition(iaVector3d(static_cast<float64>(pos._x) / mapScaleXZ / miniMapSize * 4096, height, static_cast<float64>(pos._y) / mapScaleXZ / miniMapSize * 4096));
-			}
-		}
-	}
 }
 
 void IslandHopper::onWindowClosed()
@@ -854,27 +804,6 @@ void IslandHopper::onRenderOrtho()
 			iaMatrixd mapMatrix;
 			mapMatrix.translate(10, 10, -30);
 			iRenderer::getInstance().setModelMatrix(mapMatrix);
-
-			if (_showMinimap)
-			{
-				iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
-				iRenderer::getInstance().drawTexture(0, 0, size, size, _minimap);
-
-                iRenderer::getInstance().setMaterial(_materialSolid);
-				iRenderer::getInstance().setColor(iaColor4f(0, 0, 0, 1));
-				iRenderer::getInstance().drawLine(0, 0, size, 0);
-				iRenderer::getInstance().drawLine(0, 0, 0, size);
-				iRenderer::getInstance().drawLine(size, 0, size, size);
-				iRenderer::getInstance().drawLine(0, size, size, size);
-
-				iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-				float64 playerPosZ = player->getSphere()._center._z * mapScaleXZ * size / 4096;
-				float64 playerPosX = player->getSphere()._center._x * mapScaleXZ * size / 4096;
-				iRenderer::getInstance().drawLine(0, playerPosZ, size, playerPosZ);
-				iRenderer::getInstance().drawLine(playerPosX, 0, playerPosX, size);
-
-				iRenderer::getInstance().setModelMatrix(matrix);
-			}
 
 			player->drawReticle(_window);
 		}

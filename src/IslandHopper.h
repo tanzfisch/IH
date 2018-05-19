@@ -56,7 +56,6 @@ private:
     bool _loading = true;
     bool _activeControls = false;
 	bool _wireframe = false;
-	bool _showMinimap = false;
 
     iWindow _window;
     iView _view;
@@ -81,9 +80,6 @@ private:
 
     iVoxelTerrain* _voxelTerrain = nullptr;
 
-    iPixmap* _heightMap = nullptr;
-    shared_ptr<iTexture> _minimap;
-    
 	uint64 _materialWithTextureAndBlending = 0;
 	uint64 _materialSolid = 0;
 	uint64 _octreeMaterial = 0;
@@ -92,7 +88,8 @@ private:
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
 
-    void generateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
+    void onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo);
+    void onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);
     void onKeyReleased(iKeyCode key);
@@ -101,9 +98,7 @@ private:
     void onWindowResized(int32 clientWidth, int32 clientHeight);
 
     void onMouseMoved(const iaVector2i& from, const iaVector2i& to, iWindow* _window);
-
-    //void onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max);
-    
+        
     void onMouseUp(iKeyCode key);
     void onMouseDown(iKeyCode key);
     void onMouseWheel(int d);
