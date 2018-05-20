@@ -55,7 +55,7 @@ using namespace IgorAux;
 // #define SIN_WAVE_TERRAIN
 #define USE_WATER
 
-const float64 waterOffset = 10000;
+const float64 waterOffset = 5000;
 
 IslandHopper::IslandHopper()
 {
@@ -102,7 +102,7 @@ void IslandHopper::initViews()
 {
 	_view.setClearColor(iaColor4f(0.0f, 0.0f, 0.0f, 1.0f));
 	_view.setPerspective(60);
-	_view.setClipPlanes(1.0f, 60000.f);
+	_view.setClipPlanes(1.0f, 80000.f);
 	_view.registerRenderDelegate(RenderDelegate(this, &IslandHopper::onRender));
 	_view.setName("3d");
 
@@ -328,11 +328,46 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 			for (int64 z = 0; z < voxelData->getDepth(); ++z)
 			{
 				iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
-#ifndef SIN_WAVE_TERRAIN
-                // TODO
-                float64 height = 10000 + (sin(pos._x * 0.0025) + sin(pos._z * 0.0025)) * 200.0;
-#else 
-                float64 height = 10000 + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 20.0;
+                float64 height;
+
+#ifdef SIN_WAVE_TERRAIN
+                height = waterOffset + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
+#else
+                float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
+                contour -= 0.7;
+
+                if (contour > 0.0)
+                {
+                    contour *= 3;
+                }
+
+                float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
+                noise += contour;
+
+                if (noise < 0.0)
+                {
+                    noise *= 0.5;
+                }
+                else
+                {
+                    noise *= 2.0;
+                }
+
+                noise += 0.0025;
+
+                if (noise < 0.0)
+                {
+                    noise *= 2.0;
+                }
+
+                noise += 0.0025;
+
+                height = (noise * 2000) + waterOffset + 200;
+
+                if (height < waterOffset - 100)
+                {
+                    height = waterOffset - 100;
+                }
 #endif
 
 				float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
