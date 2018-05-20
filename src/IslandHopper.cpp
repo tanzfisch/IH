@@ -55,7 +55,7 @@ using namespace IgorAux;
 // #define SIN_WAVE_TERRAIN
 #define USE_WATER
 
-const float64 waterOffset = 5000;
+const float64 waterOffset = 10000;
 
 IslandHopper::IslandHopper()
 {
@@ -266,7 +266,7 @@ void IslandHopper::init()
 void IslandHopper::initVoxelData()
 {
     // it's a flat landscape so we can limit the discovery in the vertical axis
-    iaVector3I maxDiscovery(100000, 3, 100000);
+    iaVector3I maxDiscovery(1000000, 3, 1000000);
 
     _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData), 
         iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
