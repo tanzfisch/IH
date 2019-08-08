@@ -8,14 +8,16 @@ layout(location = 0) out vec4 out_color;
 uniform sampler2D igor_matTexture0;
 uniform sampler2D igor_matTexture1;
 uniform sampler2D igor_matTexture2;
+uniform sampler2D igor_matTexture3;
 
 uniform vec3 igor_eyePosition;
 
 uniform vec3 igor_matAmbient;
 uniform vec3 igor_matDiffuse;
 uniform vec3 igor_matSpecular;
-uniform float igor_matShininess;
 uniform vec3 igor_matEmissive;
+uniform float igor_matShininess;
+uniform float igor_matAlpha;
 
 uniform vec3 igor_lightOrientation;
 uniform vec3 igor_lightAmbient;
@@ -29,25 +31,19 @@ void main()
 	
 	vec3 texSelector = vec3(N.x*N.x, N.y*N.y, N.z*N.z);
 		
-	float scale = 0.1;
+	float scale = 0.01;
+	float detailScale = 0.1;
 	
-	vec3 diffuseTextureColor0;
+	vec3 diffuseTextureColor = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;	
+	diffuseTextureColor += texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
+	diffuseTextureColor += texture2D(igor_matTexture2, P.xy * scale).rgb * texSelector.z;
+	vec3 detailTextureColor = texture2D(igor_matTexture3, P.xz * detailScale).rgb * texSelector.y;
+	detailTextureColor += texture2D(igor_matTexture3, P.yz * detailScale).rgb * texSelector.x; 
+	detailTextureColor += texture2D(igor_matTexture3, P.xy * detailScale).rgb * texSelector.z;
 	
-	if(N.y > 0)
-	{
-		// top
-		diffuseTextureColor0 = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;
-	}
-	else 
-	{
-		// bottom
-		diffuseTextureColor0 = texture2D(igor_matTexture2, P.xz * scale).rgb * texSelector.y; 
-	}
-	
-	vec3 diffuseTextureColor1 = texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
-	vec3 diffuseTextureColor2 = texture2D(igor_matTexture1, P.xy * scale).rgb * texSelector.z;
-	
-	vec3 diffuseTextureColor = diffuseTextureColor0 + diffuseTextureColor1 + diffuseTextureColor2;
+	diffuseTextureColor *= 0.5;
+	detailTextureColor *= 0.5;
+	diffuseTextureColor += detailTextureColor;	
 	
 	vec3 emissive = igor_matEmissive;
 	
@@ -72,5 +68,5 @@ void main()
 	vec3 specular = igor_matSpecular * igor_lightSpecular * specularLightFactor;
 	
 	out_color.rgb = emissive + ambient + diffuse + specular;
-	out_color.a = 1;
+	out_color.a = igor_matAlpha;
 }

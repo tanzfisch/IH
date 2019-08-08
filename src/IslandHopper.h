@@ -7,7 +7,7 @@
 #include <iTimerHandle.h>
 #include <iModelResourceFactory.h>
 #include <iKeyboard.h>
-#include <iStatisticsVisualizer.h>
+#include <iProfilerVisualizer.h>
 #include <iPerlinNoise.h>
 #include <iLSystem.h>
 #include <iVoxelTerrain.h>
@@ -49,7 +49,7 @@ private:
 
     /*! visualize statistics
     */
-    iStatisticsVisualizer _statisticsVisualizer;
+	iProfilerVisualizer _profiler;
 
 	iPerlinNoise _perlinNoise;
 
@@ -81,7 +81,6 @@ private:
     iVoxelTerrain* _voxelTerrain = nullptr;
 
 	uint64 _materialWithTextureAndBlending = 0;
-	uint64 _materialSolid = 0;
 	uint64 _octreeMaterial = 0;
 	uint64 _materialSkyBox = 0;
 

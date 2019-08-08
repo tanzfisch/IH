@@ -19,79 +19,51 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\BossDestroyed.cpp" />
-    <ClCompile Include="..\src\BossEnemy.cpp" />
-    <ClCompile Include="..\src\Bullet.cpp" />
-    <ClCompile Include="..\src\BulletHit.cpp" />
-    <ClCompile Include="..\src\DigEffect.cpp" />
-    <ClCompile Include="..\src\Enemy.cpp" />
-    <ClCompile Include="..\src\EnemyDestroyed.cpp" />
     <ClCompile Include="..\src\Entity.cpp" />
     <ClCompile Include="..\src\EntityManager.cpp" />
-    <ClCompile Include="..\src\Granade.cpp" />
     <ClCompile Include="..\src\IslandHopper.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\MuzzleFlash.cpp" />
     <ClCompile Include="..\src\Player.cpp" />
-    <ClCompile Include="..\src\StaticEnemy.cpp" />
-    <ClCompile Include="..\src\Turret.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\BossDestroyed.h" />
-    <ClInclude Include="..\src\BossEnemy.h" />
-    <ClInclude Include="..\src\Bullet.h" />
-    <ClInclude Include="..\src\BulletHit.h" />
-    <ClInclude Include="..\src\DigEffect.h" />
-    <ClInclude Include="..\src\Enemy.h" />
-    <ClInclude Include="..\src\EnemyDestroyed.h" />
     <ClInclude Include="..\src\Entity.h" />
     <ClInclude Include="..\src\EntityManager.h" />
-    <ClInclude Include="..\src\Granade.h" />
     <ClInclude Include="..\src\IslandHopper.h" />
-    <ClInclude Include="..\src\MuzzleFlash.h" />
     <ClInclude Include="..\src\Player.h" />
-    <ClInclude Include="..\src\StaticEnemy.h" />
-    <ClInclude Include="..\src\Turret.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A22023DF-A529-488E-97A7-6B40F2CB5292}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>ConsoleTest</RootNamespace>
     <ProjectName>IslandHopper</ProjectName>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">

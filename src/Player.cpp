@@ -25,11 +25,7 @@ using namespace Igor;
 #include <iaString.h>
 using namespace IgorAux;
 
-#include "Bullet.h"
-#include "Granade.h"
 #include "EntityManager.h"
-#include "DigEffect.h"
-#include "MuzzleFlash.h"
 
 Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
     : Entity(Fraction::Blue, EntityType::Vehicle)
@@ -93,11 +89,11 @@ Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
 
     iNodeEmitter* emitterLeftGun = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
     _emitterLeftGunNodeID = emitterLeftGun->getID();
-    emitterLeftGun->setType(iEmitterType::Point);
+    emitterLeftGun->setEmitterType(iEmitterType::Point);
 
     iNodeEmitter* emitterRightGun = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
     _emitterRightGunNodeID = emitterRightGun->getID();
-    emitterRightGun->setType(iEmitterType::Point);
+    emitterRightGun->setEmitterType(iEmitterType::Point);
 
     transformNode->insertNode(transformRecoilLeftGun);
     transformNode->insertNode(transformRecoilRightGun);
@@ -120,9 +116,9 @@ Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
     camera->insertNode(lodTrigger);
     _scene->getRoot()->insertNode(transformNode);    
 
-    _materialSolid = iMaterialResourceFactory::getInstance().createMaterial();
-    iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-    iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+    _materialReticle = iMaterialResourceFactory::getInstance().createMaterial();
+    iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+    iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
     _primaryWeaponTime = iTimer::getInstance().getApplicationTime();
 
@@ -267,82 +263,6 @@ void Player::dig(uint64 toolSize, uint8 toolDensity)
     }*/
 }
 
-void Player::shootSecondaryWeapon(iView& view, const iaVector3d& screenCoordinates)
-{
-    iNodeTransform* transformationNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
-    if (transformationNode != nullptr)
-    {
-        iaMatrixd matrix;
-        transformationNode->getMatrix(matrix);
-        matrix._pos = getSphere()._center;
-
-        Granade* bullet = new Granade(_scene, matrix, getFraction());
-    }
-}
-
-void Player::shootPrimaryWeapon(iView& view, const iaVector3d& screenCoordinates)
-{
-    float64 currentTime = iTimer::getInstance().getApplicationTime();
-    if (currentTime > _primaryWeaponTime + 100)
-    {
-        iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
-        if (transformNode != nullptr)
-        {
-            iaMatrixd worldMatrix;
-            transformNode->calcWorldTransformation(worldMatrix);
-
-            iaVector3d pos = view.unProject(screenCoordinates, worldMatrix);
-
-            iaVector3d topScreen = screenCoordinates;
-            topScreen._y -= 1;
-            iaVector3d top = view.unProject(topScreen, worldMatrix);
-            top -= pos;
-
-            iaVector3d depthScreen = screenCoordinates;
-            depthScreen._z = -1;
-            iaVector3d depth = view.unProject(depthScreen, worldMatrix);
-            depth -= pos;
-
-            iaMatrixd matrix;
-
-            matrix.grammSchmidt(depth, top);
-            matrix._pos = pos;
-
-            matrix = worldMatrix * matrix;
-
-            iaMatrixd offsetLeft = matrix;
-            offsetLeft.translate(-0.5, -0.4, -1.0);
-
-            iaMatrixd offsetRight = matrix;
-            offsetRight.translate(0.5, -0.4, -1.0);
-
-            new Bullet(_scene, _force * 0.001, offsetLeft, getFraction());
-            new Bullet(_scene, _force * 0.001, offsetRight, getFraction());
-
-            new MuzzleFlash(_scene, _emitterLeftGunNodeID);
-            new MuzzleFlash(_scene, _emitterRightGunNodeID);
-
-            iNodeTransform* transformRecoilLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformRecoilLeftGun));
-            iNodeTransform* transformRecoilRightGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformRecoilRightGun));
-
-            if (transformRecoilLeftGun != nullptr &&
-                transformRecoilRightGun != nullptr)
-            {
-                iaMatrixd matrix;
-                transformRecoilLeftGun->getMatrix(matrix);
-                matrix._pos += iaVector3d(0, 0, 0.25);
-                transformRecoilLeftGun->setMatrix(matrix);
-
-                transformRecoilRightGun->getMatrix(matrix);
-                matrix._pos += iaVector3d(0, 0, 0.25);
-                transformRecoilRightGun->setMatrix(matrix);
-            }
-        }
-
-        _primaryWeaponTime = currentTime;
-    }
-}
-
 uint32 Player::getLODTriggerID()
 {
     return _lodTriggerID;
@@ -369,7 +289,7 @@ void Player::drawReticle(const iWindow& window)
 
     float32 scale = 0.001 * window.getClientWidth();
 
-    iRenderer::getInstance().setMaterial(_materialSolid);
+    iRenderer::getInstance().setMaterial(_materialReticle);
     iRenderer::getInstance().setLineWidth(1 * scale);
 
     iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));

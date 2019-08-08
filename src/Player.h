@@ -50,8 +50,6 @@ public:
 	void startFastTravel();
 	void stopFastTravel();
 
-    void shootPrimaryWeapon(iView& view, const iaVector3d& screenCoordinates);
-    void shootSecondaryWeapon(iView& view, const iaVector3d& screenCoordinates);
     void dig(uint64 toolSize, uint8 toolDensity);
     iaVector3I getGunPointPosition();
 
@@ -88,7 +86,7 @@ private:
 
     float64 _primaryWeaponTime = 0;
 
-    uint32 _materialSolid = 0;
+    uint32 _materialReticle = 0;
 
     iScene* _scene = nullptr;
 

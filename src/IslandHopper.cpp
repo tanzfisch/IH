@@ -29,7 +29,6 @@ using namespace IgorAux;
 #include <iContouringCubes.h>
 #include <iTextureResourceFactory.h>
 #include <iPixmap.h>
-#include <iStatistics.h>
 #include <iTargetMaterial.h>
 #include <iNodeLODTrigger.h>
 #include <iNodeLODSwitch.h>
@@ -47,9 +46,6 @@ using namespace Igor;
 using namespace IgorAux;
 
 #include "Player.h"
-#include "Enemy.h"
-#include "BossEnemy.h"
-#include "StaticEnemy.h"
 #include "EntityManager.h"
 
 // #define SIN_WAVE_TERRAIN
@@ -222,37 +218,24 @@ void IslandHopper::init()
 	initPlayer();
 	initVoxelData();
 
-	// set up octree debug rendering
+	// load a font
+	_font = new iTextureFont("StandardFont.png");
+
+	// configure profiler
+	_profiler.setVerbosity(iProfilerVerbosity::FPSOnly);
+
+	// set up octree debug material
 	_octreeMaterial = iMaterialResourceFactory::getInstance().createMaterial("Octree");
 	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
 	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
 	// setup some materials
-	_font = new iTextureFont("StandardFont.png");
 	_materialWithTextureAndBlending = iMaterialResourceFactory::getInstance().createMaterial("TextureAndBlending");
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-
-	_materialSolid = iMaterialResourceFactory::getInstance().createMaterial();
-	iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(_materialSolid)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-
-	// configure statistics
-	_statisticsVisualizer.setVerbosity(iRenderStatisticsVerbosity::FPSOnly);
-
-	uint64 particlesMaterial = iMaterialResourceFactory::getInstance().createMaterial();
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->setName("PMat");
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D1, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::Texture2D2, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncSource, iRenderStateValue::SourceAlpha);
-	iMaterialResourceFactory::getInstance().getMaterial(particlesMaterial)->getRenderStateSet().setRenderState(iRenderState::BlendFuncDestination, iRenderStateValue::OneMinusSourceAlpha);
-
+	
 	// launch resource handlers
 	_taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
 	_taskFlushTextures = iTaskManager::getInstance().addTask(new iTaskFlushTextures(&_window));
@@ -534,22 +517,28 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 
 	case iKeyCode::F3:
 	{
-		iRenderStatisticsVerbosity level = _statisticsVisualizer.getVerbosity();
+		iProfilerVerbosity level = _profiler.getVerbosity();
 
-		if (level == iRenderStatisticsVerbosity::All)
+		if (level == iProfilerVerbosity::All)
 		{
-			level = iRenderStatisticsVerbosity::None;
+			level = iProfilerVerbosity::None;
 		}
 		else
 		{
 			int value = static_cast<int>(level);
 			value++;
-			level = static_cast<iRenderStatisticsVerbosity>(value);
+			level = static_cast<iProfilerVerbosity>(value);
 		}
 
-		_statisticsVisualizer.setVerbosity(level);
+		_profiler.setVerbosity(level);
 	}
 	break;
+
+	case iKeyCode::LAlt:
+		_activeControls = !_activeControls;
+		iMouse::getInstance().showCursor(!_activeControls);
+		break;
+
 	}
 }
 
@@ -624,7 +613,7 @@ void IslandHopper::onKeyReleased(iKeyCode key)
                     if (player != nullptr)
                     {
                         iAABoxI box;
-                        iaConvert::convert(player->getSphere()._center, box._center);
+						box._center = player->getSphere()._center.convert<int64>();
                         box._halfWidths.set(10, 10, 10);
                         _voxelTerrain->modify(box, 0);
                     }
@@ -637,7 +626,7 @@ void IslandHopper::onKeyReleased(iKeyCode key)
                 if (player != nullptr)
                 {
                     iAABoxI box;
-                    iaConvert::convert(player->getSphere()._center, box._center);
+					box._center = player->getSphere()._center.convert<int64>();
                     box._halfWidths.set(10, 10, 10);
                     _voxelTerrain->modify(box, 128);
                 }
@@ -695,15 +684,8 @@ void IslandHopper::onMouseMoved(const iaVector2i& from, const iaVector2i& to, iW
 {
 	if (_activeControls)
 	{
-		if (iMouse::getInstance().getRightButton())
-		{
-			_mouseDelta.set(to._x - from._x, to._y - from._y);
-			iMouse::getInstance().setCenter(true);
-		}
-		else
-		{
-			_mouseDelta.set(0, 0);
-		}
+		_mouseDelta.set(to._x - from._x, to._y - from._y);
+		iMouse::getInstance().setCenter();
 	}
 }
 
@@ -836,8 +818,8 @@ void IslandHopper::onRenderOrtho()
 		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
 		if (player != nullptr)
 		{
-			iaString healthText = iaString::ftoa(player->getHealth(), 0);
-			iaString shieldText = iaString::ftoa(player->getShield(), 0);
+			iaString healthText = iaString::toString(player->getHealth(), 0);
+			iaString shieldText = iaString::toString(player->getShield(), 0);
 
 			iRenderer::getInstance().setFontSize(15.0f);
 			iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
@@ -849,11 +831,11 @@ void IslandHopper::onRenderOrtho()
 			iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 
 			iaString position;
-			position += iaString::ftoa(player->getSphere()._center._x, 0);
+			position += iaString::toString(player->getSphere()._center._x, 0);
 			position += ",";
-			position += iaString::ftoa(player->getSphere()._center._y, 0);
+			position += iaString::toString(player->getSphere()._center._y, 0);
 			position += ",";
-			position += iaString::ftoa(player->getSphere()._center._z, 0);
+			position += iaString::toString(player->getSphere()._center._z, 0);
 			iRenderer::getInstance().drawString(_window.getClientWidth() * 0.30, _window.getClientHeight() * 0.10, position);
 
 			const float64 size = 300;
@@ -872,7 +854,7 @@ void IslandHopper::onRenderOrtho()
 		}
 	}
 
-	_statisticsVisualizer.drawStatistics(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
+	_profiler.draw(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
 	iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 }
