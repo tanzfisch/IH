@@ -40,14 +40,23 @@ Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
     iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
     transformNode->setMatrix(matrix);
     _transformNodeID = transformNode->getID();
+	_scene->getRoot()->insertNode(transformNode);
+
+	iNodeModel* planeModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+	planeModel->setModel("plane.ompf");
+	transformNode->insertNode(planeModel);
 
     iNodeTransform* transformCam = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    _transformCamNodeID = transformCam->getID();
+	transformCam->translate(0,2,10);
+	transformNode->insertNode(transformCam);
 
     iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeCamera));
-    _cameraNodeID = camera->getID();
+	view->setCurrentCamera(camera->getID());
+	transformCam->insertNode(camera);
+
     iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLODTrigger));
     _lodTriggerID = lodTrigger->getID();
+	camera->insertNode(lodTrigger);
 
     iaMatrixd offset;
     iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
@@ -60,69 +69,11 @@ Player::Player(iScene* scene, iView* view, const iaMatrixd& matrix)
     physicsNode->setUserData(&_id);
     physicsNode->setAngularDamping(iaVector3d(100000, 100000, 100000));
     physicsNode->setLinearDamping(500);
-
-    iNodeTransform* transformRecoilLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    _transformRecoilLeftGun = transformRecoilLeftGun->getID();
-
-    iNodeTransform* transformRecoilRightGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    _transformRecoilRightGun = transformRecoilRightGun->getID();
-
-    iNodeTransform* transformLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    transformLeftGun->translate(-0.5, -0.4, -0.75);
-    transformLeftGun->scale(0.1, 0.1, 1);
-
-    /*iNodeModel* leftgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-    leftgun->setModel("crate.ompf", nullptr);*/
-
-    iNodeTransform* transformRightGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    transformRightGun->translate(0.5, -0.4, -0.75);
-    transformRightGun->scale(0.1, 0.1, 1);
-
-    /*iNodeModel* rightgun = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-    rightgun->setModel("crate.ompf", nullptr);*/
-
-    iNodeTransform* transformLeftGunEmitter = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    transformLeftGunEmitter->translate(-0.5, -0.4, -1.25);
-
-    iNodeTransform* transformRightGunEmitter = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-    transformRightGunEmitter->translate(0.5, -0.4, -1.25);
-
-    iNodeEmitter* emitterLeftGun = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
-    _emitterLeftGunNodeID = emitterLeftGun->getID();
-    emitterLeftGun->setEmitterType(iEmitterType::Point);
-
-    iNodeEmitter* emitterRightGun = static_cast<iNodeEmitter*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeEmitter));
-    _emitterRightGunNodeID = emitterRightGun->getID();
-    emitterRightGun->setEmitterType(iEmitterType::Point);
-
-    transformNode->insertNode(transformRecoilLeftGun);
-    transformNode->insertNode(transformRecoilRightGun);
-
-    transformRecoilLeftGun->insertNode(transformLeftGun);
-    transformRecoilRightGun->insertNode(transformRightGun);
-
-    transformRecoilLeftGun->insertNode(transformLeftGunEmitter);
-    transformRecoilRightGun->insertNode(transformRightGunEmitter);
-
-    //transformLeftGun->insertNode(leftgun);
-    //transformRightGun->insertNode(rightgun);
-
-    transformLeftGunEmitter->insertNode(emitterLeftGun);
-    transformRightGunEmitter->insertNode(emitterRightGun);
-
-    transformCam->insertNode(camera);
-    transformNode->insertNode(transformCam);
-    transformNode->insertNode(physicsNode);
-    camera->insertNode(lodTrigger);
-    _scene->getRoot()->insertNode(transformNode);    
+	transformNode->insertNode(physicsNode);
 
     _materialReticle = iMaterialResourceFactory::getInstance().createMaterial();
     iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
     iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-
-    _primaryWeaponTime = iTimer::getInstance().getApplicationTime();
-
-    view->setCurrentCamera(_cameraNodeID);
 }
 
 Player::~Player()
@@ -157,110 +108,6 @@ void Player::hitBy(uint64 entityID)
         setShield(shield);
         setHealth(health);
     }
-}
-
-iaVector3I Player::getGunPointPosition()
-{
-    iaVector3I result;
-    /*iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().getNode(_cameraNodeID));
-    if (camera != nullptr)
-    {
-        iaMatrixf modelMatrix;
-        camera->getWorldMatrix(modelMatrix);
-
-        iaVector3d dir(modelMatrix._depth._x, modelMatrix._depth._y, modelMatrix._depth._z);
-        dir.negate();
-        dir *= 30.0f;
-        iaVector3d from(modelMatrix._pos._x, modelMatrix._pos._y, modelMatrix._pos._z);
-        iaVector3d to(from);
-        to += dir;
-
-        // TODO calculate intersection point with plane
-        if (from._x > 0 &&
-            from._y > 0 &&
-            from._z > 0 &&
-            to._x > 0 &&
-            to._y > 0 &&
-            to._z > 0)
-        {
-            iaVector3I f(static_cast<int64>(from._x + 0.5), static_cast<int64>(from._y + 0.5), static_cast<int64>(from._z + 0.5));
-            iaVector3I t(static_cast<int64>(to._x + 0.5), static_cast<int64>(to._y + 0.5), static_cast<int64>(to._z + 0.5));
-            iaVector3I outside;
-            iaVector3I inside;
-
-            VoxelTerrain::getInstance().castRay(f, t, outside, inside);
-
-            result = outside;
-        }
-    }*/
-
-    return result;
-}
-
-void Player::dig(uint64 toolSize, uint8 toolDensity)
-{
-  /*  iaVector3I center = getGunPointPosition();
-    if (center.length2() > 0)
-    {
-        int64 toolRadius = toolSize / 2;
-        int64 toolRadiusQuadric = toolRadius * toolRadius;
-
-        iaVector3I modifyFrom(center);
-        modifyFrom._x -= toolRadius;
-        modifyFrom._y -= toolRadius;
-        modifyFrom._z -= toolRadius;
-
-        iaVector3I modifyTo(center);
-        modifyTo._x += toolRadius;
-        modifyTo._y += toolRadius;
-        modifyTo._z += toolRadius;
-
-        iaMatrixf effectMatrix;
-        effectMatrix.translate(center._x, center._y, center._z);
-        new DigEffect(_scene, effectMatrix);
-
-        iaVector3I pos;
-
-        for (int x = modifyFrom._x; x <= modifyTo._x; ++x)
-        {
-            for (int y = modifyFrom._y; y <= modifyTo._y; ++y)
-            {
-                for (int z = modifyFrom._z; z <= modifyTo._z; ++z)
-                {
-                    pos.set(x, y, z);
-
-                    if (center.distance2(pos) < toolRadiusQuadric)
-                    {
-                        VoxelTerrain::getInstance().setVoxelDensity(pos, toolDensity);
-                    }
-                }
-            }
-        }
-
-        modifyFrom._x -= 32;
-        modifyFrom._y -= 32;
-        modifyFrom._z -= 32;
-        modifyTo._x += 32;
-        modifyTo._y += 32;
-        modifyTo._z += 32;
-
-        modifyFrom /= 32;
-        modifyTo /= 32;
-
-        iaVector3I tilePosition = center / 32;
-
-        for (int x = modifyFrom._x; x <= modifyTo._x; ++x)
-        {
-            for (int y = modifyFrom._y; y <= modifyTo._y; ++y)
-            {
-                for (int z = modifyFrom._z; z <= modifyTo._z; ++z)
-                {
-                    iaVector3I pos(x, y, z);
-                    // VoxelTerrain::getInstance().refreshTile(pos);
-                }
-            }
-        }
-    }*/
 }
 
 uint32 Player::getLODTriggerID()
@@ -378,37 +225,6 @@ void Player::handle()
     }
 
     _force = resultingForce;
-
-    iNodeTransform* transformCam = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformCamNodeID));
-    if (transformCam != nullptr)
-    {
-        iaMatrixd camMatrix;
-        iaMatrixd transformInvMatrix = matrix;
-        transformInvMatrix.invert();
-        transformCam->getMatrix(camMatrix);
-        iaVector3d camForce = transformInvMatrix * resultingForce;
-        camForce -= transformInvMatrix._pos;
-        camForce *= 0.00004;
-        camMatrix._pos += camForce;
-        camMatrix._pos *= 0.9;
-        transformCam->setMatrix(camMatrix);
-    }
-
-    iNodeTransform* transformRecoilLeftGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformRecoilLeftGun));
-    iNodeTransform* transformRecoilRightGun = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformRecoilRightGun));
-
-    if (transformRecoilLeftGun != nullptr &&
-        transformRecoilRightGun != nullptr)
-    {
-        iaMatrixd matrix;
-        transformRecoilLeftGun->getMatrix(matrix);
-        matrix._pos *= 0.95;
-        transformRecoilLeftGun->setMatrix(matrix);
-
-        transformRecoilRightGun->getMatrix(matrix);
-        matrix._pos *= 0.95;
-        transformRecoilRightGun->setMatrix(matrix);
-    }
 }
 
 void Player::rotate(float32 heading, float32 pitch)

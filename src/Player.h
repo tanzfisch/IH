@@ -50,9 +50,6 @@ public:
 	void startFastTravel();
 	void stopFastTravel();
 
-    void dig(uint64 toolSize, uint8 toolDensity);
-    iaVector3I getGunPointPosition();
-
     void rotate(float32 heading, float32 pitch);
 
     void drawReticle(const iWindow& window);
@@ -74,19 +71,12 @@ private:
     bool _fastTurn = false;
 	bool _fastTravel = false;
 
-	uint32 _physicsNodeID = iNode::INVALID_NODE_ID;
-    uint32 _lodTriggerID = iNode::INVALID_NODE_ID;
-    uint32 _transformNodeID = iNode::INVALID_NODE_ID;
-    uint32 _transformRecoilLeftGun = iNode::INVALID_NODE_ID;
-    uint32 _transformRecoilRightGun = iNode::INVALID_NODE_ID;
-	uint32 _transformCamNodeID = iNode::INVALID_NODE_ID;
-    uint32 _cameraNodeID = iNode::INVALID_NODE_ID;
-    uint32 _emitterRightGunNodeID = iNode::INVALID_NODE_ID;
-    uint32 _emitterLeftGunNodeID = iNode::INVALID_NODE_ID;
+	uint64 _physicsNodeID = iNode::INVALID_NODE_ID;
+	uint64 _transformNodeID = iNode::INVALID_NODE_ID;
 
-    float64 _primaryWeaponTime = 0;
-
-    uint32 _materialReticle = 0;
+    uint64 _lodTriggerID = iNode::INVALID_NODE_ID;
+    
+    uint64 _materialReticle = 0;
 
     iScene* _scene = nullptr;
 
