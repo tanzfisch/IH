@@ -4,9 +4,6 @@
     <Filter Include="src">
       <UniqueIdentifier>{2a13e08f-281c-4d2a-b742-0903e55efd71}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Entities">
-      <UniqueIdentifier>{bd42fb1d-ae84-402b-a6aa-76de420a39b0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\main.cpp">
@@ -15,28 +12,16 @@
     <ClCompile Include="..\src\IslandHopper.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Entity.cpp">
-      <Filter>src\Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\EntityManager.cpp">
-      <Filter>src\Entities</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Player.cpp">
-      <Filter>src\Entities</Filter>
+    <ClCompile Include="..\src\Plane.cpp">
+      <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\IslandHopper.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Entity.h">
-      <Filter>src\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\EntityManager.h">
-      <Filter>src\Entities</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\Player.h">
-      <Filter>src\Entities</Filter>
+    <ClInclude Include="..\src\Plane.h">
+      <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

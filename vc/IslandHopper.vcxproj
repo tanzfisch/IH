@@ -19,17 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Entity.cpp" />
-    <ClCompile Include="..\src\EntityManager.cpp" />
     <ClCompile Include="..\src\IslandHopper.cpp" />
     <ClCompile Include="..\src\main.cpp" />
-    <ClCompile Include="..\src\Player.cpp" />
+    <ClCompile Include="..\src\Plane.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\Entity.h" />
-    <ClInclude Include="..\src\EntityManager.h" />
     <ClInclude Include="..\src\IslandHopper.h" />
-    <ClInclude Include="..\src\Player.h" />
+    <ClInclude Include="..\src\Plane.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A22023DF-A529-488E-97A7-6B40F2CB5292}</ProjectGuid>

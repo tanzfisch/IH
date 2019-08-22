@@ -33,7 +33,7 @@ namespace Igor
 	class iPhysicsBody;
 }
 
-class Enemy;
+class Plane;
 
 class IslandHopper
 {
@@ -46,6 +46,8 @@ public:
 	void run();
 
 private:
+
+	Plane* _plane = nullptr;
 
     /*! visualize statistics
     */

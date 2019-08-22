@@ -45,8 +45,7 @@ using namespace Igor;
 #include <iaConvert.h>
 using namespace IgorAux;
 
-#include "Player.h"
-#include "EntityManager.h"
+#include "Plane.h"
 
 // #define SIN_WAVE_TERRAIN
 #define USE_WATER
@@ -153,11 +152,11 @@ void IslandHopper::initScene()
 	skyBoxNode->setTextureScale(1);
 	// create a sky box material
 	_materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
-    auto material = iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox);
-    material->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-    material->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-    material->setOrder(iMaterial::RENDER_ORDER_MIN);
-    material->setName("SkyBox");
+	auto material = iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox);
+	material->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+	material->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
+	material->setOrder(iMaterial::RENDER_ORDER_MIN);
+	material->setName("SkyBox");
 	// and set the sky box material
 	skyBoxNode->setMaterial(_materialSkyBox);
 	// insert sky box to scene
@@ -183,11 +182,11 @@ void IslandHopper::initScene()
 
 		// create a water material
 		uint64 materialWater = iMaterialResourceFactory::getInstance().createMaterial();
-        material = iMaterialResourceFactory::getInstance().getMaterial(materialWater);
-        material->setOrder(iMaterial::RENDER_ORDER_MAX - i);
-        material->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-        material->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-        material->setName("WaterPlane");
+		material = iMaterialResourceFactory::getInstance().getMaterial(materialWater);
+		material->setOrder(iMaterial::RENDER_ORDER_MAX - i);
+		material->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+		material->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+		material->setName("WaterPlane");
 
 		// and set the water material
 		waterNode->setMaterial(materialWater);
@@ -204,8 +203,7 @@ void IslandHopper::initPlayer()
 //    matrix.translate(759669, 4817, 381392);
 	//matrix.translate(759844, 4661, 381278);
 	matrix.translate(759846, 10100, 381272);
-	Player* player = new Player(_scene, &_view, matrix);
-	_playerID = player->getID();
+	_plane = new Plane(_scene, &_view, matrix);
 }
 
 void IslandHopper::init()
@@ -235,49 +233,45 @@ void IslandHopper::init()
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
 	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-	
+
 	// launch resource handlers
 	_taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
 	_taskFlushTextures = iTaskManager::getInstance().addTask(new iTaskFlushTextures(&_window));
 
 	registerHandles();
 
-    // start physics
-    iPhysics::getInstance().start();
+	// start physics
+	iPhysics::getInstance().start();
 }
 
 void IslandHopper::initVoxelData()
 {
-    // it's a flat landscape so we can limit the discovery in the vertical axis
-    iaVector3I maxDiscovery(1000000, 3, 1000000);
+	// it's a flat landscape so we can limit the discovery in the vertical axis
+	iaVector3I maxDiscovery(1000000, 3, 1000000);
 
-    _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData), 
-        iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
+	_voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData),
+		iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
 
-    iTargetMaterial* targetMaterial = _voxelTerrain->getTargetMaterial();
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 1);
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
-    targetMaterial->setAmbient(iaColor3f(0.3f, 0.3f, 0.3f));
-    targetMaterial->setDiffuse(iaColor3f(0.8f, 0.8f, 0.8f));
-    targetMaterial->setSpecular(iaColor3f(1.0f, 1.0f, 1.0f));
-    targetMaterial->setEmissive(iaColor3f(0.0f, 0.0f, 0.0f));
-    targetMaterial->setShininess(1000.0f);
+	iTargetMaterial* targetMaterial = _voxelTerrain->getTargetMaterial();
+	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
+	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 1);
+	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+	targetMaterial->setAmbient(iaColor3f(0.3f, 0.3f, 0.3f));
+	targetMaterial->setDiffuse(iaColor3f(0.8f, 0.8f, 0.8f));
+	targetMaterial->setSpecular(iaColor3f(1.0f, 1.0f, 1.0f));
+	targetMaterial->setEmissive(iaColor3f(0.0f, 0.0f, 0.0f));
+	targetMaterial->setShininess(1000.0f);
 
-    uint64 materialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
-    auto material = iMaterialResourceFactory::getInstance().getMaterial(materialID);
-    material->addShaderSource("terrain.vert", iShaderObjectType::Vertex);
-    material->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
-    material->compileShader();
+	uint64 materialID = iMaterialResourceFactory::getInstance().createMaterial("TerrainMaterial");
+	auto material = iMaterialResourceFactory::getInstance().getMaterial(materialID);
+	material->addShaderSource("terrain.vert", iShaderObjectType::Vertex);
+	material->addShaderSource("terrain_directional_light.frag", iShaderObjectType::Fragment);
+	material->compileShader();
 
-    _voxelTerrain->setMaterialID(materialID);
-    _voxelTerrain->setScene(_scene);
+	_voxelTerrain->setMaterialID(materialID);
+	_voxelTerrain->setScene(_scene);
 
-    Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-    if (player != nullptr)
-    {
-        _voxelTerrain->setLODTrigger(player->getLODTriggerID());
-    }
+	_voxelTerrain->setLODTrigger(_plane->getLODTriggerID());
 }
 
 __IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const iaVector3f& checkPos)
@@ -311,46 +305,46 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 			for (int64 z = 0; z < voxelData->getDepth(); ++z)
 			{
 				iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
-                float64 height;
+				float64 height;
 
 #ifdef SIN_WAVE_TERRAIN
-                height = waterOffset + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
+				height = waterOffset + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
 #else
-                float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
-                contour -= 0.7;
+				float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
+				contour -= 0.7;
 
-                if (contour > 0.0)
-                {
-                    contour *= 3;
-                }
+				if (contour > 0.0)
+				{
+					contour *= 3;
+				}
 
-                float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
-                noise += contour;
+				float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
+				noise += contour;
 
-                if (noise < 0.0)
-                {
-                    noise *= 0.5;
-                }
-                else
-                {
-                    noise *= 2.0;
-                }
+				if (noise < 0.0)
+				{
+					noise *= 0.5;
+				}
+				else
+				{
+					noise *= 2.0;
+				}
 
-                noise += 0.0025;
+				noise += 0.0025;
 
-                if (noise < 0.0)
-                {
-                    noise *= 2.0;
-                }
+				if (noise < 0.0)
+				{
+					noise *= 2.0;
+				}
 
-                noise += 0.0025;
+				noise += 0.0025;
 
-                height = (noise * 2000) + waterOffset + 200;
+				height = (noise * 2000) + waterOffset + 200;
 
-                if (height < waterOffset - 100)
-                {
-                    height = waterOffset - 100;
-                }
+				if (height < waterOffset - 100)
+				{
+					height = waterOffset - 100;
+				}
 #endif
 
 				float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
@@ -454,58 +448,53 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 {
 	if (_activeControls)
 	{
-		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-
-		if (player != nullptr)
+		switch (key)
 		{
-			switch (key)
-			{
-			case iKeyCode::A:
-				player->startLeft();
-				break;
+		case iKeyCode::A:
+			_plane->startLeft();
+			break;
 
-			case iKeyCode::D:
-				player->startRight();
-				break;
+		case iKeyCode::D:
+			_plane->startRight();
+			break;
 
-			case iKeyCode::W:
-			case iKeyCode::Z:
-				player->startForward();
-				break;
+		case iKeyCode::W:
+		case iKeyCode::Z:
+			_plane->startForward();
+			break;
 
-			case iKeyCode::H:
-				player->stopForward();
-				break;
+		case iKeyCode::H:
+			_plane->stopForward();
+			break;
 
-			case iKeyCode::S:
-				player->startBackward();
-				break;
+		case iKeyCode::S:
+			_plane->startBackward();
+			break;
 
-			case iKeyCode::Q:
-				player->startUp();
-				break;
+		case iKeyCode::Q:
+			_plane->startUp();
+			break;
 
-			case iKeyCode::E:
-				player->startDown();
-				break;
+		case iKeyCode::E:
+			_plane->startDown();
+			break;
 
-			case iKeyCode::LShift:
-				//player->startFastTurn();
-				break;
+		case iKeyCode::LShift:
+			//_plane->startFastTurn();
+			break;
 
-			case iKeyCode::One:
-				player->startRollLeft();
-				break;
+		case iKeyCode::One:
+			_plane->startRollLeft();
+			break;
 
-			case iKeyCode::Three:
-				player->startRollRight();
-				break;
+		case iKeyCode::Three:
+			_plane->startRollRight();
+			break;
 
-			case iKeyCode::Space:
-				//player->dig(_toolSize, _toolDensity);
-				player->startFastTravel();
-				break;
-			}
+		case iKeyCode::Space:
+			//_plane->dig(_toolSize, _toolDensity);
+			_plane->startFastTravel();
+			break;
 		}
 	}
 
@@ -546,112 +535,100 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 {
 	if (_activeControls)
 	{
-		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-		if (player != nullptr)
+		switch (key)
 		{
-            switch (key)
-            {
-            case iKeyCode::A:
-                player->stopLeft();
-                break;
+		case iKeyCode::A:
+			_plane->stopLeft();
+			break;
 
-            case iKeyCode::D:
-                player->stopRight();
-                break;
+		case iKeyCode::D:
+			_plane->stopRight();
+			break;
 
-            case iKeyCode::W:
-                player->stopForward();
-                break;
+		case iKeyCode::W:
+			_plane->stopForward();
+			break;
 
-            case iKeyCode::S:
-                player->stopBackward();
-                break;
+		case iKeyCode::S:
+			_plane->stopBackward();
+			break;
 
-            case iKeyCode::Q:
-                player->stopUp();
-                break;
+		case iKeyCode::Q:
+			_plane->stopUp();
+			break;
 
-            case iKeyCode::E:
-                player->stopDown();
-                break;
+		case iKeyCode::E:
+			_plane->stopDown();
+			break;
 
-            case iKeyCode::Space:
-                player->stopFastTravel();
-                break;
+		case iKeyCode::Space:
+			_plane->stopFastTravel();
+			break;
 
-            case iKeyCode::LShift:
-                //player->stopFastTurn();
-                break;
+		case iKeyCode::LShift:
+			//_plane->stopFastTurn();
+			break;
 
-            case iKeyCode::One:
-                player->stopRollLeft();
-                break;
+		case iKeyCode::One:
+			_plane->stopRollLeft();
+			break;
 
-            case iKeyCode::Three:
-                player->stopRollRight();
-                break;
+		case iKeyCode::Three:
+			_plane->stopRollRight();
+			break;
 
-            case iKeyCode::F5:
-                player->setPosition(iaVector3d(706378, 1280, 553650));
-                break;
+		case iKeyCode::F5:
+			_plane->setPosition(iaVector3d(706378, 1280, 553650));
+			break;
 
-            case iKeyCode::F6:
-                player->setPosition(iaVector3d(27934.5, 2700, 17452.6));
-                break;
+		case iKeyCode::F6:
+			_plane->setPosition(iaVector3d(27934.5, 2700, 17452.6));
+			break;
 
-            case iKeyCode::F7:
-                player->setPosition(iaVector3d(16912.3, 3000, 31719.6));
-                break;
+		case iKeyCode::F7:
+			_plane->setPosition(iaVector3d(16912.3, 3000, 31719.6));
+			break;
 
-            case iKeyCode::F8:
-                player->setPosition(iaVector3d(10841.6, 4500, 25283.8));
-                break;
+		case iKeyCode::F8:
+			_plane->setPosition(iaVector3d(10841.6, 4500, 25283.8));
+			break;
 
-            case iKeyCode::F9:
-                {
-                    Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-                    if (player != nullptr)
-                    {
-                        iAABoxI box;
-						box._center = player->getSphere()._center.convert<int64>();
-                        box._halfWidths.set(10, 10, 10);
-                        _voxelTerrain->modify(box, 0);
-                    }
-                }
-                break;
+			/*	case iKeyCode::F9:
+				{
+					iAABoxI box;
+					box._center = _plane->getSphere()._center.convert<int64>();
+					box._halfWidths.set(10, 10, 10);
+					_voxelTerrain->modify(box, 0);
+				}
+				break;
 
-            case iKeyCode::F10:
-            {
-                Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-                if (player != nullptr)
-                {
-                    iAABoxI box;
-					box._center = player->getSphere()._center.convert<int64>();
-                    box._halfWidths.set(10, 10, 10);
-                    _voxelTerrain->modify(box, 128);
-                }
-            }
-            break;
+				case iKeyCode::F10:
+				{
+					iAABoxI box;
+					box._center = _plane->getSphere()._center.convert<int64>();
+					box._halfWidths.set(10, 10, 10);
+					_voxelTerrain->modify(box, 128);
+				}
+				break;*/
 
-			case iKeyCode::F12:
-			    {
-				    _wireframe = !_wireframe;
+		case iKeyCode::F12:
+		{
+			_wireframe = !_wireframe;
 
-				    uint64 terrainMaterial = _voxelTerrain->getMaterialID();
+			uint64 terrainMaterial = _voxelTerrain->getMaterialID();
 
-				    if (_wireframe)
-				    {
-					    iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-					    iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
-				    }
-				    else
-				    {
-					    iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
-					    iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::Off);
-				    }
-			    }
-			    break;
+			if (_wireframe)
+			{
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 			}
+			else
+			{
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::Off);
+			}
+		}
+		break;
 		}
 	}
 }
@@ -691,24 +668,6 @@ void IslandHopper::onMouseMoved(const iaVector2i& from, const iaVector2i& to, iW
 
 void IslandHopper::onMouseDown(iKeyCode key)
 {
-	if (_activeControls)
-	{
-		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-		if (player != nullptr)
-		{
-			/* if (key == iKeyCode::MouseMiddle)
-			 {
-				 iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
-				 player->shootSecondaryWeapon(_view, updown);
-			 }
-
-			 if (key == iKeyCode::MouseLeft)
-			 {
-				 iaVector3d updown(_weaponPos._x, _weaponPos._y, _weaponPos._z);
-				 player->shootPrimaryWeapon(_view, updown);
-			 }*/
-		}
-	}
 }
 
 void IslandHopper::onMouseUp(iKeyCode key)
@@ -738,15 +697,9 @@ void IslandHopper::handleMouse()
 {
 	if (_activeControls)
 	{
-		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-		if (player != nullptr)
-		{
-			_weaponPos.set(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, 0);
-
-			float32 headingDelta = _mouseDelta._x * 0.002;
-			float32 pitchDelta = _mouseDelta._y * 0.002;
-			player->rotate(-headingDelta, -pitchDelta);
-		}
+		float32 headingDelta = _mouseDelta._x * 0.002;
+		float32 pitchDelta = _mouseDelta._y * 0.002;
+		_plane->rotate(-headingDelta, -pitchDelta);
 	}
 }
 
@@ -761,30 +714,6 @@ void IslandHopper::onHandle()
 			_activeControls = true;
 			_mouseDelta.set(0, 0);
 		}
-	}
-	else
-	{
-		/*    BossEnemy* boss = static_cast<BossEnemy*>(EntityManager::getInstance().getEntity(_bossID));
-			if (boss == nullptr)
-			{
-				vector<uint64> ids;
-				EntityManager::getInstance().getEntities(ids);
-
-				for (auto id : ids)
-				{
-					if (_playerID != id)
-					{
-						Entity* entity = EntityManager::getInstance().getEntity(id);
-						if (entity != nullptr &&
-							entity->getType() == EntityType::Vehicle)
-						{
-							EntityManager::getInstance().getEntity(id)->kill();
-						}
-					}
-				}
-			}*/
-
-		EntityManager::getInstance().handle();
 	}
 
 	handleMouse();
@@ -801,7 +730,7 @@ void IslandHopper::onRenderOrtho()
 	iRenderer::getInstance().setViewMatrix(matrix);
 	matrix.translate(0, 0, -30);
 	iRenderer::getInstance().setModelMatrix(matrix);
-    iRenderer::getInstance().setMaterial(_materialWithTextureAndBlending);
+	iRenderer::getInstance().setMaterial(_materialWithTextureAndBlending);
 	iRenderer::getInstance().setFont(_font);
 
 	if (_loading)
@@ -812,46 +741,6 @@ void IslandHopper::onRenderOrtho()
 		iRenderer::getInstance().setColor(iaColor4f(0, 0, 1, 1));
 		iRenderer::getInstance().setFontSize(40.0f);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "generating level ...", iHorizontalAlignment::Center, iVerticalAlignment::Center);
-	}
-	else
-	{
-		Player* player = static_cast<Player*>(EntityManager::getInstance().getEntity(_playerID));
-		if (player != nullptr)
-		{
-			iaString healthText = iaString::toString(player->getHealth(), 0);
-			iaString shieldText = iaString::toString(player->getShield(), 0);
-
-			iRenderer::getInstance().setFontSize(15.0f);
-			iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-			iRenderer::getInstance().drawString(_window.getClientWidth() * 0.30, _window.getClientHeight() * 0.05, healthText);
-
-			iRenderer::getInstance().setColor(iaColor4f(0, 0, 1, 1));
-			iRenderer::getInstance().drawString(_window.getClientWidth() * 0.35, _window.getClientHeight() * 0.05, shieldText);
-
-			iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
-
-			iaString position;
-			position += iaString::toString(player->getSphere()._center._x, 0);
-			position += ",";
-			position += iaString::toString(player->getSphere()._center._y, 0);
-			position += ",";
-			position += iaString::toString(player->getSphere()._center._z, 0);
-			iRenderer::getInstance().drawString(_window.getClientWidth() * 0.30, _window.getClientHeight() * 0.10, position);
-
-			const float64 size = 300;
-			iaMatrixd mapMatrix;
-			mapMatrix.translate(10, 10, -30);
-			iRenderer::getInstance().setModelMatrix(mapMatrix);
-
-			player->drawReticle(_window);
-		}
-		else
-		{
-			iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-			iRenderer::getInstance().setFontSize(40.0f);
-			iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "you are dead :-P", iHorizontalAlignment::Center, iVerticalAlignment::Center);
-			_activeControls = false;
-		}
 	}
 
 	_profiler.draw(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
