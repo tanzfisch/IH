@@ -450,50 +450,24 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 	{
 		switch (key)
 		{
+		case iKeyCode::Space:
+			_plane->startFastTravel();
+			break;
+
 		case iKeyCode::A:
-			_plane->startLeft();
-			break;
-
-		case iKeyCode::D:
-			_plane->startRight();
-			break;
-
-		case iKeyCode::W:
-		case iKeyCode::Z:
-			_plane->startForward();
-			break;
-
-		case iKeyCode::H:
-			_plane->stopForward();
-			break;
-
-		case iKeyCode::S:
-			_plane->startBackward();
-			break;
-
-		case iKeyCode::Q:
-			_plane->startUp();
-			break;
-
-		case iKeyCode::E:
-			_plane->startDown();
-			break;
-
-		case iKeyCode::LShift:
-			//_plane->startFastTurn();
-			break;
-
-		case iKeyCode::One:
 			_plane->startRollLeft();
 			break;
 
-		case iKeyCode::Three:
+		case iKeyCode::D:
 			_plane->startRollRight();
 			break;
 
-		case iKeyCode::Space:
-			//_plane->dig(_toolSize, _toolDensity);
-			_plane->startFastTravel();
+		case iKeyCode::S:
+			_plane->startRollUp();
+			break;
+
+		case iKeyCode::W:
+			_plane->startRollDown();
 			break;
 		}
 	}
@@ -537,44 +511,25 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 	{
 		switch (key)
 		{
-		case iKeyCode::A:
-			_plane->stopLeft();
-			break;
-
-		case iKeyCode::D:
-			_plane->stopRight();
-			break;
-
-		case iKeyCode::W:
-			_plane->stopForward();
-			break;
-
-		case iKeyCode::S:
-			_plane->stopBackward();
-			break;
-
-		case iKeyCode::Q:
-			_plane->stopUp();
-			break;
-
-		case iKeyCode::E:
-			_plane->stopDown();
-			break;
 
 		case iKeyCode::Space:
 			_plane->stopFastTravel();
 			break;
 
-		case iKeyCode::LShift:
-			//_plane->stopFastTurn();
-			break;
-
-		case iKeyCode::One:
+		case iKeyCode::A:
 			_plane->stopRollLeft();
 			break;
 
-		case iKeyCode::Three:
+		case iKeyCode::D:
 			_plane->stopRollRight();
+			break;
+
+		case iKeyCode::S:
+			_plane->stopRollUp();
+			break;
+
+		case iKeyCode::W:
+			_plane->stopRollDown();
 			break;
 
 		case iKeyCode::F5:
@@ -693,16 +648,6 @@ void IslandHopper::deinitVoxelData()
 	}
 }
 
-void IslandHopper::handleMouse()
-{
-	if (_activeControls)
-	{
-		float32 headingDelta = _mouseDelta._x * 0.002;
-		float32 pitchDelta = _mouseDelta._y * 0.002;
-		_plane->rotate(-headingDelta, -pitchDelta);
-	}
-}
-
 void IslandHopper::onHandle()
 {
 	if (_loading)
@@ -715,8 +660,6 @@ void IslandHopper::onHandle()
 			_mouseDelta.set(0, 0);
 		}
 	}
-
-	handleMouse();
 }
 
 void IslandHopper::onRender()

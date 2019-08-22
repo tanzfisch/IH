@@ -104,8 +104,6 @@ private:
     void onMouseDown(iKeyCode key);
     void onMouseWheel(int d);
 
-    void handleMouse();
-
     void deinit();
     void init();
 
