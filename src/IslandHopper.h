@@ -107,7 +107,6 @@ private:
     void deinit();
     void init();
 
-	void onRender();
     void onHandle();
     void onRenderOrtho();
 

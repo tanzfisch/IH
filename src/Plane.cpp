@@ -28,18 +28,18 @@ using namespace IgorAux;
 
 Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 {
-	iNodeTransform* transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-	transformNode->setMatrix(matrix);
-	_transformNodeID = transformNode->getID();
-	scene->getRoot()->insertNode(transformNode);
+	_transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+	_transformNode->setMatrix(matrix);
+	scene->getRoot()->insertNode(_transformNode);
 
-	iNodeModel* planeModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
-	planeModel->setModel("plane.ompf");
-	transformNode->insertNode(planeModel);
+	_planeModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+	_planeModel->registerModelReadyDelegate(iModelReadyDelegate(this, &Plane::onModelReady));
+	_planeModel->setModel("plane.ompf");
+	_transformNode->insertNode(_planeModel);
 
 	iNodeTransform* transformCam = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
 	transformCam->translate(0, 2, 10);
-	transformNode->insertNode(transformCam);
+	_transformNode->insertNode(transformCam);
 
 	iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeCamera));
 	view->setCurrentCamera(camera->getID());
@@ -50,15 +50,14 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 	camera->insertNode(lodTrigger);
 
 	iaMatrixd offset;
-	iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
-	_physicsNodeID = physicsNode->getID();
-	physicsNode->addSphere(1, offset);
-	physicsNode->finalizeCollision();
-	physicsNode->setMass(500); // 500 kg
-	physicsNode->setForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &Plane::onApplyForceAndTorque));
-	physicsNode->setAngularDamping(iaVector3d(1, 1, 1));
-	physicsNode->setLinearDamping(1);
-	transformNode->insertNode(physicsNode);
+	_physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
+	_physicsNode->addSphere(1, offset);
+	_physicsNode->finalizeCollision();
+	_physicsNode->setMass(500); // 500 kg
+	_physicsNode->setForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &Plane::onApplyForceAndTorque));
+	_physicsNode->setAngularDamping(iaVector3d(0.4, 0.4, 0.4));
+	_physicsNode->setLinearDamping(0.4);
+	_transformNode->insertNode(_physicsNode);
 
 	_materialReticle = iMaterialResourceFactory::getInstance().createMaterial();
 	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
@@ -69,10 +68,33 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 
 Plane::~Plane()
 {
-	iNodeFactory::getInstance().destroyNodeAsync(_transformNodeID);
+	iNodeFactory::getInstance().destroyNodeAsync(_transformNode);
 }
 
-void Plane::onApplyForceAndTorque(iPhysicsBody * body, float32 timestep)
+void Plane::onModelReady(uint64 modelNodeID)
+{
+	if (_planeModel->getID() == modelNodeID)
+	{
+		_planeModel->unregisterModelReadyDelegate(iModelReadyDelegate(this, &Plane::onModelReady));
+
+		_leftAileron = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("left_aileron")->getChild("rotate"));
+		_rightAileron = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("right_aileron")->getChild("rotate"));
+		_leftElevator = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("left_elevator")->getChild("rotate"));
+		_rightElevator = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("right_elevator")->getChild("rotate"));
+		_rudder = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("rudder")->getChild("rotate"));
+		_propeller = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("propeller"));
+	}
+}
+
+float64 Plane::getAltitude() const
+{
+	iaMatrixd matrix;
+	_transformNode->getMatrix(matrix);
+
+	return matrix._pos._y;
+}
+
+void Plane::onApplyForceAndTorque(iPhysicsBody* body, float32 timestep)
 {
 	float64 Ixx;
 	float64 Iyy;
@@ -86,24 +108,20 @@ void Plane::onApplyForceAndTorque(iPhysicsBody * body, float32 timestep)
 	body->setTorque(_torque);
 }
 
-void Plane::setPosition(iaVector3d pos)
+void Plane::setPosition(const iaVector3d& pos)
 {
-	iNodePhysics* physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().getNode(_physicsNodeID));
-	if (physicsNode != nullptr)
-	{
-		uint64 bodyID = physicsNode->getBodyID();
+	uint64 bodyID = _physicsNode->getBodyID();
 
-		iPhysicsBody* body = iPhysics::getInstance().getBody(bodyID);
-		if (body != nullptr)
-		{
-			iaMatrixd matrix;
-			matrix._pos = pos;
-			body->setMatrix(matrix);
-		}
+	iPhysicsBody* body = iPhysics::getInstance().getBody(bodyID);
+	if (body != nullptr)
+	{
+		iaMatrixd matrix;
+		matrix._pos = pos;
+		body->setMatrix(matrix);
 	}
 }
 
-uint32 Plane::getLODTriggerID()
+uint64 Plane::getLODTriggerID() const
 {
 	return _lodTriggerID;
 }
@@ -124,11 +142,12 @@ void Plane::drawReticle(const iWindow& window)
 
 void Plane::onHandle()
 {
-	float32 speed = 40000;
+	// iaVector3d velocity = iPhysics::getInstance().getBody(_physicsBodyID)->getVelocity();
+	float32 thrust = 20000;
 
 	if (_fastTravel)
 	{
-		speed *= 2.0;
+		thrust *= 8;
 	}
 
 	const float32 offsetIncrease = 0.1;
@@ -136,52 +155,126 @@ void Plane::onHandle()
 	iaVector3d resultingForce;
 	iaVector3d resultingTorque;
 
-	iNodeTransform* transformationNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().getNode(_transformNodeID));
-	transformationNode->getMatrix(matrix);
+	_transformNode->getMatrix(matrix);
 
 	if (true)//  _forward)
 	{
 		iaVector3d foreward = matrix._depth;
 		foreward.negate();
 		foreward.normalize();
-		foreward *= speed;
+		foreward *= thrust;
 		resultingForce += foreward;
 
-		iaVector3d worldUp(0,1,0);
+		iaVector3d worldUp(0, 1, 0);
 		iaVector3d up = matrix._top;
 		up.normalize();
 
-		up *= speed * 0.4 * (worldUp * up);
+		up *= thrust * 0.4 * (worldUp * up);
 		resultingForce += up;
+	}
+
+	if (_propeller)
+	{
+		_propeller->rotate(_fastTravel ? 0.3 : 0.1, iaAxis::Z);
 	}
 
 	if (_rollLeft)
 	{
 		resultingTorque._z = 200.0;
+
+		if (_leftAileron)
+		{
+			iaMatrixd matrix;
+			matrix.rotate(0.3, iaAxis::X);
+			_leftAileron->setMatrix(matrix);
+		}
+		if (_rightAileron)
+		{
+			iaMatrixd matrix;
+			matrix.rotate(-0.3, iaAxis::X);
+			_rightAileron->setMatrix(matrix);
+		}
 	}
 	else if (_rollRight)
 	{
 		resultingTorque._z = -200.0;
+
+		if (_leftAileron)
+		{
+			iaMatrixd matrix;
+			matrix.rotate(-0.3, iaAxis::X);
+			_leftAileron->setMatrix(matrix);
+		}
+		if (_rightAileron)
+		{
+			iaMatrixd matrix;
+			matrix.rotate(0.3, iaAxis::X);
+			_rightAileron->setMatrix(matrix);
+		}
 	}
 	else
 	{
 		resultingTorque._z = 0.0;
+
+		
+		if (_leftAileron)
+		{
+			iaMatrixd matrix;
+			_leftAileron->setMatrix(matrix);
+		}
+		if (_rightAileron)
+		{
+			iaMatrixd matrix;
+			_rightAileron->setMatrix(matrix);
+		}
 	}
 
 	if (_rollUp)
 	{
 		resultingTorque._x = 200.0;
+
+		iaMatrixd matrix;
+		matrix.rotate(0.3, iaAxis::X);
+		if (_leftElevator)
+		{
+			_leftElevator->setMatrix(matrix);
+		}
+		if (_rightElevator)
+		{
+			_rightElevator->setMatrix(matrix);
+		}
 	}
 	else if (_rollDown)
 	{
 		resultingTorque._x = -200.0;
+
+		iaMatrixd matrix;
+		matrix.rotate(-0.3, iaAxis::X);
+		if (_leftElevator)
+		{
+			_leftElevator->setMatrix(matrix);
+		}
+		if (_rightElevator)
+		{
+			_rightElevator->setMatrix(matrix);
+		}
 	}
 	else
 	{
 		resultingTorque._x = 0.0;
+
+		iaMatrixd matrix;
+		if (_leftElevator)
+		{
+			_leftElevator->setMatrix(matrix);
+		}
+		if (_rightElevator)
+		{
+			_rightElevator->setMatrix(matrix);
+		}
 	}
 
-	matrix._pos.set(0,0,0);
+	matrix._pos.set(0, 0, 0);
 	_torque = matrix * resultingTorque;
 
 	_force = resultingForce;

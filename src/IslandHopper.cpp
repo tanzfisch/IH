@@ -50,7 +50,7 @@ using namespace IgorAux;
 // #define SIN_WAVE_TERRAIN
 #define USE_WATER
 
-const float64 waterOffset = 10000;
+const float64 waterLevel = 10000;
 
 IslandHopper::IslandHopper()
 {
@@ -98,7 +98,6 @@ void IslandHopper::initViews()
 	_view.setClearColor(iaColor4f(0.0f, 0.0f, 0.0f, 1.0f));
 	_view.setPerspective(60);
 	_view.setClipPlanes(1.0f, 80000.f);
-	_view.registerRenderDelegate(RenderDelegate(this, &IslandHopper::onRender));
 	_view.setName("3d");
 
 	_viewOrtho.setClearColor(false);
@@ -169,7 +168,7 @@ void IslandHopper::initScene()
 	for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
 	{
 		iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
-		waterNode->setWaterPosition(waterOffset - i * 1);
+		waterNode->setWaterPosition(waterLevel - i * 1);
 
 		if (i == 9)
 		{
@@ -308,7 +307,7 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 				float64 height;
 
 #ifdef SIN_WAVE_TERRAIN
-				height = waterOffset + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
+				height = waterLevel + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
 #else
 				float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
 				contour -= 0.7;
@@ -339,11 +338,11 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 
 				noise += 0.0025;
 
-				height = (noise * 2000) + waterOffset + 200;
+				height = (noise * 2000) + waterLevel + 200;
 
-				if (height < waterOffset - 100)
+				if (height < waterLevel - 100)
 				{
-					height = waterOffset - 100;
+					height = waterLevel - 100;
 				}
 #endif
 
@@ -388,7 +387,7 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 					{
 						pos._y = y * lodFactor + position._y + lodOffset._y;
 
-						if (pos._y > waterOffset &&
+						if (pos._y > waterLevel &&
 							pos._y > height - 300 &&
 							pos._y < height + 10)
 						{
@@ -430,7 +429,6 @@ void IslandHopper::deinit()
 
 	iSceneFactory::getInstance().destroyScene(_scene);
 
-	_view.unregisterRenderDelegate(RenderDelegate(this, &IslandHopper::onRender));
 	_viewOrtho.unregisterRenderDelegate(RenderDelegate(this, &IslandHopper::onRenderOrtho));
 
 	_window.close();
@@ -533,19 +531,19 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 			break;
 
 		case iKeyCode::F5:
-			_plane->setPosition(iaVector3d(706378, 1280, 553650));
+			_plane->setPosition(iaVector3d(706378, 10280, 553650));
 			break;
 
 		case iKeyCode::F6:
-			_plane->setPosition(iaVector3d(27934.5, 2700, 17452.6));
+			_plane->setPosition(iaVector3d(27934.5, 10270, 17452.6));
 			break;
 
 		case iKeyCode::F7:
-			_plane->setPosition(iaVector3d(16912.3, 3000, 31719.6));
+			_plane->setPosition(iaVector3d(16912.3, 10300, 31719.6));
 			break;
 
 		case iKeyCode::F8:
-			_plane->setPosition(iaVector3d(10841.6, 4500, 25283.8));
+			_plane->setPosition(iaVector3d(10841.6, 10450, 25283.8));
 			break;
 
 			/*	case iKeyCode::F9:
@@ -662,11 +660,6 @@ void IslandHopper::onHandle()
 	}
 }
 
-void IslandHopper::onRender()
-{
-	// nothing to do
-}
-
 void IslandHopper::onRenderOrtho()
 {
 	iaMatrixd matrix;
@@ -685,6 +678,14 @@ void IslandHopper::onRenderOrtho()
 		iRenderer::getInstance().setFontSize(40.0f);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.5, _window.getClientHeight() * 0.5, "generating level ...", iHorizontalAlignment::Center, iVerticalAlignment::Center);
 	}
+	else
+	{
+		iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
+		iRenderer::getInstance().setFontSize(15.0f);
+		iaString altitude = "Altitude:";
+		altitude += iaString::toString(_plane->getAltitude() - waterLevel);
+		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.01, altitude);
+	}
 
 	_profiler.draw(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
 
@@ -695,5 +696,3 @@ void IslandHopper::run()
 {
 	iApplication::getInstance().run();
 }
-
-

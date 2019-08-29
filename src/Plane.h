@@ -9,11 +9,13 @@ using namespace IgorAux;
 
 namespace Igor
 {
-    class iScene;
-    class iPhysicsBody;
-    class iPhysicsJoint;
-    class iView;
-    class iWindow;
+	class iScene;
+	class iPhysicsBody;
+	class iNodePhysics;
+	class iNodeModel;
+	class iView;
+	class iWindow;
+	class iNodeTransform;
 }
 
 class Plane
@@ -21,13 +23,13 @@ class Plane
 
 public:
 
-    Plane(iScene* scene, iView* view, const iaMatrixd& matrix);
-    virtual ~Plane();
+	Plane(iScene* scene, iView* view, const iaMatrixd& matrix);
+	virtual ~Plane();
 
-    void startRollLeft();
-    void stopRollLeft();
-    void startRollRight();
-    void stopRollRight();
+	void startRollLeft();
+	void stopRollLeft();
+	void startRollRight();
+	void stopRollRight();
 
 	void startRollUp();
 	void stopRollUp();
@@ -37,11 +39,12 @@ public:
 	void startFastTravel();
 	void stopFastTravel();
 
-    void drawReticle(const iWindow& window);
+	float64 getAltitude() const;
+	uint64 getLODTriggerID() const;
 
-    uint32 getLODTriggerID();
+	void drawReticle(const iWindow& window);
 
-    void setPosition(iaVector3d pos);
+	void setPosition(const iaVector3d& pos);
 
 private:
 
@@ -51,18 +54,27 @@ private:
 	bool _rollUp = false;
 	bool _rollDown = false;
 
-	uint64 _physicsNodeID = iNode::INVALID_NODE_ID;
-	uint64 _transformNodeID = iNode::INVALID_NODE_ID;
+	iNodeTransform* _transformNode = nullptr;
+	iNodePhysics* _physicsNode = nullptr;
+	iNodeModel* _planeModel = nullptr;
 
-    uint64 _lodTriggerID = iNode::INVALID_NODE_ID;
-    
-    uint64 _materialReticle = 0;
+	iNodeTransform* _leftAileron = nullptr;
+	iNodeTransform* _rightAileron = nullptr;
+	iNodeTransform* _propeller = nullptr;
+	iNodeTransform* _leftElevator = nullptr;
+	iNodeTransform* _rightElevator = nullptr;
+	iNodeTransform* _rudder = nullptr;
 
-    iaVector3d _force;
-    iaVector3d _torque;
+	uint64 _lodTriggerID = iNode::INVALID_NODE_ID;
 
-    void onHandle();
-    void onApplyForceAndTorque(iPhysicsBody* body, float32 timestep);
+	uint64 _materialReticle = 0;
+
+	iaVector3d _force;
+	iaVector3d _torque;
+
+	void onModelReady(uint64 modelNodeID);
+	void onHandle();
+	void onApplyForceAndTorque(iPhysicsBody* body, float32 timestep);
 
 };
 
