@@ -120,6 +120,7 @@
       <AdditionalIncludeDirectories>..\..\Igor\src\Igor\src;..\..\Igor\src\IgorAux\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -170,6 +171,7 @@ xcopy "$(TargetDir)$(TargetName).exe" "..\bin\" /Y /D
       <AdditionalIncludeDirectories>..\..\Igor\src\Igor\src;..\..\Igor\src\IgorAux\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <BrowseInformation>true</BrowseInformation>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

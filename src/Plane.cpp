@@ -1,6 +1,6 @@
 #include "Plane.h"
 
-#include <iNodeFactory.h>
+#include <iNodeManager.h>
 #include <iNodeTransform.h>
 #include <iNodePhysics.h>
 #include <iNodeModel.h>
@@ -28,29 +28,29 @@ using namespace IgorAux;
 
 Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 {
-	_transformNode = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+	_transformNode = iNodeManager::getInstance().createNode<iNodeTransform>();
 	_transformNode->setMatrix(matrix);
 	scene->getRoot()->insertNode(_transformNode);
 
-	_planeModel = static_cast<iNodeModel*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeModel));
+	_planeModel = iNodeManager::getInstance().createNode<iNodeModel>();
 	_planeModel->registerModelReadyDelegate(iModelReadyDelegate(this, &Plane::onModelReady));
 	_planeModel->setModel("plane.ompf");
 	_transformNode->insertNode(_planeModel);
 
-	iNodeTransform* transformCam = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+	iNodeTransform* transformCam = iNodeManager::getInstance().createNode<iNodeTransform>();
 	transformCam->translate(0, 2, 10);
 	_transformNode->insertNode(transformCam);
 
-	iNodeCamera* camera = static_cast<iNodeCamera*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeCamera));
+	iNodeCamera* camera = iNodeManager::getInstance().createNode<iNodeCamera>();
 	view->setCurrentCamera(camera->getID());
 	transformCam->insertNode(camera);
 
-	iNodeLODTrigger* lodTrigger = static_cast<iNodeLODTrigger*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLODTrigger));
+	iNodeLODTrigger* lodTrigger = iNodeManager::getInstance().createNode<iNodeLODTrigger>();
 	_lodTriggerID = lodTrigger->getID();
 	camera->insertNode(lodTrigger);
 
 	iaMatrixd offset;
-	_physicsNode = static_cast<iNodePhysics*>(iNodeFactory::getInstance().createNode(iNodeType::iNodePhysics));
+	_physicsNode = iNodeManager::getInstance().createNode<iNodePhysics>();
 	_physicsNode->addSphere(1, offset);
 	_physicsNode->finalizeCollision();
 	_physicsNode->setMass(500); // 500 kg
@@ -60,15 +60,15 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 	_transformNode->insertNode(_physicsNode);
 
 	_materialReticle = iMaterialResourceFactory::getInstance().createMaterial();
-	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
 	iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &Plane::onHandle));
 }
 
 Plane::~Plane()
 {
-	iNodeFactory::getInstance().destroyNodeAsync(_transformNode);
+	iNodeManager::getInstance().destroyNodeAsync(_transformNode);
 }
 
 void Plane::onModelReady(uint64 modelNodeID)

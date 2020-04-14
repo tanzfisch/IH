@@ -16,7 +16,7 @@ using namespace IgorAux;
 #include <iApplication.h>
 #include <iSceneFactory.h>
 #include <iScene.h>
-#include <iNodeFactory.h>
+#include <iNodeManager.h>
 #include <iMouse.h>
 #include <iTimer.h>
 #include <iTextureFont.h>
@@ -127,10 +127,10 @@ void IslandHopper::initScene()
 	_scene = iSceneFactory::getInstance().createScene();
 	_view.setScene(_scene);
 
-	_lightTranslate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
+	_lightTranslate = iNodeManager::getInstance().createNode<iNodeTransform>();
 	_lightTranslate->translate(100, 100, 100);
-	_lightRotate = static_cast<iNodeTransform*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeTransform));
-	_lightNode = static_cast<iNodeLight*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeLight));
+	_lightRotate = iNodeManager::getInstance().createNode<iNodeTransform>();
+	_lightNode = iNodeManager::getInstance().createNode<iNodeLight>();
 	_lightNode->setAmbient(iaColor4f(0.7f, 0.7f, 0.7f, 1.0f));
 	_lightNode->setDiffuse(iaColor4f(1.0f, 0.9f, 0.8f, 1.0f));
 	_lightNode->setSpecular(iaColor4f(1.0f, 0.9f, 0.87f, 1.0f));
@@ -140,7 +140,7 @@ void IslandHopper::initScene()
 	_scene->getRoot()->insertNode(_lightRotate);
 
 	// reate a sky box and add it to scene
-	iNodeSkyBox* skyBoxNode = static_cast<iNodeSkyBox*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeSkyBox));
+	iNodeSkyBox* skyBoxNode = iNodeManager::getInstance().createNode<iNodeSkyBox>();
 	skyBoxNode->setTextures(
 		iTextureResourceFactory::getInstance().requestFile("skybox_day/front.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
 		iTextureResourceFactory::getInstance().requestFile("skybox_day/back.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
@@ -152,8 +152,8 @@ void IslandHopper::initScene()
 	// create a sky box material
 	_materialSkyBox = iMaterialResourceFactory::getInstance().createMaterial();
 	auto material = iMaterialResourceFactory::getInstance().getMaterial(_materialSkyBox);
-	material->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
-	material->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
+	material->setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+	material->setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
 	material->setOrder(iMaterial::RENDER_ORDER_MIN);
 	material->setName("SkyBox");
 	// and set the sky box material
@@ -167,7 +167,7 @@ void IslandHopper::initScene()
 #ifdef USE_WATER
 	for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
 	{
-		iNodeWater* waterNode = static_cast<iNodeWater*>(iNodeFactory::getInstance().createNode(iNodeType::iNodeWater));
+		iNodeWater* waterNode = iNodeManager::getInstance().createNode<iNodeWater>();
 		waterNode->setWaterPosition(waterLevel - i * 1);
 
 		if (i == 9)
@@ -183,8 +183,8 @@ void IslandHopper::initScene()
 		uint64 materialWater = iMaterialResourceFactory::getInstance().createMaterial();
 		material = iMaterialResourceFactory::getInstance().getMaterial(materialWater);
 		material->setOrder(iMaterial::RENDER_ORDER_MAX - i);
-		material->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-		material->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
+		material->setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+		material->setRenderState(iRenderState::Blend, iRenderStateValue::On);
 		material->setName("WaterPlane");
 
 		// and set the water material
@@ -223,15 +223,15 @@ void IslandHopper::init()
 
 	// set up octree debug material
 	_octreeMaterial = iMaterialResourceFactory::getInstance().createMaterial("Octree");
-	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
-	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->setRenderState(iRenderState::Blend, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->setRenderState(iRenderState::DepthMask, iRenderStateValue::Off);
+	iMaterialResourceFactory::getInstance().getMaterial(_octreeMaterial)->setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 
 	// setup some materials
 	_materialWithTextureAndBlending = iMaterialResourceFactory::getInstance().createMaterial("TextureAndBlending");
-	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::Blend, iRenderStateValue::On);
-	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->getRenderStateSet().setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
+	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->setRenderState(iRenderState::Texture2D0, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->setRenderState(iRenderState::Blend, iRenderStateValue::On);
+	iMaterialResourceFactory::getInstance().getMaterial(_materialWithTextureAndBlending)->setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
 
 	// launch resource handlers
 	_taskFlushModels = iTaskManager::getInstance().addTask(new iTaskFlushModels(&_window));
@@ -572,13 +572,13 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 
 			if (_wireframe)
 			{
-				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
-				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->setRenderState(iRenderState::CullFace, iRenderStateValue::Off);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->setRenderState(iRenderState::Wireframe, iRenderStateValue::On);
 			}
 			else
 			{
-				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::CullFace, iRenderStateValue::On);
-				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->getRenderStateSet().setRenderState(iRenderState::Wireframe, iRenderStateValue::Off);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->setRenderState(iRenderState::CullFace, iRenderStateValue::On);
+				iMaterialResourceFactory::getInstance().getMaterial(terrainMaterial)->setRenderState(iRenderState::Wireframe, iRenderStateValue::Off);
 			}
 		}
 		break;
