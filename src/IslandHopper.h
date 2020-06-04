@@ -1,19 +1,19 @@
 #ifndef __ISLANDHOPPER__
 #define __ISLANDHOPPER__
 
-#include <Igor.h>
-#include <iWindow.h>
-#include <iView.h>
-#include <iTimerHandle.h>
-#include <iModelResourceFactory.h>
-#include <iKeyboard.h>
-#include <iStatisticsVisualizer.h>
-#include <iPerlinNoise.h>
-#include <iLSystem.h>
-#include <iVoxelTerrain.h>
+#include <igor/igor.h>
+#include <igor/os/iWindow.h>
+#include <igor/graphics/iView.h>
+#include <igor/os/iTimerHandle.h>
+#include <igor/resources/model/iModelResourceFactory.h>
+#include <igor/os/iKeyboard.h>
+#include <igor/resources/profiler/iProfilerVisualizer.h>
+#include <igor/graphics/generation/iPerlinNoise.h>
+#include <igor/graphics/generation/iLSystem.h>
+#include <igor/graphics/terrain/iVoxelTerrain.h>
 using namespace Igor;
 
-#include <iaMatrix.h>
+#include <iaux/math/iaMatrix.h>
 using namespace IgorAux;
 
 namespace Igor
@@ -33,7 +33,7 @@ namespace Igor
 	class iPhysicsBody;
 }
 
-class Enemy;
+class Plane;
 
 class IslandHopper
 {
@@ -47,16 +47,17 @@ public:
 
 private:
 
+	Plane* _plane = nullptr;
+
     /*! visualize statistics
     */
-    iStatisticsVisualizer _statisticsVisualizer;
+	iProfilerVisualizer _profiler;
 
 	iPerlinNoise _perlinNoise;
 
     bool _loading = true;
     bool _activeControls = false;
 	bool _wireframe = false;
-	bool _showMinimap = false;
 
     iWindow _window;
     iView _view;
@@ -81,20 +82,15 @@ private:
 
     iVoxelTerrain* _voxelTerrain = nullptr;
 
-    iPixmap* _heightMap = nullptr;
-    shared_ptr<iTexture> _minimap;
-    
 	uint64 _materialWithTextureAndBlending = 0;
-	uint64 _materialSolid = 0;
 	uint64 _octreeMaterial = 0;
 	uint64 _materialSkyBox = 0;
 
     uint64 _taskFlushModels = 0; 
     uint64 _taskFlushTextures = 0;
 
-	vector<iSpheref> _holes;
-
-    void generateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
+    void onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo);
+    void onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);
     void onKeyReleased(iKeyCode key);
@@ -102,20 +98,15 @@ private:
     void onWindowClosed();
     void onWindowResized(int32 clientWidth, int32 clientHeight);
 
-    void onMouseMoved(int32 x1, int32 y1, int32 x2, int32 y2, iWindow* _window);
-
-    //void onVoxelDataGenerated(const iaVector3I& min, const iaVector3I& max);
-    
+    void onMouseMoved(const iaVector2i& from, const iaVector2i& to, iWindow* _window);
+        
     void onMouseUp(iKeyCode key);
     void onMouseDown(iKeyCode key);
     void onMouseWheel(int d);
 
-    void handleMouse();
-
     void deinit();
     void init();
 
-	void onRender();
     void onHandle();
     void onRenderOrtho();
 

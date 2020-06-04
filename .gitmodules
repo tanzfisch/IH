@@ -1,0 +1,3 @@
+[submodule "vendor/igor"]
+	path = vendor/igor
+	url = https://github.com/tanzfisch/Igor.git

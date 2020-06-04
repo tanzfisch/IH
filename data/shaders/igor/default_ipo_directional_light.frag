@@ -5,11 +5,6 @@ in vec3 VertexNormal;
 
 layout(location = 0) out vec4 out_color;
 
-uniform sampler2D igor_matTexture0;
-uniform sampler2D igor_matTexture1;
-uniform sampler2D igor_matTexture2;
-uniform sampler2D igor_matTexture3;
-
 uniform vec3 igor_eyePosition;
 
 uniform vec3 igor_matAmbient;
@@ -29,31 +24,15 @@ void main()
 	vec3 N = normalize(VertexNormal);
 	vec3 P = VertexWorld;
 	
-	vec3 texSelector = vec3(N.x*N.x, N.y*N.y, N.z*N.z);
-		
-	float scale = 0.01;
-	float detailScale = 0.1;
-	
-	vec3 diffuseTextureColor = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;	
-	diffuseTextureColor += texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
-	diffuseTextureColor += texture2D(igor_matTexture2, P.xy * scale).rgb * texSelector.z;
-	vec3 detailTextureColor = texture2D(igor_matTexture3, P.xz * detailScale).rgb * texSelector.y;
-	detailTextureColor += texture2D(igor_matTexture3, P.yz * detailScale).rgb * texSelector.x; 
-	detailTextureColor += texture2D(igor_matTexture3, P.xy * detailScale).rgb * texSelector.z;
-	
-	diffuseTextureColor *= 0.5;
-	detailTextureColor *= 0.5;
-	diffuseTextureColor += detailTextureColor;	
-	
 	vec3 emissive = igor_matEmissive;
 	
 	// Compute the ambient term
-	vec3 ambient = igor_matAmbient * igor_lightAmbient * diffuseTextureColor;
+	vec3 ambient = igor_matAmbient * igor_lightAmbient;
 	
 	// Compute the diffuse term
 	vec3 L = normalize(igor_lightOrientation);
 	float diffuseLightFactor = max(dot(N, L), 0.0);
-	vec3 diffuse = igor_matDiffuse * igor_lightDiffuse * diffuseLightFactor * diffuseTextureColor;
+	vec3 diffuse = igor_matDiffuse * igor_lightDiffuse * diffuseLightFactor;
 	
 	// Compute the specular term
 	vec3 V = normalize(igor_eyePosition - P);

@@ -8,7 +8,6 @@ layout(location = 0) out vec4 out_color;
 uniform sampler2D igor_matTexture0;
 uniform sampler2D igor_matTexture1;
 uniform sampler2D igor_matTexture2;
-uniform sampler2D igor_matTexture3;
 
 uniform vec3 igor_eyePosition;
 
@@ -31,19 +30,25 @@ void main()
 	
 	vec3 texSelector = vec3(N.x*N.x, N.y*N.y, N.z*N.z);
 		
-	float scale = 0.01;
-	float detailScale = 0.1;
+	float scale = 0.1;
 	
-	vec3 diffuseTextureColor = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;	
-	diffuseTextureColor += texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
-	diffuseTextureColor += texture2D(igor_matTexture2, P.xy * scale).rgb * texSelector.z;
-	vec3 detailTextureColor = texture2D(igor_matTexture3, P.xz * detailScale).rgb * texSelector.y;
-	detailTextureColor += texture2D(igor_matTexture3, P.yz * detailScale).rgb * texSelector.x; 
-	detailTextureColor += texture2D(igor_matTexture3, P.xy * detailScale).rgb * texSelector.z;
+	vec3 diffuseTextureColor0;
 	
-	diffuseTextureColor *= 0.5;
-	detailTextureColor *= 0.5;
-	diffuseTextureColor += detailTextureColor;	
+	if(N.y > 0)
+	{
+		// top
+		diffuseTextureColor0 = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;
+	}
+	else 
+	{
+		// bottom
+		diffuseTextureColor0 = texture2D(igor_matTexture2, P.xz * scale).rgb * texSelector.y; 
+	}
+	
+	vec3 diffuseTextureColor1 = texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
+	vec3 diffuseTextureColor2 = texture2D(igor_matTexture1, P.xy * scale).rgb * texSelector.z;
+	
+	vec3 diffuseTextureColor = diffuseTextureColor0 + diffuseTextureColor1 + diffuseTextureColor2;
 	
 	vec3 emissive = igor_matEmissive;
 	
