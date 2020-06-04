@@ -240,3 +240,5 @@ _Pvt_Extensions
 
 include/
 lib/
+vendor/
+build/
