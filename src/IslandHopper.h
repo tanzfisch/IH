@@ -1,19 +1,19 @@
 #ifndef __ISLANDHOPPER__
 #define __ISLANDHOPPER__
 
-#include <Igor.h>
-#include <iWindow.h>
-#include <iView.h>
-#include <iTimerHandle.h>
-#include <iModelResourceFactory.h>
-#include <iKeyboard.h>
-#include <iProfilerVisualizer.h>
-#include <iPerlinNoise.h>
-#include <iLSystem.h>
-#include <iVoxelTerrain.h>
+#include <igor/igor.h>
+#include <igor/os/iWindow.h>
+#include <igor/graphics/iView.h>
+#include <igor/os/iTimerHandle.h>
+#include <igor/resources/model/iModelResourceFactory.h>
+#include <igor/os/iKeyboard.h>
+#include <igor/resources/profiler/iProfilerVisualizer.h>
+#include <igor/graphics/generation/iPerlinNoise.h>
+#include <igor/graphics/generation/iLSystem.h>
+#include <igor/graphics/terrain/iVoxelTerrain.h>
 using namespace Igor;
 
-#include <iaMatrix.h>
+#include <iaux/math/iaMatrix.h>
 using namespace IgorAux;
 
 namespace Igor

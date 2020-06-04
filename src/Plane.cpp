@@ -1,29 +1,29 @@
 #include "Plane.h"
 
-#include <iNodeManager.h>
-#include <iNodeTransform.h>
-#include <iNodePhysics.h>
-#include <iNodeModel.h>
-#include <iModel.h>
-#include <iScene.h>
-#include <iPhysics.h>
-#include <iPhysicsBody.h>
-#include <iPhysicsJoint.h>
-#include <iPhysicsCollision.h>
-#include <iNodeCamera.h>
-#include <iNodeLODTrigger.h>
-#include <iRenderer.h>
-#include <iView.h>
-#include <iWindow.h>
-#include <iMaterialResourceFactory.h>
-#include <iNodeEmitter.h>
-#include <iTimer.h>
-#include <iVoxelTerrain.h>
-#include <iApplication.h>
+#include <igor/os/iWindow.h>
+#include <igor/os/iTimer.h>
+#include <igor/os/iApplication.h>
+#include <igor/graphics/scene/nodes/iNodeManager.h>
+#include <igor/graphics/scene/nodes/iNodeTransform.h>
+#include <igor/graphics/scene/nodes/iNodePhysics.h>
+#include <igor/graphics/scene/nodes/iNodeModel.h>
+#include <igor/graphics/scene/nodes/iNodeEmitter.h>
+#include <igor/graphics/scene/nodes/iNodeCamera.h>
+#include <igor/graphics/scene/nodes/iNodeLODTrigger.h>
+#include <igor/graphics/scene/iScene.h>
+#include <igor/graphics/iRenderer.h>
+#include <igor/graphics/iView.h>
+#include <igor/resources/model/iModel.h>
+#include <igor/resources/material/iMaterialResourceFactory.h>
+#include <igor/physics/iPhysics.h>
+#include <igor/physics/iPhysicsBody.h>
+#include <igor/physics/iPhysicsJoint.h>
+#include <igor/physics/iPhysicsCollision.h>
+#include <igor/graphics/terrain/iVoxelTerrain.h>
 using namespace Igor;
 
-#include <iaConsole.h>
-#include <iaString.h>
+#include <iaux/system/iaConsole.h>
+#include <iaux/data/iaString.h>
 using namespace IgorAux;
 
 Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)

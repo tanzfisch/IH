@@ -39,21 +39,15 @@ elseif()
   message(FATAL_ERROR "unsupported environment")
 endif()
 
+# igor
 add_subdirectory(vendor/igor)
 
 # Island Hopper
-set(IH_SRC_DIR "${CMAKE_SOURCE_DIR}/src")
+set(IH_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 set(IH_HEADERS_DIR ${IH_SRC_DIR})
-file(
-  GLOB_RECURSE IH_SOURCES
-  LIST_DIRECTORIES false
-  "${IH_SRC_DIR}*.c*")
-file(
-  GLOB_RECURSE IH_HEADERS
-  LIST_DIRECTORIES false
-  "${IH_HEADERS_DIR}*.h*" "${IH_HEADERS_DIR}*.inl")
+file(GLOB_RECURSE IH_SOURCES LIST_DIRECTORIES false "${IH_SRC_DIR}*.c*")
+file(GLOB_RECURSE IH_HEADERS LIST_DIRECTORIES false "${IH_HEADERS_DIR}*.h*" "${IH_HEADERS_DIR}*.inl")
 add_executable(IslandHopper ${IH_SOURCES} ${IH_HEADERS})
-
 target_include_directories(IslandHopper PRIVATE ${IGOR_HEADERS_DIR} ${IAUX_HEADERS_DIR}
                                         ${OMPF_HEADERS_DIR})
 target_link_libraries(IslandHopper igor)

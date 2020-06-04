@@ -1,10 +1,10 @@
 #ifndef __PLANE__
 #define __PLANE__
 
-#include <iNode.h>
+#include <igor/graphics/scene/nodes/iNode.h>
 using namespace Igor;
 
-#include <iaMatrix.h>
+#include <iaux/math/iaMatrix.h>
 using namespace IgorAux;
 
 namespace Igor
