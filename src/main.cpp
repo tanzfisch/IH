@@ -1,17 +1,16 @@
 #include "IslandHopper.h"
 
 #include <igor/igor.h>
-using namespace Igor;
 
 int main()
 {
-	Igor::startup();
+	igor::startup();
 
     IslandHopper* islandHopper = new IslandHopper();
     islandHopper->run();
 	delete islandHopper;
 	
-	Igor::shutdown();
+	igor::shutdown();
 
 	return 0;
 }

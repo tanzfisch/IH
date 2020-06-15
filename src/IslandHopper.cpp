@@ -2,46 +2,46 @@
 
 #include <igor/resources/material/iMaterial.h>
 #include <igor/resources/material/iMaterialGroup.h>
-#include <igor/graphics/scene/traversal/iNodeVisitorPrintTree.h>
+#include <igor/scene/traversal/iNodeVisitorPrintTree.h>
 #include <igor/threading/iTaskManager.h>
-#include <igor/graphics/scene/nodes/iNodeSkyBox.h>
-#include <igor/graphics/scene/nodes/iNodeLight.h>
-#include <igor/graphics/scene/nodes/iNodeCamera.h>
-#include <igor/graphics/scene/nodes/iNodeModel.h>
-#include <igor/graphics/scene/nodes/iNodeTransform.h>
-#include <igor/graphics/scene/nodes/iNodeManager.h>
-#include <igor/graphics/scene/nodes/iNodeLODTrigger.h>
-#include <igor/graphics/scene/nodes/iNodeLODSwitch.h>
-#include <igor/graphics/scene/nodes/iNodeWater.h>
-#include <igor/graphics/scene/nodes/iNodeParticleSystem.h>
-#include <igor/graphics/scene/nodes/iNodeEmitter.h>
-#include <igor/graphics/scene/nodes/iNodeMesh.h>
+#include <igor/scene/nodes/iNodeSkyBox.h>
+#include <igor/scene/nodes/iNodeLight.h>
+#include <igor/scene/nodes/iNodeCamera.h>
+#include <igor/scene/nodes/iNodeModel.h>
+#include <igor/scene/nodes/iNodeTransform.h>
+#include <igor/scene/nodes/iNodeManager.h>
+#include <igor/scene/nodes/iNodeLODTrigger.h>
+#include <igor/scene/nodes/iNodeLODSwitch.h>
+#include <igor/scene/nodes/iNodeWater.h>
+#include <igor/scene/nodes/iNodeParticleSystem.h>
+#include <igor/scene/nodes/iNodeEmitter.h>
+#include <igor/scene/nodes/iNodeMesh.h>
 #include <igor/graphics/iRenderer.h>
-#include <igor/os/iApplication.h>
-#include <igor/graphics/scene/iSceneFactory.h>
-#include <igor/graphics/scene/iScene.h>
-#include <igor/os/iMouse.h>
-#include <igor/os/iTimer.h>
+#include <igor/system/iApplication.h>
+#include <igor/scene/iSceneFactory.h>
+#include <igor/scene/iScene.h>
+#include <igor/system/iMouse.h>
+#include <igor/system/iTimer.h>
 #include <igor/resources/texture/iTextureFont.h>
 #include <igor/threading/tasks/iTaskFlushModels.h>
 #include <igor/threading/tasks/iTaskFlushTextures.h>
 #include <igor/resources/material/iMaterialResourceFactory.h>
-#include <igor/graphics/terrain/data/iVoxelData.h>
+#include <igor/terrain/data/iVoxelData.h>
 #include <igor/resources/mesh/iMeshBuilder.h>
 #include <igor/resources/texture/iTextureResourceFactory.h>
 #include <igor/resources/texture/iPixmap.h>
 #include <igor/resources/material/iTargetMaterial.h>
-#include <igor/graphics/scene/octree/iOctree.h>
+#include <igor/scene/octree/iOctree.h>
 #include <igor/physics/iPhysics.h>
 #include <igor/physics/iPhysicsMaterialCombo.h>
 #include <igor/physics/iPhysicsBody.h>
 
-using namespace Igor;
+using namespace igor;
 
 #include <iaux/data/iaConvert.h>
 #include <iaux/system/iaConsole.h>
 #include <iaux/math/iaVector3.h>
-using namespace IgorAux;
+using namespace iaux;
 
 #include "Plane.h"
 
@@ -72,12 +72,12 @@ void IslandHopper::registerHandles()
 	_window.registerWindowResizeDelegate(WindowResizeDelegate(this, &IslandHopper::onWindowResized));
 	_window.registerWindowCloseDelegate(WindowCloseDelegate(this, &IslandHopper::onWindowClosed));
 
-	iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &IslandHopper::onHandle));
+	iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iPreDrawDelegate(this, &IslandHopper::onHandle));
 }
 
 void IslandHopper::unregisterHandles()
 {
-	iApplication::getInstance().unregisterApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &IslandHopper::onHandle));
+	iApplication::getInstance().unregisterApplicationPreDrawHandleDelegate(iPreDrawDelegate(this, &IslandHopper::onHandle));
 
 	_window.unregisterWindowResizeDelegate(WindowResizeDelegate(this, &IslandHopper::onWindowResized));
 	_window.unregisterWindowCloseDelegate(WindowCloseDelegate(this, &IslandHopper::onWindowClosed));
@@ -101,7 +101,7 @@ void IslandHopper::initViews()
 	_viewOrtho.setClearColor(false);
 	_viewOrtho.setClearDepth(false);
 	_viewOrtho.setClipPlanes(0.1, 100);
-	_viewOrtho.registerRenderDelegate(RenderDelegate(this, &IslandHopper::onRenderOrtho));
+	_viewOrtho.registerRenderDelegate(iDrawDelegate(this, &IslandHopper::onRenderOrtho));
 	_viewOrtho.setName("ortho");
 
 	_window.setTitle("IslandHopper");
@@ -109,6 +109,7 @@ void IslandHopper::initViews()
 	_window.addView(&_viewOrtho);
 #if 1
 	_window.setClientSize(1280, 600);
+	_window.setCentered();
 #else
 	_window.setSizeByDesktop();
 	_window.setFullscreen();
@@ -427,7 +428,7 @@ void IslandHopper::deinit()
 
 	iSceneFactory::getInstance().destroyScene(_scene);
 
-	_viewOrtho.unregisterRenderDelegate(RenderDelegate(this, &IslandHopper::onRenderOrtho));
+	_viewOrtho.unregisterRenderDelegate(iDrawDelegate(this, &IslandHopper::onRenderOrtho));
 
 	_window.close();
 	_window.removeView(&_view);

@@ -1,16 +1,16 @@
 #include "Plane.h"
 
-#include <igor/os/iWindow.h>
-#include <igor/os/iTimer.h>
-#include <igor/os/iApplication.h>
-#include <igor/graphics/scene/nodes/iNodeManager.h>
-#include <igor/graphics/scene/nodes/iNodeTransform.h>
-#include <igor/graphics/scene/nodes/iNodePhysics.h>
-#include <igor/graphics/scene/nodes/iNodeModel.h>
-#include <igor/graphics/scene/nodes/iNodeEmitter.h>
-#include <igor/graphics/scene/nodes/iNodeCamera.h>
-#include <igor/graphics/scene/nodes/iNodeLODTrigger.h>
-#include <igor/graphics/scene/iScene.h>
+#include <igor/system/iWindow.h>
+#include <igor/system/iTimer.h>
+#include <igor/system/iApplication.h>
+#include <igor/scene/nodes/iNodeManager.h>
+#include <igor/scene/nodes/iNodeTransform.h>
+#include <igor/scene/nodes/iNodePhysics.h>
+#include <igor/scene/nodes/iNodeModel.h>
+#include <igor/scene/nodes/iNodeEmitter.h>
+#include <igor/scene/nodes/iNodeCamera.h>
+#include <igor/scene/nodes/iNodeLODTrigger.h>
+#include <igor/scene/iScene.h>
 #include <igor/graphics/iRenderer.h>
 #include <igor/graphics/iView.h>
 #include <igor/resources/model/iModel.h>
@@ -19,16 +19,17 @@
 #include <igor/physics/iPhysicsBody.h>
 #include <igor/physics/iPhysicsJoint.h>
 #include <igor/physics/iPhysicsCollision.h>
-#include <igor/graphics/terrain/iVoxelTerrain.h>
-using namespace Igor;
+#include <igor/terrain/iVoxelTerrain.h>
+using namespace igor;
 
 #include <iaux/system/iaConsole.h>
 #include <iaux/data/iaString.h>
-using namespace IgorAux;
+using namespace iaux;
 
 Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 {
 	_transformNode = iNodeManager::getInstance().createNode<iNodeTransform>();
+	_transformNode->setName("planeTransform");
 	_transformNode->setMatrix(matrix);
 	scene->getRoot()->insertNode(_transformNode);
 
@@ -63,11 +64,13 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->setRenderState(iRenderState::DepthTest, iRenderStateValue::Off);
 	iMaterialResourceFactory::getInstance().getMaterial(_materialReticle)->setRenderState(iRenderState::Blend, iRenderStateValue::On);
 
-	iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iApplicationPreDrawHandleDelegate(this, &Plane::onHandle));
+	iApplication::getInstance().registerApplicationPreDrawHandleDelegate(iPreDrawDelegate(this, &Plane::onHandle));
 }
 
 Plane::~Plane()
 {
+	iApplication::getInstance().unregisterApplicationPreDrawHandleDelegate(iPreDrawDelegate(this, &Plane::onHandle));
+
 	iNodeManager::getInstance().destroyNodeAsync(_transformNode);
 }
 
@@ -277,7 +280,7 @@ void Plane::onHandle()
 	matrix._pos.set(0, 0, 0);
 	_torque = matrix * resultingTorque;
 
-	_force = resultingForce;
+ 	_force = resultingForce;
 }
 
 void Plane::startFastTravel()
