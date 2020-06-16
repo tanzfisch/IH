@@ -16,15 +16,14 @@
 #include <igor/resources/model/iModel.h>
 #include <igor/resources/material/iMaterialResourceFactory.h>
 #include <igor/physics/iPhysics.h>
-#include <igor/physics/iPhysicsBody.h>
-#include <igor/physics/iPhysicsJoint.h>
-#include <igor/physics/iPhysicsCollision.h>
 #include <igor/terrain/iVoxelTerrain.h>
 using namespace igor;
 
 #include <iaux/system/iaConsole.h>
 #include <iaux/data/iaString.h>
 using namespace iaux;
+
+static const float64 s_maxThrust = 100000;
 
 Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 {
@@ -57,7 +56,7 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 	_physicsNode->setMass(500); // 500 kg
 	_physicsNode->setForceAndTorqueDelegate(iApplyForceAndTorqueDelegate(this, &Plane::onApplyForceAndTorque));
 	_physicsNode->setAngularDamping(iaVector3d(0.4, 0.4, 0.4));
-	_physicsNode->setLinearDamping(0.4);
+	_physicsNode->setLinearDamping(0.5);
 	_transformNode->insertNode(_physicsNode);
 
 	_materialReticle = iMaterialResourceFactory::getInstance().createMaterial();
@@ -143,16 +142,20 @@ void Plane::drawReticle(const iWindow& window)
 	iRenderer::getInstance().drawLine(weaponPos + iaVector3f(0, -10 * scale, 0), weaponPos + iaVector3f(0, 10 * scale, 0));
 }
 
-void Plane::onHandle()
+float64 Plane::getVelocity() const
 {
-	// iaVector3d velocity = iPhysics::getInstance().getBody(_physicsBodyID)->getVelocity();
-	float32 thrust = 20000;
+	iaMatrixd inverse = _physicsNode->getWorldMatrix();
+	inverse.invert();
+	iaVector3d vec = inverse * _physicsNode->getVelocity();
+	return -vec._z;
+}
 
-	if (_fastTravel)
-	{
-		thrust *= 8;
-	}
+void Plane::onHandle()
+{	
+	float64 velocity = getVelocity();
+	con_endl(velocity);
 
+	float32 thrust = s_maxThrust * _thrustLevel;
 	const float32 offsetIncrease = 0.1;
 	iaMatrixd matrix;
 	iaVector3d resultingForce;
@@ -178,7 +181,7 @@ void Plane::onHandle()
 
 	if (_propeller)
 	{
-		_propeller->rotate(_fastTravel ? 0.3 : 0.1, iaAxis::Z);
+		_propeller->rotate(_thrustLevel * 5.0, iaAxis::Z);
 	}
 
 	if (_rollLeft)
@@ -283,14 +286,14 @@ void Plane::onHandle()
  	_force = resultingForce;
 }
 
-void Plane::startFastTravel()
+void Plane::setThrustLevel(float64 thrustLevel)
 {
-	_fastTravel = true;
+	_thrustLevel = std::min(1.0, std::max(0.0, thrustLevel));
 }
 
-void Plane::stopFastTravel()
+float64 Plane::getThrustLevel() const
 {
-	_fastTravel = false;
+	return _thrustLevel;
 }
 
 void Plane::startRollLeft()

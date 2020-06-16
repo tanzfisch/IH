@@ -447,10 +447,6 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 	{
 		switch (key)
 		{
-		case iKeyCode::Space:
-			_plane->startFastTravel();
-			break;
-
 		case iKeyCode::A:
 			_plane->startRollLeft();
 			break;
@@ -479,8 +475,7 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 	{
 		iProfilerVerbosity level = _profiler.getVerbosity();
 
-		if (level == iProfilerVerbosity::All)
-		{
+		if (level == iProfilerVerbosity::All)		{
 			level = iProfilerVerbosity::None;
 		}
 		else
@@ -509,8 +504,12 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 		switch (key)
 		{
 
-		case iKeyCode::Space:
-			_plane->stopFastTravel();
+		case iKeyCode::OEMPlus:
+			_plane->setThrustLevel(_plane->getThrustLevel() + 0.1);
+			break;
+
+		case iKeyCode::OEM2:
+			_plane->setThrustLevel(_plane->getThrustLevel() - 0.1);
 			break;
 
 		case iKeyCode::A:
@@ -684,6 +683,10 @@ void IslandHopper::onRenderOrtho()
 		iaString altitude = "Altitude:";
 		altitude += iaString::toString(_plane->getAltitude() - waterLevel);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.01, altitude);
+
+		iaString thrustLevel = "Thrust:";
+		thrustLevel += iaString::toString(_plane->getThrustLevel() * 100.0);
+		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.04, thrustLevel);
 	}
 
 	_profiler.draw(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));

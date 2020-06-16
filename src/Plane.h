@@ -36,8 +36,10 @@ public:
 	void startRollDown();
 	void stopRollDown();
 
-	void startFastTravel();
-	void stopFastTravel();
+	void setThrustLevel(float64 thrustLevel);
+	float64 getThrustLevel() const;
+
+	float64 getVelocity() const;
 
 	float64 getAltitude() const;
 	uint64 getLODTriggerID() const;
@@ -48,7 +50,7 @@ public:
 
 private:
 
-	bool _fastTravel = false;
+	float64 _thrustLevel = 0.5;
 	bool _rollLeft = false;
 	bool _rollRight = false;
 	bool _rollUp = false;
