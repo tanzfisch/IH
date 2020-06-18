@@ -2,6 +2,7 @@
 #define __PLANE__
 
 #include <igor/scene/nodes/iNode.h>
+#include <igor/system/iTimerHandle.h>
 using namespace igor;
 
 #include <iaux/math/iaMatrix.h>
@@ -10,8 +11,6 @@ using namespace iaux;
 namespace igor
 {
 	class iScene;
-	class iPhysicsBody;
-	class iNodePhysics;
 	class iNodeModel;
 	class iView;
 	class iWindow;
@@ -39,25 +38,23 @@ public:
 	void setThrustLevel(float64 thrustLevel);
 	float64 getThrustLevel() const;
 
-	float64 getVelocity() const;
+	const iaVector3d& getVelocity() const;
 
 	float64 getAltitude() const;
 	uint64 getLODTriggerID() const;
 
 	void drawReticle(const iWindow& window);
 
-	void setPosition(const iaVector3d& pos);
-
 private:
 
+	iaVector3d _velocity;
 	float64 _thrustLevel = 0.5;
 	bool _rollLeft = false;
 	bool _rollRight = false;
-	bool _rollUp = false;
-	bool _rollDown = false;
+	bool _pitchUp = false;
+	bool _pitchDown = false;
 
 	iNodeTransform* _transformNode = nullptr;
-	iNodePhysics* _physicsNode = nullptr;
 	iNodeModel* _planeModel = nullptr;
 
 	iNodeTransform* _leftAileron = nullptr;
@@ -71,12 +68,10 @@ private:
 
 	uint64 _materialReticle = 0;
 
-	iaVector3d _force;
-	iaVector3d _torque;
+	iTimerHandle _timerHandle;
 
 	void onModelReady(uint64 modelNodeID);
-	void onHandle();
-	void onApplyForceAndTorque(iPhysicsBody* body, float32 timestep);
+	void onTick();
 
 };
 

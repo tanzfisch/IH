@@ -528,22 +528,6 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 			_plane->stopRollDown();
 			break;
 
-		case iKeyCode::F5:
-			_plane->setPosition(iaVector3d(706378, 10280, 553650));
-			break;
-
-		case iKeyCode::F6:
-			_plane->setPosition(iaVector3d(27934.5, 10270, 17452.6));
-			break;
-
-		case iKeyCode::F7:
-			_plane->setPosition(iaVector3d(16912.3, 10300, 31719.6));
-			break;
-
-		case iKeyCode::F8:
-			_plane->setPosition(iaVector3d(10841.6, 10450, 25283.8));
-			break;
-
 			/*	case iKeyCode::F9:
 				{
 					iAABoxI box;
@@ -687,6 +671,14 @@ void IslandHopper::onRenderOrtho()
 		iaString thrustLevel = "Thrust:";
 		thrustLevel += iaString::toString(_plane->getThrustLevel() * 100.0);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.04, thrustLevel);
+
+		iaString velocity = "Velocity:";
+		velocity += iaString::toString(_plane->getVelocity()._x);
+		velocity += ",";
+		velocity += iaString::toString(_plane->getVelocity()._y);
+		velocity += ",";
+		velocity += iaString::toString(_plane->getVelocity()._z);
+		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.07, velocity);
 	}
 
 	_profiler.draw(&_window, _font, iaColor4f(1.0, 1.0, 1.0, 1));
