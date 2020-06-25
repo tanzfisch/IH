@@ -23,11 +23,10 @@ using namespace igor;
 #include <iaux/data/iaString.h>
 using namespace iaux;
 
-Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
+Plane::Plane(iScene *scene, iView *view)
 {
 	_transformNode = iNodeManager::getInstance().createNode<iNodeTransform>();
-	_transformNode->setName("plane_somename");
-	_transformNode->setMatrix(matrix);
+	_transformNode->setName("plane transform");
 	scene->getRoot()->insertNode(_transformNode);
 
 	_planeModel = iNodeManager::getInstance().createNode<iNodeModel>();
@@ -35,27 +34,38 @@ Plane::Plane(iScene* scene, iView* view, const iaMatrixd& matrix)
 	_planeModel->setModel("plane.ompf");
 	_transformNode->insertNode(_planeModel);
 
-	iNodeTransform* transformCam = iNodeManager::getInstance().createNode<iNodeTransform>();
-	transformCam->translate(0, 2, 10);
-	_transformNode->insertNode(transformCam);
+	_camOrientationNode = iNodeManager::getInstance().createNode<iNodeTransform>();
+	_camOrientationNode->setName("cam orientation");
+	_transformNode->insertNode(_camOrientationNode);
 
-	iNodeCamera* camera = iNodeManager::getInstance().createNode<iNodeCamera>();
+	iNodeTransform *transformCam = iNodeManager::getInstance().createNode<iNodeTransform>();
+	transformCam->translate(0, 2.5, 10);
+	_camOrientationNode->insertNode(transformCam);
+
+	iNodeCamera *camera = iNodeManager::getInstance().createNode<iNodeCamera>();
 	view->setCurrentCamera(camera->getID());
 	transformCam->insertNode(camera);
 
-	iNodeLODTrigger* lodTrigger = iNodeManager::getInstance().createNode<iNodeLODTrigger>();
+	iNodeLODTrigger *lodTrigger = iNodeManager::getInstance().createNode<iNodeLODTrigger>();
 	_lodTriggerID = lodTrigger->getID();
 	camera->insertNode(lodTrigger);
 
 	_timerHandle.setIntervall(10);
 	_timerHandle.registerTimerDelegate(iTimerTickDelegate(this, &Plane::onTick));
+
+	_collisionCast = iPhysics::getInstance().createSphere(2.0, iaMatrixd());
 }
 
 Plane::~Plane()
 {
 	_timerHandle.unregisterTimerDelegate(iTimerTickDelegate(this, &Plane::onTick));
-
 	iNodeManager::getInstance().destroyNodeAsync(_transformNode);
+	iPhysics::getInstance().destroyCollision(_collisionCast);
+}
+
+void Plane::setMatrix(const iaMatrixd &matrix)
+{
+	_transformNode->setMatrix(matrix);
 }
 
 void Plane::onModelReady(uint64 modelNodeID)
@@ -64,12 +74,12 @@ void Plane::onModelReady(uint64 modelNodeID)
 	{
 		_planeModel->unregisterModelReadyDelegate(iModelReadyDelegate(this, &Plane::onModelReady));
 
-		_leftAileron = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("left_aileron")->getChild("rotate"));
-		_rightAileron = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("right_aileron")->getChild("rotate"));
-		_leftElevator = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("left_elevator")->getChild("rotate"));
-		_rightElevator = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("right_elevator")->getChild("rotate"));
-		_rudder = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("rudder")->getChild("rotate"));
-		_propeller = static_cast<iNodeTransform*>(_planeModel->getChild("plane")->getChild("body")->getChild("propeller"));
+		_leftAileron = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("left_aileron")->getChild("rotate"));
+		_rightAileron = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("right_aileron")->getChild("rotate"));
+		_leftElevator = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("left_elevator")->getChild("rotate"));
+		_rightElevator = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("right_elevator")->getChild("rotate"));
+		_rudder = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("rudder")->getChild("rotate"));
+		_propeller = static_cast<iNodeTransform *>(_planeModel->getChild("plane")->getChild("body")->getChild("propeller"));
 	}
 }
 
@@ -86,70 +96,29 @@ uint64 Plane::getLODTriggerID() const
 	return _lodTriggerID;
 }
 
-void Plane::drawReticle(const iWindow& window)
+float64 Plane::getVelocity() const
 {
-	iaVector3f weaponPos(window.getClientWidth() * 0.5, window.getClientHeight() * 0.5, 0);
-
-	float32 scale = 0.001 * window.getClientWidth();
-
-	iRenderer::getInstance().setMaterial(_materialReticle);
-	iRenderer::getInstance().setLineWidth(1 * scale);
-
-	iRenderer::getInstance().setColor(iaColor4f(1, 0, 0, 1));
-	iRenderer::getInstance().drawLine(weaponPos + iaVector3f(-10 * scale, 0, 0), weaponPos + iaVector3f(10 * scale, 0, 0));
-	iRenderer::getInstance().drawLine(weaponPos + iaVector3f(0, -10 * scale, 0), weaponPos + iaVector3f(0, 10 * scale, 0));
-}
-
-const iaVector3d& Plane::getVelocity() const
-{
-	return _velocity;
+	return _velocity.length();
 }
 
 void Plane::onTick()
-{	
-	static const float64 rollTorque = 0.00005;
-	static const float64 pitchTorque = 0.000025;
-	static const float64 maxThrust = 0.02;
-	static const float64 planeWeight = 0.01;
+{
+	static const float64 fps = 100.0;
+	static const float64 maxRollSpeed = M_PI * 0.0005 / fps;
+	static const float64 maxPitchSpeed = M_PI * 0.0005 / fps;
+	static const float64 maxVelocity = 0.1 / fps;
+
+	// appliy drag
+	_rollTorque *= 0.99995;
+	_pitchTorque *= 0.99995;
 
 	iaMatrixd matrix;
 	_transformNode->getMatrix(matrix);
 
-	iaVector3d thrust = matrix._depth;
-	thrust.negate();
-	thrust.normalize();
-	thrust *= _thrustLevel * maxThrust;
-
-	iaVector3d up(0, 1, 0);
-	iaVector3d lift = matrix._top;
-	lift *=  (lift * up) * (_thrustLevel * maxThrust);
-
-	iaVector3d weight(0, -planeWeight, 0);
-
-	_velocity *= 0.99;
-
-	iaVector3d netForce = thrust + lift + weight;
-	netForce *= 0.001;
-	_velocity += netForce;
-	matrix._pos += _velocity;
-
-	// con_endl(thrust << "+" << lift << "+" << weight << "=" << netForce);
-
-	/*if (true)//  _forward)
-	{
-		
-		foreward.negate();
-		foreward.normalize();
-		foreward *= thrust;
-		resultingForce += foreward;
-
-		iaVector3d worldUp(0, 1, 0);
-		iaVector3d up = matrix._top;
-		up.normalize();
-
-		up *= thrust * 0.4 * (worldUp * up);
-		resultingForce += up;
-	}*/
+	_velocity = matrix._depth;
+	_velocity.negate();
+	_velocity.normalize();
+	_velocity *= _thrustLevel * maxVelocity;
 
 	if (_propeller)
 	{
@@ -173,7 +142,10 @@ void Plane::onTick()
 			_rightAileron->setMatrix(matrix);
 		}
 
-		roll.rotate(rollTorque,iaAxis::Z);
+		if (fabs(_rollTorque) < maxRollSpeed)
+		{
+			_rollTorque += 0.000000001;
+		}
 	}
 	else if (_rollRight)
 	{
@@ -189,7 +161,11 @@ void Plane::onTick()
 			matrix.rotate(0.3, iaAxis::X);
 			_rightAileron->setMatrix(matrix);
 		}
-		roll.rotate(-rollTorque, iaAxis::Z);
+
+		if (fabs(_rollTorque) < maxRollSpeed)
+		{
+			_rollTorque -= 0.000000001;
+		}
 	}
 	else
 	{
@@ -220,7 +196,10 @@ void Plane::onTick()
 			_rightElevator->setMatrix(matrix);
 		}
 
-		pitch.rotate(pitchTorque, iaAxis::X);
+		if (fabs(_pitchTorque) < maxPitchSpeed)
+		{
+			_pitchTorque += 0.000000001;
+		}
 	}
 	else if (_pitchDown)
 	{
@@ -235,7 +214,10 @@ void Plane::onTick()
 			_rightElevator->setMatrix(matrix);
 		}
 
-		pitch.rotate(-pitchTorque, iaAxis::X);
+		if (fabs(_pitchTorque) < maxPitchSpeed)
+		{
+			_pitchTorque -= 0.000000001;
+		}
 	}
 	else
 	{
@@ -250,9 +232,33 @@ void Plane::onTick()
 		}
 	}
 
+	std::vector<ConvexCastReturnInfo> info;
+	iaVector3d target = matrix._pos + _velocity;
+	iPhysics::getInstance().convexCast(matrix, target, _collisionCast, iRayPreFilterDelegate(this, &Plane::onRayPreFilter), nullptr, info);
+
+	if (!info.empty())
+	{
+		_planeCrashedEvent();
+		return;
+	}
+
+	roll.rotate(_rollTorque, iaAxis::Z);
+	pitch.rotate(_pitchTorque, iaAxis::X);
+
 	matrix *= pitch;
 	matrix *= roll;
+	matrix._pos = target;
 	_transformNode->setMatrix(matrix);
+
+	_camOrientationNode->identity();
+	_camOrientationNode->rotate(-_pitchTorque * 10000, iaAxis::X);
+	_camOrientationNode->rotate(-_rollTorque * 10000, iaAxis::Z);
+}
+
+unsigned Plane::onRayPreFilter(iPhysicsBody *body, iPhysicsCollision *collision, const void *userData)
+{
+	// our plane has no body
+	return 1;
 }
 
 void Plane::setThrustLevel(float64 thrustLevel)

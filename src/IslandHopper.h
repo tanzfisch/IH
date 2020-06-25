@@ -18,9 +18,9 @@ using namespace iaux;
 
 namespace igor
 {
-	class iScene;
-	class iNodeTransform;
-	class iNodeLight;
+    class iScene;
+    class iNodeTransform;
+    class iNodeLight;
     class iTextureFont;
     class iVoxelData;
     class iContouringCubes;
@@ -30,8 +30,8 @@ namespace igor
     class iNodeTransformControl;
     class iNodeLODTrigger;
     class iTexture;
-	class iPhysicsBody;
-}
+    class iPhysicsBody;
+} // namespace igor
 
 class Plane;
 
@@ -39,25 +39,23 @@ class IslandHopper
 {
 
 public:
-
     IslandHopper();
-	virtual ~IslandHopper();
+    virtual ~IslandHopper();
 
-	void run();
+    void run();
 
 private:
-
-	Plane* _plane = nullptr;
+    Plane *_plane = nullptr;
 
     /*! visualize statistics
     */
-	iProfilerVisualizer _profiler;
+    iProfilerVisualizer _profiler;
 
-	iPerlinNoise _perlinNoise;
+    iPerlinNoise _perlinNoise;
 
     bool _loading = true;
     bool _activeControls = false;
-	bool _wireframe = false;
+    bool _wireframe = false;
 
     iWindow _window;
     iView _view;
@@ -66,9 +64,9 @@ private:
     uint64 _playerID = 0;
     uint64 _bossID = 0;
 
-    iTextureFont* _font = nullptr;
+    iTextureFont *_font = nullptr;
 
-    iScene* _scene = nullptr;
+    iScene *_scene = nullptr;
 
     uint64 _toolSize = 10;
     uint8 _toolDensity = 0;
@@ -76,21 +74,24 @@ private:
     iaVector2f _mouseDelta;
     iaVector3f _weaponPos;
 
-    iNodeTransform* _lightTranslate = nullptr;
-    iNodeTransform* _lightRotate = nullptr;
-    iNodeLight* _lightNode = nullptr;
+    iNodeTransform *_lightTranslate = nullptr;
+    iNodeTransform *_lightRotate = nullptr;
+    iNodeLight *_lightNode = nullptr;
 
-    iVoxelTerrain* _voxelTerrain = nullptr;
+    iVoxelTerrain *_voxelTerrain = nullptr;
 
-	uint64 _materialWithTextureAndBlending = 0;
-	uint64 _octreeMaterial = 0;
-	uint64 _materialSkyBox = 0;
+    uint64 _materialWithTextureAndBlending = 0;
+    uint64 _octreeMaterial = 0;
+    uint64 _materialSkyBox = 0;
 
-    uint64 _taskFlushModels = 0; 
+    uint64 _taskFlushModels = 0;
     uint64 _taskFlushTextures = 0;
 
+    void playerCrashed();
+    void playerLanded();
+
     void onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo);
-    void onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo);
+    void onGenerateVoxelData(iVoxelBlockInfo *voxelBlockInfo);
 
     void onKeyPressed(iKeyCode key);
     void onKeyReleased(iKeyCode key);
@@ -98,8 +99,8 @@ private:
     void onWindowClosed();
     void onWindowResized(int32 clientWidth, int32 clientHeight);
 
-    void onMouseMoved(const iaVector2i& from, const iaVector2i& to, iWindow* _window);
-        
+    void onMouseMoved(const iaVector2i &from, const iaVector2i &to, iWindow *_window);
+
     void onMouseUp(iKeyCode key);
     void onMouseDown(iKeyCode key);
     void onMouseWheel(int d);
@@ -118,7 +119,6 @@ private:
 
     void initVoxelData();
     void deinitVoxelData();
-
 };
 
 #endif

@@ -242,3 +242,4 @@ include/
 lib/
 vendor/
 build/
+.vscode/

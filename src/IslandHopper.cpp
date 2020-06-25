@@ -48,7 +48,8 @@ using namespace iaux;
 // #define SIN_WAVE_TERRAIN
 #define USE_WATER
 
-const float64 waterLevel = 10000;
+static const float64 s_waterLevel = 10000;
+static const float64 s_treeLine = 10500;
 
 IslandHopper::IslandHopper()
 {
@@ -139,7 +140,7 @@ void IslandHopper::initScene()
 	_scene->getRoot()->insertNode(_lightRotate);
 
 	// reate a sky box and add it to scene
-	iNodeSkyBox* skyBoxNode = iNodeManager::getInstance().createNode<iNodeSkyBox>();
+	iNodeSkyBox *skyBoxNode = iNodeManager::getInstance().createNode<iNodeSkyBox>();
 	skyBoxNode->setTextures(
 		iTextureResourceFactory::getInstance().requestFile("skybox_day/front.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
 		iTextureResourceFactory::getInstance().requestFile("skybox_day/back.jpg", iResourceCacheMode::Free, iTextureBuildMode::Mipmapped, iTextureWrapMode::Clamp),
@@ -166,8 +167,8 @@ void IslandHopper::initScene()
 #ifdef USE_WATER
 	for (int i = 0; i < 10; ++i) // todo just for the look give water a depth
 	{
-		iNodeWater* waterNode = iNodeManager::getInstance().createNode<iNodeWater>();
-		waterNode->setWaterPosition(waterLevel - i * 1);
+		iNodeWater *waterNode = iNodeManager::getInstance().createNode<iNodeWater>();
+		waterNode->setWaterPosition(s_waterLevel - i * 1);
 
 		if (i == 9)
 		{
@@ -196,12 +197,16 @@ void IslandHopper::initScene()
 
 void IslandHopper::initPlayer()
 {
+	if (_plane == nullptr)
+	{
+		_plane = new Plane(_scene, &_view);
+		_plane->_planeCrashedEvent.append(PlaneCrashedDelegate(this, &IslandHopper::playerCrashed));
+		_plane->_planeLandedEvent.append(PlaneLandedDelegate(this, &IslandHopper::playerLanded));
+	}
+
 	iaMatrixd matrix;
-	//matrix.translate(730000, 4800, 530000);
-//    matrix.translate(759669, 4817, 381392);
-	//matrix.translate(759844, 4661, 381278);
 	matrix.translate(759846, 10100, 381272);
-	_plane = new Plane(_scene, &_view, matrix);
+	_plane->setMatrix(matrix);
 }
 
 void IslandHopper::init()
@@ -248,9 +253,9 @@ void IslandHopper::initVoxelData()
 	iaVector3I maxDiscovery(1000000, 3, 1000000);
 
 	_voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &IslandHopper::onGenerateVoxelData),
-		iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
+									  iVoxelTerrainPlacePropsDelegate(this, &IslandHopper::onVoxelDataGenerated), 11, 4, &maxDiscovery);
 
-	iTargetMaterial* targetMaterial = _voxelTerrain->getTargetMaterial();
+	iTargetMaterial *targetMaterial = _voxelTerrain->getTargetMaterial();
 	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
 	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 1);
 	targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
@@ -272,23 +277,61 @@ void IslandHopper::initVoxelData()
 	_voxelTerrain->setLODTrigger(_plane->getLODTriggerID());
 }
 
-__IGOR_INLINE__ float64 metaballFunction(const iaVector3f& metaballPos, const iaVector3f& checkPos)
+__IGOR_INLINE__ float64 metaballFunction(const iaVector3f &metaballPos, const iaVector3f &checkPos)
 {
 	return 1.0 / ((checkPos._x - metaballPos._x) * (checkPos._x - metaballPos._x) + (checkPos._y - metaballPos._y) * (checkPos._y - metaballPos._y) + (checkPos._z - metaballPos._z) * (checkPos._z - metaballPos._z));
 }
 
 void IslandHopper::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
 {
+	// skip this block
+	if (voxelBlockPropsInfo._max._y < s_waterLevel ||
+		voxelBlockPropsInfo._min._y > s_treeLine)
+	{
+		return;
+	}
+
+	iaVector3I diff;
+	diff = voxelBlockPropsInfo._max;
+	diff -= voxelBlockPropsInfo._min;
+
+	iaVector3d offset = voxelBlockPropsInfo._min.convert<float64>();
+	iaRandomNumberGeneratoru rand(offset._x + offset._y + offset._z);
+
+	for (int i = 0; i < 10; ++i)
+	{
+		iaVector3d from(rand.getNext() % diff._x + offset._x, s_treeLine * 2, rand.getNext() % diff._z + offset._z);
+		iaVector3d to = from;
+		to._y = s_waterLevel;
+
+		iaVector3I outside, inside;
+
+		if (_voxelTerrain->castRay(iaVector3I(from._x, from._y, from._z), iaVector3I(to._x, to._y, to._z), outside, inside))
+		{
+			iaVector3d pos(outside._x, outside._y, outside._z);
+
+			iNodeTransform *transformTree = iNodeManager::getInstance().createNode<iNodeTransform>();
+			transformTree->translate(pos);
+			iNodeModel *tree = iNodeManager::getInstance().createNode<iNodeModel>();
+			tree->setModel("tree.ompf");
+			iNodeLODSwitch *lodSwitch = iNodeManager::getInstance().createNode<iNodeLODSwitch>();
+			lodSwitch->insertNode(tree);
+			lodSwitch->addTrigger(_plane->getLODTriggerID());
+			lodSwitch->setThresholds(tree, 0, 100);
+			transformTree->insertNode(lodSwitch);
+			_scene->getRoot()->insertNode(transformTree);
+		}
+	}
 }
 
-void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
+void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo *voxelBlockInfo)
 {
 	uint32 lodFactor = static_cast<uint32>(pow(2, voxelBlockInfo->_lod));
-	iVoxelData* voxelData = voxelBlockInfo->_voxelData;
+	iVoxelData *voxelData = voxelBlockInfo->_voxelData;
 	iaVector3I position = voxelBlockInfo->_positionInLOD;
 	position *= (32 * lodFactor);
-	iaVector3f& lodOffset = voxelBlockInfo->_lodOffset;
-	uint64& size = voxelBlockInfo->_size;
+	iaVector3f &lodOffset = voxelBlockInfo->_lodOffset;
+	uint64 &size = voxelBlockInfo->_size;
 
 	const float64 from = 0.35;
 	const float64 to = 0.36;
@@ -306,7 +349,7 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 				float64 height;
 
 #ifdef SIN_WAVE_TERRAIN
-				height = waterLevel + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
+				height = s_waterLevel + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
 #else
 				float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
 				contour -= 0.7;
@@ -337,11 +380,11 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 
 				noise += 0.0025;
 
-				height = (noise * 2000) + waterLevel + 200;
+				height = (noise * 2000) + s_waterLevel + 200;
 
-				if (height < waterLevel - 100)
+				if (height < s_waterLevel - 100)
 				{
-					height = waterLevel - 100;
+					height = s_waterLevel - 100;
 				}
 #endif
 
@@ -386,7 +429,7 @@ void IslandHopper::onGenerateVoxelData(iVoxelBlockInfo* voxelBlockInfo)
 					{
 						pos._y = y * lodFactor + position._y + lodOffset._y;
 
-						if (pos._y > waterLevel &&
+						if (pos._y > s_waterLevel &&
 							pos._y > height - 300 &&
 							pos._y < height + 10)
 						{
@@ -439,6 +482,12 @@ void IslandHopper::deinit()
 		delete _font;
 		_font = nullptr;
 	}
+
+	if (_plane != nullptr)
+	{
+		delete _plane;
+		_plane = nullptr;
+	}
 }
 
 void IslandHopper::onKeyPressed(iKeyCode key)
@@ -475,7 +524,8 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 	{
 		iProfilerVerbosity level = _profiler.getVerbosity();
 
-		if (level == iProfilerVerbosity::All)		{
+		if (level == iProfilerVerbosity::All)
+		{
 			level = iProfilerVerbosity::None;
 		}
 		else
@@ -493,7 +543,6 @@ void IslandHopper::onKeyPressed(iKeyCode key)
 		_activeControls = !_activeControls;
 		iMouse::getInstance().showCursor(!_activeControls);
 		break;
-
 	}
 }
 
@@ -509,7 +558,10 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 			break;
 
 		case iKeyCode::OEM2:
-			_plane->setThrustLevel(_plane->getThrustLevel() - 0.1);
+			if (_plane->getThrustLevel() >= 0.3)
+			{
+				_plane->setThrustLevel(_plane->getThrustLevel() - 0.1);
+			}
 			break;
 
 		case iKeyCode::A:
@@ -527,24 +579,6 @@ void IslandHopper::onKeyReleased(iKeyCode key)
 		case iKeyCode::W:
 			_plane->stopRollDown();
 			break;
-
-			/*	case iKeyCode::F9:
-				{
-					iAABoxI box;
-					box._center = _plane->getSphere()._center.convert<int64>();
-					box._halfWidths.set(10, 10, 10);
-					_voxelTerrain->modify(box, 0);
-				}
-				break;
-
-				case iKeyCode::F10:
-				{
-					iAABoxI box;
-					box._center = _plane->getSphere()._center.convert<int64>();
-					box._halfWidths.set(10, 10, 10);
-					_voxelTerrain->modify(box, 128);
-				}
-				break;*/
 
 		case iKeyCode::F12:
 		{
@@ -592,7 +626,18 @@ void IslandHopper::onMouseWheel(int d)
 	}
 }
 
-void IslandHopper::onMouseMoved(const iaVector2i& from, const iaVector2i& to, iWindow* _window)
+void IslandHopper::playerCrashed()
+{
+	con_endl("crash");
+	initPlayer();
+}
+
+void IslandHopper::playerLanded()
+{
+	con_endl("land");
+}
+
+void IslandHopper::onMouseMoved(const iaVector2i &from, const iaVector2i &to, iWindow *_window)
 {
 	if (_activeControls)
 	{
@@ -664,20 +709,16 @@ void IslandHopper::onRenderOrtho()
 	{
 		iRenderer::getInstance().setColor(iaColor4f(1, 1, 1, 1));
 		iRenderer::getInstance().setFontSize(15.0f);
-		iaString altitude = "Altitude:";
-		altitude += iaString::toString(_plane->getAltitude() - waterLevel);
+		iaString altitude = "Altitude: ";
+		altitude += iaString::toString(_plane->getAltitude() - s_waterLevel);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.01, altitude);
 
-		iaString thrustLevel = "Thrust:";
+		iaString thrustLevel = "Thrust: ";
 		thrustLevel += iaString::toString(_plane->getThrustLevel() * 100.0);
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.04, thrustLevel);
 
-		iaString velocity = "Velocity:";
-		velocity += iaString::toString(_plane->getVelocity()._x);
-		velocity += ",";
-		velocity += iaString::toString(_plane->getVelocity()._y);
-		velocity += ",";
-		velocity += iaString::toString(_plane->getVelocity()._z);
+		iaString velocity = "Velocity: ";
+		velocity += iaString::toString(_plane->getVelocity());
 		iRenderer::getInstance().drawString(_window.getClientWidth() * 0.01, _window.getClientHeight() * 0.07, velocity);
 	}
 
