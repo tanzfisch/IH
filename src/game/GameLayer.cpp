@@ -2,10 +2,8 @@
 
 #include "../ui/HUDLayer.h"
 
-// #define SIN_WAVE_TERRAIN
-
 static const float64 s_waterLevel = 10000;
-static const float64 s_treeLine = 10500;
+static const float64 s_treeLine = 10200;
 
 GameLayer::GameLayer(iWindow *window, int32 zIndex)
     : iLayer(window, "Game", zIndex)
@@ -93,7 +91,7 @@ void GameLayer::initPlayer()
     }
 
     iaMatrixd matrix;
-    matrix.translate(759846, 10100, 381272);
+    matrix.translate(740846, 10100, 381272);
     _plane->setMatrix(matrix);
 }
 
@@ -128,10 +126,10 @@ void GameLayer::onInit()
 void GameLayer::initVoxelData()
 {
     // it's a flat landscape so we can limit the discovery in the vertical axis
-    iaVector3I maxDiscovery(1000000, 300, 1000000);
+    iaVector3I maxDiscovery(1000000, 10, 1000000);
 
     _voxelTerrain = new iVoxelTerrain(iVoxelTerrainGenerateDelegate(this, &GameLayer::onGenerateVoxelData),
-                                      iVoxelTerrainPlacePropsDelegate(this, &GameLayer::onVoxelDataGenerated), 11, 4, maxDiscovery);
+                                      iVoxelTerrainPlacePropsDelegate(this, &GameLayer::onVoxelDataGenerated), 11, 6, maxDiscovery);
 
     iTargetMaterial *targetMaterial = _voxelTerrain->getTargetMaterial();
     targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
@@ -181,11 +179,6 @@ void GameLayer::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
     {
         for (int64 z = min._z; z < max._z; z += 4)
         {
-            float32 noise = _perlinNoise.getValue(iaVector3d(x * 0.03, min._y, z * 0.03), 3);
-            if (noise < 0.6)
-            {
-                continue;
-            }
 
             float64 offsetx = (rand.getNext() % 300 / 100.0) - 1.5;
             float64 offsetz = (rand.getNext() % 300 / 100.0) - 1.5;
@@ -200,17 +193,34 @@ void GameLayer::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
             {
                 iaVector3d pos(outside._x, outside._y, outside._z);
 
-                iNodeTransform *transformTree = iNodeManager::getInstance().createNode<iNodeTransform>();
-                transformTree->translate(pos);
-                iNodeModel *tree = iNodeManager::getInstance().createNode<iNodeModel>();
-                tree->setModel("tree.ompf");
-                tree->registerModelReadyDelegate(iModelReadyDelegate(this, &GameLayer::onModelReady));
-                iNodeLODSwitch *lodSwitch = iNodeManager::getInstance().createNode<iNodeLODSwitch>();
-                lodSwitch->insertNode(tree);
-                lodSwitch->addTrigger(_plane->getLODTriggerID());
-                lodSwitch->setThresholds(tree, 0, 2000);
-                transformTree->insertNode(lodSwitch);
-                _scene->getRoot()->insertNode(transformTree);
+                float32 noise = _perlinNoise.getValue(iaVector3d(x * 0.03, min._y, z * 0.03), 3);
+
+                if (noise > 0.6)
+                {
+                    iNodeTransform *transformTree = iNodeManager::getInstance().createNode<iNodeTransform>();
+                    transformTree->translate(pos);
+                    transformTree->rotate(rand.getNextFloat() * M_PI_2, iaAxis::Y);
+                    iNodeModel *tree = iNodeManager::getInstance().createNode<iNodeModel>();
+
+                    float32 range = (pos._y - s_waterLevel) / (s_treeLine - s_waterLevel);
+
+                    if (rand.getNextFloat() * range > 0.1)
+                    {
+                        tree->setModel("tree.ompf");
+                    }
+                    else
+                    {
+                        tree->setModel("palm.ompf");
+                    }
+
+                    tree->registerModelReadyDelegate(iModelReadyDelegate(this, &GameLayer::onModelReady));
+                    iNodeLODSwitch *lodSwitch = iNodeManager::getInstance().createNode<iNodeLODSwitch>();
+                    lodSwitch->insertNode(tree);
+                    lodSwitch->addTrigger(_plane->getLODTriggerID());
+                    lodSwitch->setThresholds(tree, 0, 400);
+                    transformTree->insertNode(lodSwitch);
+                    _scene->getRoot()->insertNode(transformTree);
+                }
             }
         }
     }
@@ -247,11 +257,7 @@ void GameLayer::onGenerateVoxelData(iVoxelBlockInfo *voxelBlockInfo)
             for (int64 z = 0; z < voxelData->getDepth(); ++z)
             {
                 iaVector3f pos(x * lodFactor + position._x + lodOffset._x, 0, z * lodFactor + position._z + lodOffset._z);
-                float64 height;
 
-#ifdef SIN_WAVE_TERRAIN
-                height = s_waterLevel + (sin(pos._x * 0.125) + sin(pos._z * 0.125)) * 10.0;
-#else
                 float64 contour = _perlinNoise.getValue(iaVector3d(pos._x * 0.0001, 0, pos._z * 0.0001), 3, 0.6);
                 contour -= 0.7;
 
@@ -260,7 +266,7 @@ void GameLayer::onGenerateVoxelData(iVoxelBlockInfo *voxelBlockInfo)
                     contour *= 3;
                 }
 
-                float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 7, 0.55) * 0.15;
+                float64 noise = _perlinNoise.getValue(iaVector3d(pos._x * 0.001, 0, pos._z * 0.001), 6, 0.45) * 0.15;
                 noise += contour;
 
                 if (noise < 0.0)
@@ -281,13 +287,12 @@ void GameLayer::onGenerateVoxelData(iVoxelBlockInfo *voxelBlockInfo)
 
                 noise += 0.0025;
 
-                height = (noise * 2000) + s_waterLevel + 200;
+                float64 height = (noise * 5000) + s_waterLevel + 200;
 
                 if (height < s_waterLevel - 100)
                 {
                     height = s_waterLevel - 100;
                 }
-#endif
 
                 float64 transdiff = height - static_cast<float64>(position._y) - lodOffset._y;
                 if (transdiff > 0 && transdiff <= voxelData->getHeight() * lodFactor)
