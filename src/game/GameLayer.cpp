@@ -2,8 +2,8 @@
 
 #include "../ui/HUDLayer.h"
 
-static const float64 s_waterLevel = 10000;
-static const float64 s_treeLine = 10200;
+static const int64 s_waterLevel = 10000;
+static const int64 s_treeLine = 10200;
 
 GameLayer::GameLayer(iWindow *window, int32 zIndex)
     : iLayer(window, "Game", zIndex)
@@ -132,9 +132,10 @@ void GameLayer::initVoxelData()
                                       iVoxelTerrainPlacePropsDelegate(this, &GameLayer::onVoxelDataGenerated), 11, 6, maxDiscovery);
 
     iTargetMaterial *targetMaterial = _voxelTerrain->getTargetMaterial();
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("grass.png"), 0);
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("dirt.png"), 1);
-    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("rock.png"), 2);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("green.png"), 0);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("brown.png"), 1);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("gray.png"), 2);
+    targetMaterial->setTexture(iTextureResourceFactory::getInstance().requestFile("detail.png"), 3);
     targetMaterial->setAmbient(iaColor3f(0.3f, 0.3f, 0.3f));
     targetMaterial->setDiffuse(iaColor3f(0.8f, 0.8f, 0.8f));
     targetMaterial->setSpecular(iaColor3f(1.0f, 1.0f, 1.0f));
@@ -179,13 +180,12 @@ void GameLayer::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
     {
         for (int64 z = min._z; z < max._z; z += 4)
         {
-
             float64 offsetx = (rand.getNext() % 300 / 100.0) - 1.5;
             float64 offsetz = (rand.getNext() % 300 / 100.0) - 1.5;
 
-            iaVector3d from(x + offsetx, s_treeLine, z + offsetz);
+            iaVector3d from(std::min(std::max((float64)min._x, x + offsetx), (float64)max._x), std::min(max._y, s_treeLine), std::min(std::max((float64)min._z, z + offsetz), (float64)max._z));
             iaVector3d to = from;
-            to._y = s_waterLevel;
+            to._y = std::max(min._y, s_waterLevel);
 
             iaVector3I outside, inside;
 
@@ -219,7 +219,7 @@ void GameLayer::onVoxelDataGenerated(iVoxelBlockPropsInfo voxelBlockPropsInfo)
                     lodSwitch->addTrigger(_plane->getLODTriggerID());
                     lodSwitch->setThresholds(tree, 0, 400);
                     transformTree->insertNode(lodSwitch);
-                    _scene->getRoot()->insertNode(transformTree);
+                    _scene->getRoot()->insertNodeAsync(transformTree);
                 }
             }
         }

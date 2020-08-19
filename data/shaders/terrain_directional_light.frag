@@ -32,7 +32,7 @@ void main()
 	vec3 texSelector = vec3(N.x*N.x, N.y*N.y, N.z*N.z);
 		
 	float scale = 0.01;
-	float detailScale = 0.1;
+	float detailScale = 0.01;
 	
 	vec3 diffuseTextureColor = texture2D(igor_matTexture0, P.xz * scale).rgb * texSelector.y;	
 	diffuseTextureColor += texture2D(igor_matTexture1, P.yz * scale).rgb * texSelector.x; 
@@ -41,8 +41,8 @@ void main()
 	detailTextureColor += texture2D(igor_matTexture3, P.yz * detailScale).rgb * texSelector.x; 
 	detailTextureColor += texture2D(igor_matTexture3, P.xy * detailScale).rgb * texSelector.z;
 	
-	diffuseTextureColor *= 0.5;
-	detailTextureColor *= 0.5;
+	diffuseTextureColor *= 0.6;
+	detailTextureColor *= 0.4;
 	diffuseTextureColor += detailTextureColor;	
 	
 	vec3 emissive = igor_matEmissive;
